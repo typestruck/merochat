@@ -7,9 +7,15 @@ import Server.Database as SD
 import Server.Database.Privileges as SDP
 import Server.Effect (ServerEffect)
 import Server.Praise.Database as SPD
-import Shared.Praise (PraisedFor)
+import Shared.Praise (Praise, PraisedFor, PraiseDisplay)
 import Shared.Privilege (Privilege(..))
 import Shared.ResponseError (ResponseError(..))
+
+presentPraise ∷ Int → Int → ServerEffect PraiseDisplay
+presentPraise loggedUserId userId = do
+      praise ← SPD.presentPraise userId
+      isAllowedToPraise ← SPD.isAllowedToPraise loggedUserId userId
+      pure { praise, alreadyPraised: not isAllowedToPraise }
 
 savePraise ∷ Int → Int → Array PraisedFor → ServerEffect Boolean
 savePraise loggedUserId userId for = do

@@ -193,10 +193,10 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                   , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
                           [ SIVR.retry "Failed to load praise" (FetchPraise user.id) model.failedRequests
                           , SIVPR.praiseForm model user
-                          -- , if model.praise.freeToFetch then
-                          --     HE.div [ HA.class' "asks-list" ] $ map SIVPR.praised user.asks
-                          -- else
-                          --    HE.div' [ HA.class' "loading" ]
+                          , if model.praise.freeToFetch then
+                              HE.div [ HA.class' "ask-list" ] $ SIVPR.praised user.praise
+                          else
+                             HE.div' [ HA.class' "loading" ]
                           ]
 
                   , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts } ]
@@ -290,10 +290,10 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
             , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
                     [ SIVR.retry "Failed to load asks" (FetchPraise suggestion.id) model.failedRequests
                     , SIVPR.praiseForm model suggestion
-                    -- , if model.praise.freeToFetch then
-                    --       HE.div [ HA.class' "praise-list" ] $ map SIVPR.praised suggestion.praise
-                    -- else
-                    --     HE.div' [ HA.class' "loading" ]
+                    , if model.praise.freeToFetch then
+                              HE.div [ HA.class' "ask-list" ] $ SIVPR.praised suggestion.praise
+                          else
+                             HE.div' [ HA.class' "loading" ]
                     ]
 
             , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts } ]

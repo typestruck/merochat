@@ -5,15 +5,20 @@ import Prelude
 import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
+import Data.Either (Either)
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
+import Data.Show.Generic as DGRS
 import Debug (spy)
-import Droplet.Language (class ToValue)
+import Droplet.Language (class FromValue, class ToValue)
+import Droplet.Language as DL
 import Foreign as F
-import Shared.Content (Content)
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.Unsafe as SU
+
+type PraiseDisplay = { praise ∷ Array Praise, alreadyPraised ∷ Boolean }
 
 type Praise =
       { id ∷ Int
@@ -97,4 +102,10 @@ instance DecodeJson PraisedFor where
       decodeJson = DADGR.genericDecodeJson
 
 instance ToValue PraisedFor where
-      toValue p = spy "pasfasd" (F.unsafeToForeign $ DE.fromEnum p)
+      toValue p = F.unsafeToForeign $ DE.fromEnum p
+
+instance FromValue PraisedFor where
+      fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
+
+instance Show PraisedFor where
+      show = DGRS.genericShow

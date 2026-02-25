@@ -4,41 +4,43 @@ import Prelude
 
 import Client.Privilege as CCP
 import Data.Array as DA
+import Data.Array.NonEmpty as DAN
 import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Tuple as DT
 import Data.Tuple.Nested (type (/\), (/\))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Change as SCN
-import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..), User)
+import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Options.Praise (maxPraiseCharacters)
-import Shared.Praise (PraisedFor(..))
+import Shared.Praise (PraisedFor(..), Praise)
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
-import Shared.Unsafe as SU
-import Shared.User (ProfileVisibility(..))
+import Shared.User (PraiseStatus(..), User)
 
-praised ∷ ∀ message. _ → Html message
-praised praise = HE.div [ HA.class' "praise-entry" ]
-      [
-      -- [ HE.div [ HA.class' "praise-question" ]
-      --         [ HE.span [ HA.class' "duller" ] [ HE.text $ praise.name <> " praises: " ]
-      --         , HE.div [HA.class' "praise-question-itself"] [ HE.b [] [ HE.i [] [ HE.text praise.question ] ] ]
-      --         ]
-      -- , HE.div [ HA.class' "praise-answer" ] [ HE.text $ SU.fromJust praise.answer ]
-      ]
+praised ∷ ∀ message. Array PraisedFor → Array (Html message)
+praised rows = map display counts
+      where
+      counts = map run $ DA.group  rows
+      run p = DAN.head p /\ DAN.length p
+
+      display (praise /\ n) = HE.div [ HA.class' "praise-entry" ]
+            $ [ HE.div [ HA.class' "tag tag-praise" ]
+                    [ HE.text <<< DT.snd $ displayPraise praise ]
+            ] <> (if n > 1 then [HE.text $ "x " <> show n] else [])
 
 praiseForm ∷ ImModel → User → Html ImMessage
 praiseForm model user =
       if not $ SP.hasPrivilege SendPraise model.user then
             CCP.notEnoughKarma "send praises" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
-      -- else if DA.elem user.id model.praises.unallowed then
-      --       HE.div_ [ HE.text $ "You have already praised " <> user.name ]
-      -- else if DA.elem user.id model.praises.sent then
-      --       HE.div_ [ HE.text $ "Praise sent" ]
+      else if user.praiseStatus == HasPraised || not model.praise.freeToFetch then
+            HE.div [] []
+      else if user.praiseStatus == PraiseNotAccepted then
+            HE.div_ [ HE.text $ "You have already praised " <> user.name ]
       else
             form
       where
@@ -68,15 +70,15 @@ praiseForm model user =
             ]
 
 praises ∷ Array (PraisedFor /\ String)
-praises = map praisedFor $ DE.upFromIncluding Funny
-      where
-      praisedFor = case _ of
-            Funny → Funny /\ "Funny"
-            Advice → Advice /\ "Good advice"
-            Arguing → Arguing /\ "Likes to argue"
-            Serious → Serious /\ "Serious conversations"
-            FastReply → FastReply /\ "Replies fast"
-            AlwaysReply → AlwaysReply /\ "Always reply"
-            LongReply → LongReply /\ "Long form conversations"
-            Sarcastic → Sarcastic /\ "Sarcastic "
-            Other _ → Other "" /\ "Other"
+praises = map displayPraise $ DE.upFromIncluding Funny
+
+displayPraise = case _ of
+      Funny → Funny /\ "Funny"
+      Advice → Advice /\ "Good advice"
+      Arguing → Arguing /\ "Likes to argue"
+      Serious → Serious /\ "Serious conversations"
+      FastReply → FastReply /\ "Replies fast"
+      AlwaysReply → AlwaysReply /\ "Always reply"
+      LongReply → LongReply /\ "Long form conversations"
+      Sarcastic → Sarcastic /\ "Sarcastic "
+      Other _ → Other "" /\ "Other"

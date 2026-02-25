@@ -7,7 +7,8 @@ import Data.Maybe (Maybe(..))
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Im.Types (Contact, User)
+import Shared.Im.Types (Contact)
+import Shared.User (User)
 
 defaultContact ∷ Int → User → Contact
 defaultContact id chatted =

@@ -42,6 +42,7 @@ import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (PM, ProfileAsk, ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
 import Shared.ProfileColumn as SP
 import Shared.ResizeInput as SIR
+import Shared.User (Gender(..))
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 import Web.Event.Internal.Types (Event)
@@ -204,7 +205,15 @@ setCountry ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe Pro
 setCountry value model = model { countryInputed = DI.fromString value } /\ []
 
 setGender ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-setGender value model = model { genderInputed = DSR.read value } /\ []
+setGender value model = model { genderInputed = parsed } /\ []
+      where
+      parsed =
+            case DS.toLower $ DS.trim value of
+                  "female" → Just Female
+                  "male" → Just Male
+                  "non binary" → Just NonBinary
+                  "other" → Just Other
+                  _ → Nothing
 
 setTag ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 setTag tag model =

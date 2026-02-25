@@ -43,13 +43,14 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), SelectedImage, ShowContextMenu(..), Touch, Turn, User, WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), SelectedImage, ShowContextMenu(..), Touch, Turn, WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Modal (ChatModal(..), Modal(..))
 import Shared.ResizeInput as SRI
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
+import Shared.User (User)
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 import Web.DOM.Element as WDE

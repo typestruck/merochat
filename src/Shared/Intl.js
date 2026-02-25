@@ -1,6 +1,7 @@
 let kmbFormater = new Intl.NumberFormat('en', {
     maximumFractionDigits: 1,
-    notation: 'compact'
+    notation: 'compact',
+    roundingMode: 'floor'
 });
 
 export function thousands(number) {

@@ -39,6 +39,7 @@ model =
       , praise:
               { freeToSave: true
               , selected: Nothing
+              , freeToFetch: true
               , other: Nothing
               }
       , asks:
@@ -110,6 +111,8 @@ imUser =
       , favorite: false
       , id: imUserId
       , showing: ShowInfo
+      , praise : []
+      , praiseStatus: HasNotPraised
       , totalAsks: 0
       , profileVisibility: Everyone
       , asksVisibility: Everyone

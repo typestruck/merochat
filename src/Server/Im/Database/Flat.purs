@@ -14,7 +14,7 @@ import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Im.Types (Contact, HM, User, HistoryMessage)
+import Shared.Im.Types (Contact, HM, HistoryMessage)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
 
@@ -92,6 +92,8 @@ fromFlatUser fc =
       , headline: fc.headline
       , posts: []
       , asks: []
+      , praise : []
+      , praiseStatus: HasNotPraised
       , unseenPosts: DM.fromMaybe 0 (fc.unseenPosts >>= BI.toInt)
       , postsVisibility: fc.postsVisibility
       , ownBackground: SC.coerce fc.ownBackground

@@ -26,8 +26,8 @@ _praiser = Proxy
 _praised ∷ Proxy "praised"
 _praised = Proxy
 
-_praisedFor ∷ Proxy "praised_for"
-_praisedFor = Proxy
+_praised_for ∷ Proxy "praised_for"
+_praised_for = Proxy
 
 _accepted :: Proxy "accepted"
 _accepted = Proxy

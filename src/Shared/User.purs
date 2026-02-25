@@ -14,6 +14,7 @@ import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
+import Data.Show.Generic as DGRS
 import Data.Show.Generic as DSG
 import Data.String as DS
 import Data.String.Read (class Read)
@@ -33,6 +34,7 @@ import Shared.Availability (Availability)
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Post (Post)
+import Shared.Praise (Praise, PraisedFor)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.Unsafe as SU
@@ -51,7 +53,7 @@ type BasicUser fields =
       | fields
       )
 
-type IU =
+type User = Record
       ( BasicUser
               ( gender ∷ Maybe String
               , country ∷ Maybe String
@@ -79,10 +81,14 @@ type IU =
               , joined ∷ DateTimeWrapper
               , completedTutorial ∷ Boolean
               , bin ∷ Int
+              , praise ∷ Array PraisedFor
+              , praiseStatus ∷ PraiseStatus
               , asks ∷ Array Ask
               , privileges ∷ Array Privilege
               )
       )
+
+data PraiseStatus = HasNotPraised | HasPraised | PraiseNotAccepted
 
 data ProfileTab = ShowInfo | ShowPosts | ShowAsks | ShowPraise
 
@@ -158,16 +164,6 @@ derive instance Ord ReceiveEmail
 derive instance Ord Gender
 derive instance Ord ProfileTab
 derive instance Ord ProfileVisibility
-
---refactor: should just use Enum (have to fix read/writeforeign instances for gender)
-instance Read Gender where
-      read input =
-            case DS.toLower $ DS.trim input of
-                  "female" → Just Female
-                  "male" → Just Male
-                  "non binary" → Just NonBinary
-                  "other" → Just Other
-                  _ → Nothing
 
 instance Bounded Gender where
       bottom = Female
@@ -311,6 +307,15 @@ instance FromValue ReceiveEmail where
 instance ToValue ProfileVisibility where
       toValue = F.unsafeToForeign <<< DE.fromEnum
 
+instance DecodeJson PraiseStatus where
+      decodeJson = DADGR.genericDecodeJson
+
+instance Show PraiseStatus where
+      show = DGRS.genericShow
+
+instance EncodeJson PraiseStatus where
+      encodeJson = DAEGR.genericEncodeJson
+
 instance HasContentType ProfileVisibility where
       getContentType = const json
 
@@ -330,3 +335,7 @@ temporaryUserExpiration (DateTimeWrapper dt) = DDT.diff dt (SU.fromJust $ DDT.ad
 
 instance Show ReceiveEmail where
       show = DSG.genericShow
+
+derive instance Eq PraiseStatus
+
+derive instance Generic PraiseStatus _

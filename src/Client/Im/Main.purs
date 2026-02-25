@@ -64,7 +64,7 @@ import Shared.Element (ElementId(..))
 import Shared.Element as SE
 import Shared.Im.Contact as SCN
 import Shared.Im.View as SIV
-import Shared.Modal (Modal(..), ScreenModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Profile.Types as SPT
@@ -181,11 +181,13 @@ update st model =
             DisplayAsks userId asks → CIA.displayAsks userId asks model
 
             --praise
-            SpecialRequest (FetchPraise _) → model /\ []
+            SpecialRequest (FetchPraise userId) → CIPR.fetchPraise userId model
+            ToggleShowing userId for ShowPraise → CIPR.toggleShowing userId for model
             TogglePraise userId praise → CIPR.togglePraise userId praise model
             SetOtherPraise praise → CIPR.setOtherPraise praise model
             SavePraise → CIPR.savePraise model
             AfterSavePraise userId allowed → CIPR.afterSavePraise userId allowed model
+            DisplayPraise userId praise → CIPR.displayPraise userId praise model
 
             --posts
             DisplayPosts userId posts → CIPS.displayPosts userId posts model
@@ -199,7 +201,7 @@ update st model =
             SetPostCaption content → CIPS.setPostCaption content model
             SendPost → CIPS.sendPost model
             AfterSendPost id → CIPS.afterSendPost id webSocket model
-            ToggleShowing userId for toggle → CIPS.toggleShowing userId toggle for model
+            ToggleShowing userId for ShowPosts → CIPS.toggleShowing userId ShowPosts for model
 
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions webSocket model
@@ -267,8 +269,41 @@ update st model =
             UpdateSubscription → CIP.updateSubscription model
             SetRegistered → setRegistered model
             SetPrivacySettings ps → setPrivacySettings ps model
+            ToggleShowing userId for ShowInfo → toggleShowing userId ShowInfo for model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
+
+
+
+toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
+toggleShowing userId toggle for model =
+      case for of
+            ForSuggestions → toggleShowingSuggestions userId toggle model
+            ForContacts → toggleShowingContacts userId toggle model
+
+toggleShowingSuggestions ∷ Int → ProfileTab → ImModel → MoreMessages
+toggleShowingSuggestions userId toggle model =
+      model
+            { suggestions = map upd model.suggestions
+            --we need this bookkeeping for big suggestion cards
+            , suggesting = Just userId
+            , modal = Special $ ShowSuggestionCard userId
+            } /\ []
+      where
+      upd suggestion
+            | suggestion.id == userId = suggestion { showing = toggle }
+            | otherwise = suggestion
+
+toggleShowingContacts ∷ Int → ProfileTab → ImModel → MoreMessages
+toggleShowingContacts userId toggle model =
+      model
+            { contacts = map upd model.contacts
+            , fullContactProfileVisible = true
+            } /\ []
+      where
+      upd contact
+            | contact.user.id == userId = contact { user = contact.user { showing = toggle } }
+            | otherwise = contact
 
 removeChatBackground ∷ ImModel → NoMessages
 removeChatBackground model = model { toggleContextMenu = HideContextMenu, user { ownBackground = true } } /\ [ save ]

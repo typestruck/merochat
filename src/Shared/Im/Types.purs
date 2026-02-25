@@ -33,18 +33,16 @@ import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (ExperimentsMessage(..))
 import Shared.Post (Post)
-import Shared.Praise (PraisedFor)
+import Shared.Praise (Praise, PraisedFor, PraiseDisplay)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
-import Shared.User (IU, ProfileTab(..))
+import Shared.User (User, ProfileTab(..))
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
-
-type User = Record IU
 
 type Report =
       { reason ∷ ReportReason
@@ -186,6 +184,7 @@ type Im =
               { freeToSave ∷ Boolean
               , selected ∷ Maybe (Int /\ Array PraisedFor)
               , other ∷ Maybe String
+              , freeToFetch :: Boolean
               }
       )
 
@@ -356,6 +355,7 @@ data ImMessage
       --praise
       | TogglePraise Int PraisedFor
       | SetOtherPraise (Maybe String)
+      | DisplayPraise Int PraiseDisplay
       | SavePraise
       | AfterSavePraise Int Boolean
 
@@ -740,9 +740,6 @@ instance Show ReportReason where
             Minor → "User is a minor"
             Spam → "Spam/Product placement"
             OtherReason → "Other"
-
-instance Show WebSocketPayloadClient where
-      show = DGRS.genericShow
 
 instance Show WebSocketPayloadServer where
       show = DGRS.genericShow

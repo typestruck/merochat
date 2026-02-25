@@ -9,10 +9,10 @@ import Effect.Unsafe as EU
 import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..), epoch)
 import Shared.Im.Contact as SC
-import Shared.Im.Types (Contact, MessageStatus(..), User)
+import Shared.Im.Types (Contact, MessageStatus(..))
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
-import Shared.User (ProfileTab(..), ProfileVisibility(..))
+import Shared.User (PraiseStatus(..), ProfileTab(..), ProfileVisibility(..), User)
 
 backerId ∷ Int
 backerId = 0
@@ -39,9 +39,11 @@ backerUser =
       , availability: Online
       , backer: false
       , joined: DateTimeWrapper epoch
+      , praiseStatus: HasNotPraised
       , readReceipts: true
       , posts: []
       , favorite: false
+      , praise : []
       , asks: []
       , asksVisibility: Everyone
       , totalAsks: 0

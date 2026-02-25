@@ -58,6 +58,7 @@ create table praises(
     id integer generated always as identity primary key,
     praiser integer not null,
     praised integer not null,
+    date timestamptz default (utc_now()),
     praised_for smallint not null,
     content text,
     accepted boolean not null default false,

@@ -61,7 +61,8 @@ handlers reading =
               , post: runJson reading SAH.post
               }
       , praise:
-              { save: runJson reading SPRH.save
+              { get: runJson reading SPRH.praise
+              , post: runJson reading SPRH.post
               }
       , im:
               { get: runHtml reading SIH.im

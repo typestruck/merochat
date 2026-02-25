@@ -11,13 +11,13 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Ask (A)
 import Shared.Change as SCN
-import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..), User)
+import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Options.Ask (maxAskCharacters)
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.Unsafe as SU
-import Shared.User (ProfileVisibility(..))
+import Shared.User (ProfileVisibility(..), User)
 
 asked ∷ ∀ message r. Record (A r) → Html message
 asked ask = HE.div [ HA.class' "ask-entry" ]

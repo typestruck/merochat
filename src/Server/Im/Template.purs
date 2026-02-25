@@ -90,6 +90,7 @@ template payload = do
                     { freeToSave: true
                     , selected: Nothing
                     , other: Nothing
+                    , freeToFetch: true
                     }
             , asks:
                     { freeToFetch: true
