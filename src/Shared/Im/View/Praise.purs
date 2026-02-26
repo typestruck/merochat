@@ -17,7 +17,7 @@ import Shared.Change as SCN
 import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Options.Praise (maxPraiseCharacters)
-import Shared.Praise (PraisedFor(..), Praise)
+import Shared.Praise (PraisedFor(..))
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.User (PraiseStatus(..), User)
@@ -25,13 +25,14 @@ import Shared.User (PraiseStatus(..), User)
 praised ∷ ∀ message. Array PraisedFor → Array (Html message)
 praised rows = map display counts
       where
-      counts = map run $ DA.group  rows
+      counts = map run $ DA.group rows
       run p = DAN.head p /\ DAN.length p
 
       display (praise /\ n) = HE.div [ HA.class' "praise-entry" ]
-            $ [ HE.div [ HA.class' "tag tag-praise" ]
-                    [ HE.text <<< DT.snd $ displayPraise praise ]
-            ] <> (if n > 1 then [HE.text $ "x " <> show n] else [])
+            $
+                  [ HE.div [ HA.class' "tag tag-praise" ]
+                          [ HE.text <<< DT.snd $ displayPraise praise ]
+                  ] <> (if n > 1 then [ HE.text $ "x " <> show n ] else [])
 
 praiseForm ∷ ImModel → User → Html ImMessage
 praiseForm model user =
@@ -70,8 +71,9 @@ praiseForm model user =
             ]
 
 praises ∷ Array (PraisedFor /\ String)
-praises = map displayPraise $ DE.upFromIncluding Funny
+praises = DA.filter ((_ /= "Other") <<< DT.snd) <<< map displayPraise $ DE.upFromIncluding Funny
 
+displayPraise ∷ PraisedFor → PraisedFor /\ String
 displayPraise = case _ of
       Funny → Funny /\ "Funny"
       Advice → Advice /\ "Good advice"

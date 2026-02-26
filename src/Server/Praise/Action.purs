@@ -24,5 +24,5 @@ savePraise loggedUserId userId for = do
       allowedToPraise ← SPD.isAllowedToPraise loggedUserId userId
       when allowedToPraise <<< SD.withTransaction $ \connection → do
             SPD.savePraise connection loggedUserId userId for
-            SPD.notifyPraise connection userId
+        --    SPD.notifyPraise connection userId
       pure allowedToPraise
