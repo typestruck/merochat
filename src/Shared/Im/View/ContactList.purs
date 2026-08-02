@@ -10,7 +10,7 @@ import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
-
+import Shared.Extra as SE
 import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
@@ -34,8 +34,8 @@ contactList isClientRender model =
             Nobody → HE.div' [ HA.class' "contact-list" ]
             _ →
                   HE.div
-                        [ SIS.onScrollEvent CheckFetchContacts
-                        , HA.class' "contact-list"
+                        [ --SIS.onScrollEvent CheckFetchContacts,
+                         HA.class' "contact-list"
                         ]
                         (retryLoadingNewContact : DA.snoc (DA.snoc contacts retryLoadingContacts) loading)
       where
@@ -44,9 +44,8 @@ contactList isClientRender model =
             | DA.null model.contacts = [ suggestionsCall ]
             | otherwise =
                     let
-                          entries = map displayContactListEntry $ DA.sortBy compareLastDate model.contacts
-                    in
-                          if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
+                          entries =  map displayContactListEntry $ DA.sortBy compareLastDate model.contacts
+                     in  if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
 
       displayContactListEntry contact =
             let
@@ -82,6 +81,7 @@ contactList isClientRender model =
                                                 , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.user.availability /= Online || not contact.user.onlineStatus || not model.user.onlineStatus } ]
                                                 , HE.div [ HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 } ] [ HE.span [ HA.class' "unread-number" ] [ HE.text $ show numberUnreadMessages ] ]
                                                 ]
+<<<<<<< HEAD
                                         ]
                                   else
                                         [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && model.user.onlineStatus then show contact.user.availability else "" ]
@@ -135,6 +135,29 @@ contactList isClientRender model =
                                         ]
                                 )
                         , HE.hr' [ HA.class' "contact-ruler" ]
+=======
+                                        , if contact.typing && model.user.typingStatus && contact.user.typingStatus then
+                                                HE.div [ HA.class' "contact-list-last-message duller typing" ] [ HE.p_ [ HE.text "Typing..." ] ]
+                                          else if not $ DS.null contact.draft then
+                                                HE.div' [ HA.class' "contact-list-last-message duller message-draft" {- , HA.innerHtml $ SM.parseRestricted ("Draft: " <> contact.draft) -} ]
+                                          else
+                                                case lastHistoryEntry of
+                                                      Just entry → case entry.reaction of
+                                                            Just reaction → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ "Reacted with " <> reaction ] ]
+                                                            Nothing → HE.div' [ HA.class' "contact-list-last-message duller" {- , HA.innerHtml $ SM.parseRestricted entry.content -} ]
+                                                      _ → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text "No messages yet" ] ]
+                                        ]
+                                , HE.div [ HA.class' "contact-options" ]
+                                        case lastHistoryEntry of
+                                              Just entry →
+                                                    [ HE.span [ HA.class' { duller: true, hidden: not isClientRender || not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.ago $ SC.coerce entry.date ]
+                                                    , HE.div [ HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 } ] [ HE.span [ HA.class' "unread-number" ] [ HE.text $ show numberUnreadMessages ] ]
+                                                    , HE.div [ HA.class' { "duller": true, hidden: numberUnreadMessages > 0 || entry.sender == contact.user.id || not contact.user.readReceipts || not model.user.readReceipts } ] [ HE.text $ show entry.status ]
+                                                    ]
+                                              Nothing → []
+                                ]
+                        , SE.hr [ HA.class' "contact-ruler" ]
+>>>>>>> 356c2478 (Add more elements)
                         ]
 
       -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
@@ -153,9 +176,9 @@ contactList isClientRender model =
       chattingId = (_.id <<< _.user) <$> SIC.maybeFindContact model.chatting model.contacts
 
       -- | Displayed if loading contact from an incoming message fails
-      retryLoadingNewContact = SIVR.retry "Failed to sync contacts. You might have missed messages." FetchMissedContacts model.failedRequests
+      retryLoadingNewContact = HE.div [] [ ] -- SIVR.retry "Failed to sync contacts. You might have missed messages." FetchMissedContacts model.failedRequests
 
       -- | Displayed if loading contact list fails
-      retryLoadingContacts = SIVR.retry "Failed to load contacts" (FetchContacts true) model.failedRequests
+      retryLoadingContacts =  HE.div [] [] -- SIVR.retry "Failed to load contacts" (FetchContacts true) model.failedRequests
 
-      loading = HE.div [ HA.class' "loading-contacts" ] [ HE.div [ HA.class' { "loading": true, hidden: model.freeToFetchContactList } ] [] ]
+      loading = HE.div [ HA.class' "loading-contacts" ] [ ]-- HE.div [ HA.class' { "loading": true, hidden: model.freeToFetchContactList } ] [] ]

@@ -10,6 +10,7 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
+import Shared.Extra as SE
 import Shared.Html (Html(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
@@ -26,7 +27,7 @@ template = do
       Html <$> FRS.render contents
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Login Js ]
+            [ SE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Login Js ]
             ]
       content =
             [ HE.div [ HA.class' "pastel-area" ]
@@ -44,9 +45,9 @@ template = do
                                     , HE.span' [ HA.class' "request-error-message error-message" ]
                                     ]
                             , HE.div [ HA.class' "forgot-sign-up" ]
-                                    [ HE.a [ HA.href $ routesSpec.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] [ HE.text "Forgot your password?" ]
+                                    [ SE.a [ HA.href $ routesSpec.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] [ HE.text "Forgot your password?" ]
                                     , HE.span [ HA.class' "or" ] [ HE.text "or" ]
-                                    , HE.a [ HA.href $ routesSpec.landing {}, HA.class' "question-link" ] [ HE.text "Don't have an account?" ]
+                                    , SE.a [ HA.href $ routesSpec.landing {}, HA.class' "question-link" ] [ HE.text "Don't have an account?" ]
                                     ]
                             ]
                     ]

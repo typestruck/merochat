@@ -5,23 +5,24 @@ import Prelude
 
 import Flame (Html)
 import Flame.Html.Attribute as HA
+import Shared.Extra as SE
 import Flame.Html.Element as HE
 
 faq ∷ ∀ m. Html m
 faq =
       HE.div [ HA.class' "terms" ]
             [ HE.ul [ HA.class' "bulleted no-padding" ]
-                    [ HE.li [ HA.class' "no-padding" ] [ HE.a [ HA.href "#whatsmerochat" ] [ HE.text "What is MeroChat?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#canifilter" ] [ HE.text "Can I filter suggestions by gender/location/etc?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#dating" ] [ HE.text "Is MeroChat a dating/hookup app?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#isitfree" ] [ HE.text "Is MeroChat free?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#whatskarma" ] [ HE.text "What is karma?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#gibberishprofile" ] [ HE.text "What is that gibberish on my profile?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#profileprivate" ] [ HE.text "Is my profile private?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#groupchats" ] [ HE.text "Are group chats available?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#chatexperiments" ] [ HE.text "What are chat experiments?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#mero" ] [ HE.text "What does Mero in MeroChat stand for?" ] ]
-                    , HE.li_ [ HE.a [ HA.href "#canihelp" ] [ HE.text "Wow, I love it. How can I help?" ] ]
+                    [ HE.li [ HA.class' "no-padding" ] [ SE.a [ HA.href "#whatsmerochat" ] [ HE.text "What is MeroChat?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#canifilter" ] [ HE.text "Can I filter suggestions by gender/location/etc?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#dating" ] [ HE.text "Is MeroChat a dating/hookup app?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#isitfree" ] [ HE.text "Is MeroChat free?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#whatskarma" ] [ HE.text "What is karma?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#gibberishprofile" ] [ HE.text "What is that gibberish on my profile?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#profileprivate" ] [ HE.text "Is my profile private?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#groupchats" ] [ HE.text "Are group chats available?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#chatexperiments" ] [ HE.text "What are chat experiments?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#mero" ] [ HE.text "What does Mero in MeroChat stand for?" ] ]
+                    , HE.li_ [ SE.a [ HA.href "#canihelp" ] [ HE.text "Wow, I love it. How can I help?" ] ]
                     ]
             , HE.h2 [ HA.id "whatsmerochat" ] [ HE.text "What is MeroChat?" ]
             , HE.p_ [ HE.text "MeroChat is a random chat. That means the app suggests you new people to talk to. You may choose to fill in your profile and voila! Friends" ]
@@ -46,12 +47,12 @@ faq =
             , HE.h2_ [ HE.text "Recommend me some music" ]
             , HE.p_
                     [ HE.text "Listen to "
-                    , HE.a [ HA.href "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q", HA.target "_blank" ] [ HE.text "Metá Metá" ]
+                    , SE.a [ HA.href "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q", HA.target "_blank" ] [ HE.text "Metá Metá" ]
                     ]
             , HE.h2 [ HA.id "canihelp" ] [ HE.text "Wow, I love it. How can I help?" ]
             , HE.p_
                     [ HE.text "Right?! If you can spare some, consider backing MeroChat. The entire "
-                    , HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "source code" ]
+                    , SE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "source code" ]
                     , HE.text " is also freely avaible in case this is your thing. That being said, just letting others know about MeroChat is already a huge help. Reporting bugs, bad user behavior or other issues is also highly appreciated"
                     ]
             ]

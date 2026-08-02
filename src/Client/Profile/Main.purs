@@ -17,8 +17,17 @@ import Shared.Profile.View as SPV
 
 main ∷ Effect Unit
 main = do
+<<<<<<< HEAD
       void $ F.resumeMount (SE.toQuerySelector ProfileEditionForm) profileAppId
             { view: SPV.view
             , subscribe: [ FS.onCustomEvent' modalVisible (pure <<< Just <<< ToggleVisibility) ]
             , update: CPU.update
             }
+=======
+      pure unit
+      -- void $ F.resumeMount (SE.toQuerySelector ProfileEditionForm) profileAppId
+      --       { view: SPV.view
+      --       , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+      --       , update: CPU.update
+      --       }
+>>>>>>> 356c2478 (Add more elements)

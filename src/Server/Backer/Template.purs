@@ -9,6 +9,7 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Backer.View as SBV
+import Shared.Extra as SE
 import Shared.Html (Html(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
@@ -18,7 +19,7 @@ template = do
       contents ← ST.template externalDefaultParameters
             { content = externalDefaultParameters.content <> [ SBV.view { visible: true } ]
             , css = externalDefaultParameters.css <>
-                    [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Backer Css ]
+                    [ SE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Backer Css ]
                     ]
             , title = "MeroChat - Become a backer"
             }

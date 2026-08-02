@@ -8,6 +8,7 @@ import Effect (Effect)
 import Environment (production)
 import Flame (Html)
 import Flame.Html.Attribute as HA
+import Shared.Extra as SE
 import Flame.Html.Element as HE
 import Shared.App.Banner as SAB
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
@@ -56,10 +57,10 @@ externalDefaultParameters =
                               ]
                       , HE.div [ HA.class' "menu-merochat" ]
                               [ HE.div [ HA.class' "menu" ]
-                                      [ HE.a [ HA.href $ routesSpec.landing {} ] [ HE.text "Home" ]
-                                      , HE.a [ HA.href $ routesSpec.help {} <> "#faq" ] [ HE.text "FAQ" ]
-                                      , HE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Support us" ]
-                                      , HE.a [ HA.href $ routesSpec.login.get {}, HA.class' "login-link" ] [ HE.text "Login" ]
+                                      [ SE.a [ HA.href $ routesSpec.landing {} ] [ HE.text "Home" ]
+                                      , SE.a [ HA.href $ routesSpec.help {} <> "#faq" ] [ HE.text "FAQ" ]
+                                      , SE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Support us" ]
+                                      , SE.a [ HA.href $ routesSpec.login.get {}, HA.class' "login-link" ] [ HE.text "Login" ]
                                       , HE.div [ HA.class' "theme-switcher" ]
                                               [ SS.sun []
                                               , SS.moon []
@@ -71,16 +72,16 @@ externalDefaultParameters =
                                       ]
                               ]
                       ]
-              , if production then HE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
-                else HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
+              , if production then SE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
+                else SE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
               ]
       , content: []
       , footer:
               [ HE.div [ HA.class' "footer" ]
-                      [ HE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "Terms and conditions" ]
-                      , HE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "Privacy policy" ]
-                      , HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "Source code" ]
-                      , HE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Donate" ]
+                      [ SE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "Terms and conditions" ]
+                      , SE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "Privacy policy" ]
+                      , SE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "Source code" ]
+                      , SE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Donate" ]
                       ]
               ]
       }
@@ -92,14 +93,14 @@ templateWith ∷ ∀ a. Parameters a → Html a
 templateWith parameters =
       HE.html [ HA.lang "en" ]
             [ HE.head_
-                    ( [ HE.meta [ HA.charset "UTF-8" ]
-                      , HE.meta [ HA.name "viewport", HA.content "width=device-width, interactive-widget=resizes-content" ]
-                      , HE.meta [ HA.name "description", HA.content "Text based, 1 on 1, friendly only random chat!" ]
-                      , HE.link [ HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href parameters.favicon ]
-                      , HE.link [ HA.rel "manifest", HA.href parameters.favicon, HA.href "/file/default/manifest.json" ]
-                      , HE.link [ HA.rel "preconnect", HA.href "https://fonts.googleapis.com" ]
-                      , HE.link [ HA.rel "preconnect", HA.href "https://fonts.gstatic.com", HA.createAttribute "crossorigin" "" ]
-                      , HE.link [ HA.href "https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=Inter:ital,opsz@0,14..32;1,14..32&display=swap", HA.rel "stylesheet" ]
+                    ( [ SE.meta [ HA.charset "UTF-8" ]
+                      , SE.meta [ HA.name "viewport", HA.content "width=device-width, interactive-widget=resizes-content" ]
+                      , SE.meta [ HA.name "description", HA.content "Text based, 1 on 1, friendly only random chat!" ]
+                      , SE.link [ HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href parameters.favicon ]
+                      , SE.link [ HA.rel "manifest", HA.href parameters.favicon, HA.href "/file/default/manifest.json" ]
+                      , SE.link [ HA.rel "preconnect", HA.href "https://fonts.googleapis.com" ]
+                      , SE.link [ HA.rel "preconnect", HA.href "https://fonts.gstatic.com", HA.createAttribute "crossorigin" "" ]
+                      , SE.link [ HA.href "https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=Inter:ital,opsz@0,14..32;1,14..32&display=swap", HA.rel "stylesheet" ]
                       , HE.title [ HE.text parameters.title ]
                       ] <> styleSheets
                     )
@@ -109,12 +110,12 @@ templateWith parameters =
       styleSheets =
             ( if parameters.bundled then []
               else
-                    [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Base Css ]
+                    [ SE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Base Css ]
                     ]
             ) <> parameters.css
       javascript =
             ( if parameters.bundled then []
               else
-                    [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Common Js ]
+                    [ SE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Common Js ]
                     ]
             ) <> parameters.javascript

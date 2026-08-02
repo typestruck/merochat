@@ -14,8 +14,9 @@ import Shared.KarmaPrivileges.View as SLV
 import Client.AppId (karmaPrivilegesAppId)
 
 main ∷ Effect Unit
-main = void $ F.resumeMount (QuerySelector "#karma-leaderboard") karmaPrivilegesAppId
-      { view: SLV.view
-      , subscribe: [ FS.onCustomEvent' modalVisible (pure <<< Just <<< ToggleVisibility) ]
-      , update: CLU.update
-      }
+main = pure unit
+      -- void $ F.resumeMount (QuerySelector "#karma-leaderboard") karmaPrivilegesAppId
+      -- { view: SLV.view
+      -- , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+      -- , update: CLU.update
+      -- }

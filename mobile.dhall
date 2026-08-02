@@ -1,0 +1,1 @@
+./spago.dhall // { sources = [ "src/Shared/**/*.purs", "src/Client/**/*.purs" ] }

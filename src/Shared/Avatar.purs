@@ -9,6 +9,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Effect (Effect)
 import Flame.Html.Attribute as HA
+import Shared.Extra as SE
 import Flame.Html.Element as HE
 import Flame.Types (Html, NodeData)
 import Shared.Backer.Contact (backerId)
@@ -45,7 +46,8 @@ decoding value = HA.createAttribute "decoding" value
 
 -- avoid lagging pictures when browsing suggestions
 avatar ∷ ∀ message. Array (NodeData message) → Html message
-avatar attributes = HE.managed { createNode, updateNode } attributes unit
+avatar attributes = SE.managed { createNode, updateNode } attributes unit
       where
       createNode _ = createImg
+      updateNode :: _ -> _ -> _ -> Effect Node
       updateNode n o p = pure $ resetImg n o p

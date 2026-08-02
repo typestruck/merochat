@@ -14,12 +14,13 @@ import Server.Terms as STM
 import Shared.Html (Html(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SPT
+import Shared.Extra as SE
 
 template ∷ Effect Html
 template = do
       contents ← ST.template externalDefaultParameters
-            { css = externalDefaultParameters.css <> [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.bundlePath Help Css ] ]
-            , javascript = [ HE.script' [ HA.type' "text/javascript", HA.src $ SPT.bundlePath Help Js ] ]
+            { css = externalDefaultParameters.css <> [ SE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.bundlePath Help Css ] ]
+            , javascript = [ SE.script' [ HA.type' "text/javascript", HA.src $ SPT.bundlePath Help Js ] ]
             , content = externalDefaultParameters.content <> content
             , title = "MeroChat - Help"
             }

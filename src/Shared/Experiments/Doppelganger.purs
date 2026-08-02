@@ -8,6 +8,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
+import Shared.Extra as SE
 import Flame.Html.Element as HE
 import Shared.Experiments.Types (DoppelgangerSection(..), ExperimentsMessage(..), ExperimentsModel)
 import Shared.Unsafe as SU
@@ -25,7 +26,7 @@ view model = HE.div [ HA.class' "word-chain duller" ]
                           HE.input [ HA.type' "button", HA.onClick ResumeQuestions, HA.class' "green-button", HA.value "Take quiz" ]
       ]
       where
-      matchLink match = HE.a [ HA.title "Send message to user", HA.onClick $ MessageFromExperiment match.id ] [ HE.text match.name ]
+      matchLink match = SE.a [ HA.title "Send message to user", HA.onClick $ MessageFromExperiment match.id ] [ HE.text match.name ]
 
       showMatches
             | DA.null model.doppelganger.matches = HE.div [] [ HE.text "No evil clones found. Yet." ]
@@ -40,7 +41,7 @@ view model = HE.div [ HA.class' "word-chain duller" ]
 
       showChoice questionId choice = HE.div [ HA.class' "choice-option" ]
             [ --i think it is a bug on flame, input checked property for that position in the group is not cleared
-              HE.managed { createNode: createOption, updateNode: resetChecked } [ HA.checked false, HA.autocomplete "off", HA.type' "radio", HA.name $ "choices" <> show questionId, HA.value $ show choice.id, HA.id $ show choice.id, HA.onChange $ SelectChoice questionId choice.id ] model.doppelganger.selectedChoice
+              SE.managed { createNode: createOption, updateNode: resetChecked } [ HA.checked false, HA.autocomplete "off", HA.type' "radio", HA.name $ "choices" <> show questionId, HA.value $ show choice.id, HA.id $ show choice.id, HA.onChange $ SelectChoice questionId choice.id ] model.doppelganger.selectedChoice
             , HE.label [ HA.for $ show choice.id ] [ HE.text choice.description ]
             ]
 

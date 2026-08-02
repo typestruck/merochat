@@ -12,6 +12,7 @@ import Shared.Experiments.Debate as SEDB
 import Shared.Experiments.Doppelganger as SED
 import Shared.Experiments.PaperPlane as SEP
 import Shared.Experiments.WordChain as SEW
+import Shared.Extra as SE
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.visible } ]
