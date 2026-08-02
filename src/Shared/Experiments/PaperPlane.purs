@@ -10,6 +10,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Experiments.Types (ExperimentsMessage(..), ExperimentsModel, PaperPlaneSection(..), PaperPlaneStatus(..))
 import Shared.Options.PaperPlane (maxMessageCharacters, maxPaperPlanes)
+import Shared.Extra as SE
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.class' "paper-plane duller" ]
@@ -38,7 +39,7 @@ caught model =
                     ]
             , HE.div [ HA.class' "paper-thrown-from" ]
                     [ HE.text $ "from "
-                    , HE.a [ HA.onClick $ MessagePaperPlane plane.thrower plane.message ] [ HE.text plane.name ]
+                    , SE.a [ HA.onClick $ MessagePaperPlane plane.thrower plane.message ] [ HE.text plane.name ]
                     ]
             ]
 
@@ -55,9 +56,9 @@ flyingBy model =
                     [ HE.div [ HA.class' "paper-flown-message" ] [ HE.text plane.message ]
                     ]
             , HE.div [ HA.class' "paper-thrown-options" ]
-                    [ HE.a [ HA.class' "paper-catch report", HA.onClick $ ReportPlane plane.id plane.thrower ] [ HE.text "Report" ]
-                    , HE.a [ HA.class' "paper-catch", HA.onClick $ PassPaperPlane plane.id ] [ HE.text "Pass" ]
-                    , HE.a [ HA.class' "paper-catch", HA.onClick $ CatchPaperPlane plane.id ] [ HE.text "Catch!" ]
+                    [ SE.a [ HA.class' "paper-catch report", HA.onClick $ ReportPlane plane.id plane.thrower ] [ HE.text "Report" ]
+                    , SE.a [ HA.class' "paper-catch", HA.onClick $ PassPaperPlane plane.id ] [ HE.text "Pass" ]
+                    , SE.a [ HA.class' "paper-catch", HA.onClick $ CatchPaperPlane plane.id ] [ HE.text "Catch!" ]
                     ]
             ]
 

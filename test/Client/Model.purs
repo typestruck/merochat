@@ -19,7 +19,7 @@ import Shared.Im.Contact as SIC
 import Shared.Modal (Modal(..), ScreenModal(..))
 import Unsafe.Coerce as UC
 import Web.DOM (Element)
-import Web.Socket.WebSocket (WebSocket)
+import Client.Im.WebSocket.Connection (WebSocket)
 
 run ∷ ∀ m. m → Aff (m → m) → Aff m
 run m f = do

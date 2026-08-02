@@ -14,8 +14,9 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 main ∷ Effect Unit
 main =
-      void $ F.resumeMount (QuerySelector "#settings-edition") settingsAppId
-            { view: SSV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
-            , update: CSU.update
-            }
+      pure unit
+      -- void $ F.resumeMount (QuerySelector "#settings-edition") settingsAppId
+      --       { view: SSV.view
+      --       , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+      --       , update: CSU.update
+      --       }

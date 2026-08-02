@@ -16,6 +16,7 @@ import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwo
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
 import Shared.Routes (routesSpec)
+import Shared.Extra as SE
 
 template ∷ Effect Html
 template = do
@@ -27,7 +28,7 @@ template = do
       Html <$> FRS.render contents
       where
       javascript =
-            [ HE.script [ HA.type' "text/javascript" ]
+            [ SE.script [ HA.type' "text/javascript" ]
                     [ HE.text
                             """
             if (navigator.userAgent.toLowerCase().indexOf(`android`) == -1)
@@ -42,7 +43,7 @@ template = do
                             [ HE.h2 [] [ HE.text "iOS" ]
                             , HE.div []
                                     [ HE.text "Apple charges 400 usd per year so MeroChat isn't on the App Store yet. "
-                                    , HE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Wink, wink, donate" ]
+                                    , SE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Wink, wink, donate" ]
                                     ]
 
                             , HE.b [ HA.class' "app-step" ] [ HE.text "However, you can add the site to your home screen, which works the same as an app! Step by step:" ]

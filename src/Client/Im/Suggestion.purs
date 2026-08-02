@@ -29,7 +29,7 @@ import Shared.Modal (Modal(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
-import Web.Socket.WebSocket (WebSocket)
+import Client.Im.WebSocket.Connection (WebSocket)
 
 -- | Display next suggestion card
 nextSuggestion ∷ WebSocket → ImModel → MoreMessages

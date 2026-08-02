@@ -30,7 +30,7 @@ import Web.Event.Event as WEE
 import Web.Event.Internal.Types (Event)
 import Web.HTML.HTMLInputElement as WDE
 import Web.HTML.HTMLInputElement as WHI
-import Web.Socket.WebSocket (WebSocket)
+import Client.Im.WebSocket.Connection (WebSocket)
 
 displayPosts ∷ Int → Array Post → ImModel → NextMessage
 displayPosts userId posts model =

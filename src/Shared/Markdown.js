@@ -1,4 +1,4 @@
-import { marked } from 'marked';
+let marked = { use: function() {}}
 
 let maxWidth = typeof document == "undefined" ? undefined :
       (window.matchMedia('(max-width:1279px)').matches ?

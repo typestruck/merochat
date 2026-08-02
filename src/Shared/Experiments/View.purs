@@ -10,6 +10,7 @@ import Flame.Html.Element as HE
 import Shared.Experiments.Doppelganger as SED
 import Shared.Experiments.PaperPlane as SEP
 import Shared.Experiments.WordChain as SEW
+import Shared.Extra as SE
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.visible } ]
@@ -21,7 +22,7 @@ view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.vi
                     [ HE.label [ HA.class' "bold" ] [ HE.text experiment.name ]
                     , HE.div [ HA.class' "duller experiment-description" ] [ HE.text experiment.description ]
                     ]
-            , HE.fragment [ extra model experiment.code ]
+            , SE.fragment [ extra model experiment.code ]
             ]
 
 extra ∷ ExperimentsModel → Experiment → Html ExperimentsMessage

@@ -12,9 +12,9 @@ import Shared.Backer.Types (BackerMessage(..))
 import Shared.Backer.View as SIHV
 
 main ∷ Effect Unit
-main =
-      void $ F.resumeMount_ (QuerySelector "#backer")
-            { view: SIHV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
-            , update: CIHU.update
-            }
+main = pure unit
+      -- void $ F.resumeMount_ (QuerySelector "#backer")
+      --       { view: SIHV.view
+      --       , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+      --       , update: CIHU.update
+      --       }

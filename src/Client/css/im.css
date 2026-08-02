@@ -2,7 +2,7 @@
     --im-background-color: #F0E8DD;
     --im-second-background-color: #696460;
     --im-text-color: #FBFEFB;
-    --im-chat-background-image: url('/file/default/chat-background-light.svg');
+    --im-chat-background-image: url('https://static.mero.chat/file/default/chat-background-light.svg');
     --merochat-green: #327B4F;
 }
 
@@ -3136,7 +3136,7 @@ label {
     position: static;
 }
 
-@media (max-width:1279px) {
+/* @media (max-width:1279px) { */
     #im {
         display: flex;
         overflow-x: hidden;
@@ -3939,7 +3939,7 @@ label {
         padding-left: 10px;
         width: auto;
     }
-}
+/* } */
 
 @media (min-width:1280px) and (max-width:1919px) {
     .modal-menu {

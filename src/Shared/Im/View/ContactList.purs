@@ -10,7 +10,7 @@ import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
-
+import Shared.Extra as SE
 import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
@@ -34,8 +34,8 @@ contactList isClientRender model =
             Nobody → HE.div' [ HA.class' "contact-list" ]
             _ →
                   HE.div
-                        [ SIS.onScrollEvent CheckFetchContacts
-                        , HA.class' "contact-list"
+                        [ --SIS.onScrollEvent CheckFetchContacts,
+                         HA.class' "contact-list"
                         ]
                         (retryLoadingNewContact : DA.snoc (DA.snoc contacts retryLoadingContacts) loading)
       where
@@ -44,9 +44,8 @@ contactList isClientRender model =
             | DA.null model.contacts = [ suggestionsCall ]
             | otherwise =
                     let
-                          entries = map displayContactListEntry $ DA.sortBy compareLastDate model.contacts
-                    in
-                          if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
+                          entries =  map displayContactListEntry $ DA.sortBy compareLastDate model.contacts
+                     in  if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
 
       displayContactListEntry contact =
             let
@@ -85,12 +84,12 @@ contactList isClientRender model =
                                         , if contact.typing && model.user.typingStatus && contact.user.typingStatus then
                                                 HE.div [ HA.class' "contact-list-last-message duller typing" ] [ HE.p_ [ HE.text "Typing..." ] ]
                                           else if not $ DS.null contact.draft then
-                                                HE.div' [ HA.class' "contact-list-last-message duller message-draft", HA.innerHtml $ SM.parseRestricted ("Draft: " <> contact.draft) ]
+                                                HE.div' [ HA.class' "contact-list-last-message duller message-draft" {- , HA.innerHtml $ SM.parseRestricted ("Draft: " <> contact.draft) -} ]
                                           else
                                                 case lastHistoryEntry of
                                                       Just entry → case entry.reaction of
                                                             Just reaction → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ "Reacted with " <> reaction ] ]
-                                                            Nothing → HE.div' [ HA.class' "contact-list-last-message duller", HA.innerHtml $ SM.parseRestricted entry.content ]
+                                                            Nothing → HE.div' [ HA.class' "contact-list-last-message duller" {- , HA.innerHtml $ SM.parseRestricted entry.content -} ]
                                                       _ → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text "No messages yet" ] ]
                                         ]
                                 , HE.div [ HA.class' "contact-options" ]
@@ -102,7 +101,7 @@ contactList isClientRender model =
                                                     ]
                                               Nothing → []
                                 ]
-                        , HE.hr' [ HA.class' "contact-ruler" ]
+                        , SE.hr [ HA.class' "contact-ruler" ]
                         ]
 
       -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
@@ -121,9 +120,9 @@ contactList isClientRender model =
       chattingId = (_.id <<< _.user) <$> SIC.maybeFindContact model.chatting model.contacts
 
       -- | Displayed if loading contact from an incoming message fails
-      retryLoadingNewContact = SIVR.retry "Failed to sync contacts. You might have missed messages." FetchMissedContacts model.failedRequests
+      retryLoadingNewContact = HE.div [] [ ] -- SIVR.retry "Failed to sync contacts. You might have missed messages." FetchMissedContacts model.failedRequests
 
       -- | Displayed if loading contact list fails
-      retryLoadingContacts = SIVR.retry "Failed to load contacts" (FetchContacts true) model.failedRequests
+      retryLoadingContacts =  HE.div [] [] -- SIVR.retry "Failed to load contacts" (FetchContacts true) model.failedRequests
 
-      loading = HE.div [ HA.class' "loading-contacts" ] [ HE.div [ HA.class' { "loading": true, hidden: model.freeToFetchContactList } ] [] ]
+      loading = HE.div [ HA.class' "loading-contacts" ] [ ]-- HE.div [ HA.class' { "loading": true, hidden: model.freeToFetchContactList } ] [] ]

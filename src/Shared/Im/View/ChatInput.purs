@@ -13,6 +13,7 @@ import Client.Dom as CCD
 import Client.Privilege as CCP
 import Client.Im.Swipe as CIT
 import Data.Array as DA
+import Shared.Extra as SE
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -86,7 +87,7 @@ audioModal model =
                   ]
 
 chatBarInput ∷ Either Int Int → ElementId → ImModel → Html ImMessage
-chatBarInput eid elementId model = HE.fragment
+chatBarInput eid elementId model = SE.fragment
       [ emojiModal elementId model
       , HE.div [ HA.class' { hidden: not available || DM.isNothing model.chatting && DA.null model.suggestions } ]
               [ HE.div [ HA.class' "chat-input-options" ]

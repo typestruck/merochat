@@ -119,14 +119,12 @@ let additions =
 let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.15.4-20220723/packages.dhall
         sha256:efb50561d50d0bebe01f8e5ab21cda51662cca0f5548392bafc3216953a0ed88
+    with flame-lynx = ../purescript-flame-lynx/spago.dhall as Location
 
 let overrides =
       { droplet =
               upstream.droplet
           //  { version = "ce2541c6d0db343a8c6168ce7ed79f5c0bb2c860" }
-          , flame =
-             upstream.flame
-          //  { version = "v1.6.0" }
           , unordered-collections =
              upstream.unordered-collections
           //  { version = "0192d2c9d0759895b7492cc00651631eb9abc5b5" }
@@ -206,6 +204,42 @@ let additions =
           , "transformers"
           ]
         }
+  {-      ,flame-lynx =
+      {
+        version = "main"
+      , repo = "https://github.com/easafe/purescript-flame-lynx"
+      , dependencies =
+        [ "aff"
+        , "argonaut-codecs"
+        , "argonaut-core"
+        , "argonaut-generic"
+        , "arrays"
+        , "bifunctors"
+        , "console"
+        , "effect"
+        , "either"
+        , "exceptions"
+        , "foldable-traversable"
+        , "foreign"
+        , "foreign-object"
+        , "maybe"
+        , "newtype"
+        , "nullable"
+        , "partial"
+        , "prelude"
+        , "random"
+        , "refs"
+        , "strings"
+        , "spec"
+        , "tuples"
+        , "typelevel-prelude"
+        , "unsafe-coerce"
+        , "web-dom"
+        , "web-events"
+        , "web-html"
+        , "web-uievents"
+        ]
+      } -}
       , payload =
         { version = "5e43d5283c7b078ee7d7d9699c813743dcf9bc32"
         , repo = "https://github.com/easafe/purescript-payload"

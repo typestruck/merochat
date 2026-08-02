@@ -9,6 +9,7 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Html (Html(..))
+import Shared.Extra as SE
 
 template ∷ Effect Html
 template = do
@@ -29,11 +30,11 @@ template = do
                             ]
                     , HE.p_
                             [ HE.text "To restore your account, please reach us at "
-                            , HE.a [ HA.href "mailto:contact@mero.chat" ] [ HE.text "contact@mero.chat" ]
+                            , SE.a [ HA.href "mailto:contact@mero.chat" ] [ HE.text "contact@mero.chat" ]
                             , HE.text ", "
-                            , HE.a [ HA.href "https://reddit.com/r/MeroChat", HA.target "_blank" ] [ HE.text "r/MeroChat" ]
+                            , SE.a [ HA.href "https://reddit.com/r/MeroChat", HA.target "_blank" ] [ HE.text "r/MeroChat" ]
                             , HE.text " or "
-                            , HE.a [ HA.href "https://twitter.com/MeroChat", HA.target "_blank" ] [ HE.text "@MeroChat" ]
+                            , SE.a [ HA.href "https://twitter.com/MeroChat", HA.target "_blank" ] [ HE.text "@MeroChat" ]
                             ]
                     ]
             ]

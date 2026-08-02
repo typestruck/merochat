@@ -10,6 +10,7 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Now as EN
 import Environment (production)
+import Shared.Extra as SE
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -32,8 +33,8 @@ template payload = do
                     { title = SIU.title unreadChats
                     , favicon = SIU.favicon unreadChats
                     , header =
-                            [ if production then HE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
-                              else HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
+                            [ if production then SE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
+                              else SE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
                             ]
                     , content = modals : [ SIV.view false m ]
                     , javascript = javascript
@@ -129,12 +130,12 @@ template payload = do
 
       unreadChats = SIU.countUnreadChats payload.user.id payload.contacts
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
-            , HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Im Js ]
+            [ SE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
+            , SE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Im Js ]
             ]
       css =
-            [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Im Css ]
-            , HE.style [ HA.type' "text/css" ]
+            [ SE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Im Css ]
+            , SE.style [ HA.type' "text/css" ]
                     [ HE.text
                             """
                     svg {

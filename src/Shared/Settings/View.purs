@@ -23,6 +23,7 @@ import Record as R
 import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
 import Shared.File as SF
+import Shared.Extra as SE
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (maxImageSizeKB)
 import Shared.Settings.Types (SM, SettingsMessage(..), SettingsModel, Tab(..))
@@ -56,32 +57,32 @@ view model =
 privacySection ∷ SettingsModel → Html SettingsMessage
 privacySection model = HE.div [ HA.id $ show PrivacySettings ]
       [ HE.label_ [ HE.text "Profile visibility" ]
-      , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-              [ HE.option [ HA.selected $ model.profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Show profile (default)" ]
-              , HE.option [ HA.selected $ model.profileVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Show profile only to registered users" ]
-              , HE.option [ HA.selected $ model.profileVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Show profile only to contacts" ]
-              , HE.option [ HA.selected $ model.profileVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not show profile" ]
+      , SE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
+              [ SE.option [ HA.selected $ model.profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Show profile (default)" ]
+              , SE.option [ HA.selected $ model.profileVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Show profile only to registered users" ]
+              , SE.option [ HA.selected $ model.profileVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Show profile only to contacts" ]
+              , SE.option [ HA.selected $ model.profileVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not show profile" ]
               ]
 
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= Everyone } ] [ HE.text "All users can see your profile and send you messages" ]
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= NoTemporaryUsers } ]
               [ HE.text "All users (excluding quick sign up users) can see your"
-              , HE.br
+              , SE.br
               , HE.text "profile and send you messages"
               ]
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= Contacts } ]
               [ HE.text "Only users you have previously messaged can see your"
-              , HE.br
+              , SE.br
               , HE.text "profile or send you messages"
               ]
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= Nobody } ] [ HE.text "No one can see your profile or message you" ]
 
       , HE.label_ [ HE.text "Posts visibility" ]
-      , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { postsVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-              [ HE.option [ HA.selected $ model.postsVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Show posts (default)" ]
-              , HE.option [ HA.selected $ model.postsVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Show posts only to registered users" ]
-              , HE.option [ HA.selected $ model.postsVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Show posts only to contacts" ]
-              , HE.option [ HA.selected $ model.postsVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not show posts" ]
+      , SE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { postsVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
+              [ SE.option [ HA.selected $ model.postsVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Show posts (default)" ]
+              , SE.option [ HA.selected $ model.postsVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Show posts only to registered users" ]
+              , SE.option [ HA.selected $ model.postsVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Show posts only to contacts" ]
+              , SE.option [ HA.selected $ model.postsVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not show posts" ]
               ]
       , HE.div [ HA.class' "duller" ] $ case model.postsVisibility of
               Everyone → [ HE.text "All users can see your posts" ]
@@ -91,11 +92,11 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               TemporarilyBanned → []
 
       , HE.label_ [ HE.text "Asks" ]
-      , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { asksVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-              [ HE.option [ HA.selected $ model.asksVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Allow asks from everyone" ]
-              , HE.option [ HA.selected $ model.asksVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Allow asks only from registered users (default)" ]
-              , HE.option [ HA.selected $ model.asksVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Allow asks only from contacts" ]
-              , HE.option [ HA.selected $ model.asksVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not allow asks" ]
+      , SE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { asksVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
+              [ SE.option [ HA.selected $ model.asksVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Allow asks from everyone" ]
+              , SE.option [ HA.selected $ model.asksVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Allow asks only from registered users (default)" ]
+              , SE.option [ HA.selected $ model.asksVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Allow asks only from contacts" ]
+              , SE.option [ HA.selected $ model.asksVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not allow asks" ]
               ]
       , HE.div [ HA.class' "duller" ] $ case model.asksVisibility of
               Everyone → [ HE.text "All users can send you asks" ]
@@ -121,7 +122,7 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               [ HE.input [ HA.id "typing-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.typingStatus, HA.onChange (SetSField (_ { typingStatus = not model.typingStatus })) ]
               , HE.label [ HA.for "typing-toggle", HA.class' "inline" ] [ HE.text "Typing status" ]
               ]
-      , HE.br
+      , SE.br
       , HE.div [ HA.class' "section-buttons privacy" ]
               [ HE.input
                       [ HA.type' "button"
@@ -150,7 +151,7 @@ accountSection model = HE.div_
                     , HE.span' [ HA.class' "request-error-message" ]
                     , HE.span [ HA.class' "success-message" ]
                             [ HE.text "Account terminated!"
-                            , HE.br
+                            , SE.br
                             , HE.text "You will be logged out..."
                             ]
                     ]
@@ -230,7 +231,7 @@ fieldConfirmationSection model field inputType maxChars validator fieldErrorMess
                     , HE.span' [ HA.class' "request-error-message" ]
                     , HE.span [ HA.class' "success-message" ]
                             [ HE.text $ capitalizedStringField <> " changed!"
-                            , HE.br
+                            , SE.br
                             , HE.text "You will be logged out..."
                             ]
                     ]

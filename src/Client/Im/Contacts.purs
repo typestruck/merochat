@@ -33,7 +33,7 @@ import Shared.Im.Contact as SIC
 import Shared.Modal (Modal(..))
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
-import Web.Socket.WebSocket (WebSocket)
+import Client.Im.WebSocket.Connection (WebSocket)
 
 -- | When a contact is selected from the list, update `chatting` accordingly
 resumeChat ∷ Int → ImModel → MoreMessages

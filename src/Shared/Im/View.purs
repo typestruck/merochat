@@ -30,19 +30,19 @@ view isClientRender model = HE.div [ HA.id "im" ]
       [ HE.div [ HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen } ]
               [ SAB.banner
               , SIVU.userMenu model
-              , HE.div [ HA.class' { "suggestion-box-error": true, flexed: model.smallScreen && not (DS.null model.errorMessage) } ] [ HE.text model.errorMessage ]
-              , SIVN.reloadPage model.imUpdated
-              , SIVN.prompt model.enableNotificationsVisible
-              , SIVCN.contactList isClientRender model
-              , SIVL.logoMenu model
-              , SIVM.modals model
+              --    , HE.div [ HA.class' { "suggestion-box-error": true, flexed: model.smallScreen && not (DS.null model.errorMessage) } ] [ HE.text model.errorMessage ]
+              --    , SIVN.reloadPage model.imUpdated
+              --    , SIVN.prompt model.enableNotificationsVisible
+              --    , SIVCN.contactList isClientRender model
+              --   , SIVL.logoMenu model
+              --   , SIVM.modals model
               ]
       , HE.div [ HA.class' { "suggestion-box": true, "current-mobile-screen": not model.initialScreen, "with-chat-background": hasChatBackground }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile, HA.style { "backgroundImage": chatBackgroundUrl } ]
-              [ HE.div [ HA.class' { "suggestion-box-error": true, "error-message-connection-lost": true, flexed: not $ DS.null model.errorMessage } ] [ HE.text model.errorMessage ]
-              , SIVNM.unreadNotification model
-              , SIVP.suggestionProfile model
-              , SIVH.chatHistory model
-              , SIVC.chat model
+              [ --HE.div [ HA.class' { "suggestion-box-error": true, "error-message-connection-lost": true, flexed: not $ DS.null model.errorMessage } ] [ HE.text model.errorMessage ]
+              --   , SIVNM.unreadNotification model
+              --   , SIVP.suggestionProfile model
+              --   , SIVH.chatHistory model
+              --   , SIVC.chat model
               ]
       ]
       where

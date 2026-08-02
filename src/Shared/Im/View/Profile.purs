@@ -7,11 +7,12 @@ import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.User
 
-import Client.Privilege as CCP
+--import Client.Privilege as CCP
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Int as DI
+import Shared.Extra as SE
 import Data.Int as DN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -25,9 +26,9 @@ import Shared.Avatar as SA
 import Shared.Backer.Contact (backerId)
 import Shared.Badge (Badge)
 import Shared.Badge as SB
-import Shared.DateTime (DateTimeWrapper)
+--import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
-import Shared.Im.Contact as SIC
+--import Shared.Im.Contact as SIC
 import Shared.Im.Svg (backArrow, home, nextArrow)
 import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIS
@@ -50,179 +51,180 @@ import Shared.User as SUR
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
-suggestionProfile model =
-      if (model.user.profileVisibility > NoTemporaryUsers || not (SP.hasPrivilege StartChats model.user)) && notChatting then
-            suggestionWarning
-      else if DA.null model.suggestions && notChatting then
-            emptySuggestions
-      else
-            case SIC.maybeFindContact model.chatting model.contacts of
-                  Just chatting →
-                        if chatting.user.availability == Unavailable then
-                              unavailable chatting.user.name
-                        else if model.fullContactProfileVisible then
-                              fullProfile chatting.user model
-                        else
-                              compactProfile chatting model
-                  Nothing → suggestionCards model
-      where
-      notChatting = DM.isNothing model.chatting
+suggestionProfile model = HE.div [ ] []
+--       if (model.user.profileVisibility > NoTemporaryUsers || not (SP.hasPrivilege StartChats model.user)) && notChatting then
+--             suggestionWarning
+--       else if DA.null model.suggestions && notChatting then
+--             emptySuggestions
+--       else
+--             case SIC.maybeFindContact model.chatting model.contacts of
+--                   Just chatting →
+--                         if chatting.user.availability == Unavailable then
+--                               unavailable chatting.user.name
+--                         else if model.fullContactProfileVisible then
+--                               fullProfile chatting.user model
+--                         else
+--                               compactProfile chatting model
+--                   Nothing → suggestionCards model
+--       where
+--       notChatting = DM.isNothing model.chatting
 
-      emptySuggestions = HE.div [ HA.class' "suggestion empty retry" ]
-            $
-                  if model.suggestionsFrom == OnlineOnly then
-                        suggestionsFilter model : (SIVR.retryForm "No users currently online :(" $ SpecialRequest NextSuggestion)
-                  else
-                        SIVR.retryForm "Could not find suggestions" $ SpecialRequest NextSuggestion
+--       emptySuggestions = HE.div [ HA.class' "suggestion empty retry" ]
+--             $
+--                   if model.suggestionsFrom == OnlineOnly then
+--                         suggestionsFilter model : (SIVR.retryForm "No users currently online :(" $ SpecialRequest NextSuggestion)
+--                   else
+--                         SIVR.retryForm "Could not find suggestions" $ SpecialRequest NextSuggestion
 
-      suggestionWarning = HE.div [ HA.class' "suggestion" ] [ welcome model ]
+--       suggestionWarning = HE.div [ HA.class' "suggestion" ] [ welcome model ]
 
 -- | Contact was deleted, made private or they blocked the logged user
 unavailable ∷ String → Html ImMessage
-unavailable name =
-      HE.div [ HA.class' "profile-contact" ]
-            [ HE.div [ HA.class' "profile-contact-top" ]
-                    [ HE.div [ HA.class' "profile-unavailable-header" ]
-                            [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                            , HE.h1 [ HA.class' "contact-name" ] [ HE.text name ]
-                            , HE.span [ HA.class' "unavailable-message" ] [ HE.text " is no longer available" ]
-                            ]
-                    ]
-            ]
+unavailable name = HE.div [] []
+--       HE.div [ HA.class' "profile-contact" ]
+--             [ HE.div [ HA.class' "profile-contact-top" ]
+--                     [ HE.div [ HA.class' "profile-unavailable-header" ]
+--                             [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
+--                             , HE.h1 [ HA.class' "contact-name" ] [ HE.text name ]
+--                             , HE.span [ HA.class' "unavailable-message" ] [ HE.text " is no longer available" ]
+--                             ]
+--                     ]
+--             ]
 
 -- | Compact profile view shown by default
 compactProfile ∷ Contact → ImModel → Html ImMessage
-compactProfile contact model =
-      HE.div [ HA.class' "profile-contact" ]
-            [ HE.div [ HA.class' "profile-contact-top" ]
-                    [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.src $ SA.fromAvatar contact.user ] <> showProfileAction
-                    , HE.div (HA.class' "profile-contact-header" : [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ])
-                            [ HE.div [ HA.class' "contact-name-badge" ] $ HE.h1 [ HA.class' "contact-name" ] ([ HE.text contact.user.name ]) : badges contact.user.badges
-                            , availableStatus
-                            ]
-                    , HE.div [ HA.class' "profile-contact-deets" ]
-                            [ HE.div [ HA.class' "outer-user-menu" ] [ SIA.contextMenu $ show CompactProfileContextMenu ]
-                            ]
-                    , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] contextMenu
-                    , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick ResumeSuggesting ]
-                    ]
-            ]
-      where
-      contextMenu =
-            ( if not model.user.ownBackground && DM.isJust contact.user.chatBackground then
-                    [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick RemoveChatBackground ] [ HE.text "Remove chat background" ] ]
-              else
-                    []
-            ) <> profileContextMenu contact.user true
+compactProfile contact model = HE.div [] []
+--       HE.div [ HA.class' "profile-contact" ]
+--             [ HE.div [ HA.class' "profile-contact-top" ]
+--                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
+--                     , HE.img $ [ SA.async, SA.decoding "lazy", HA.src $ SA.fromAvatar contact.user ] <> showProfileAction
+--                     , HE.div (HA.class' "profile-contact-header" : [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ])
+--                             [ HE.div [ HA.class' "contact-name-badge" ] $ HE.h1 [ HA.class' "contact-name" ] ([ HE.text contact.user.name ]) : badges contact.user.badges
+--                             , availableStatus
+--                             ]
+--                     , HE.div [ HA.class' "profile-contact-deets" ]
+--                             [ HE.div [ HA.class' "outer-user-menu" ] [ SIA.contextMenu $ show CompactProfileContextMenu ]
+--                             ]
+--                     , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] contextMenu
+--                     , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick ResumeSuggesting ]
+--                     ]
+--             ]
+--       where
+--       contextMenu =
+--             ( if not model.user.ownBackground && DM.isJust contact.user.chatBackground then
+--                     [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick RemoveChatBackground ] [ HE.text "Remove chat background" ] ]
+--               else
+--                     []
+--             ) <> profileContextMenu contact.user true
 
-      showProfileAction
-            | contact.user.unseenPosts > 0 = [ HA.class' "avatar-profile newly-posted", HA.title "Click to see recent posts", HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts ]
-            | otherwise = [ HA.class' "avatar-profile", HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
+--       showProfileAction
+--             | contact.user.unseenPosts > 0 = [ HA.class' "avatar-profile newly-posted", HA.title "Click to see recent posts", HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts ]
+--             | otherwise = [ HA.class' "avatar-profile", HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
-      availableStatus =
-            HE.div
-                  [ HA.class' { hidden: contact.typing && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus } ]
-                  [ HE.text $ show contact.user.availability ]
+--       availableStatus =
+--             HE.div
+--                   [ HA.class' { hidden: contact.typing && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus } ]
+--                   [ HE.text $ show contact.user.availability ]
 
 -- | Full screen profile view
 fullProfile ∷ User → ImModel → Html ImMessage
-fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMenu : profile
-      where
-      profileMenu = HE.div [ HA.class' "profile-top-menu" ]
-            [ SIA.arrow [ HA.class' "svg-back-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
-            , HE.div [ HA.class' { "outer-user-menu": true, hidden: model.showLargeAvatar } ]
-                    [ SIA.contextMenu $ show FullProfileContextMenu
-                    ]
-            , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu user true
-            , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
-            ]
+fullProfile user model = HE.div [] []
+        --HE.div [ HA.class' "contact-full-profile" ] $ profileMenu : profile
+--       where
+--       profileMenu = HE.div [ HA.class' "profile-top-menu" ]
+--             [ SIA.arrow [ HA.class' "svg-back-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
+--             , HE.div [ HA.class' { "outer-user-menu": true, hidden: model.showLargeAvatar } ]
+--                     [ SIA.contextMenu $ show FullProfileContextMenu
+--                     ]
+--             , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu user true
+--             , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
+--             ]
 
-      profile =
-            if model.showLargeAvatar then
-                  [ HE.div [ HA.class' "avatar-info full" ]
-                          [ HE.div [ HA.class' "big-suggestion-info" ]
-                                  [ HE.strong [ HA.class' "big-card-name big-name-avatar" ] [ HE.text user.name ]
-                                  ]
-                          , HE.div [ HA.class' "big-avatar-info big-avatar-center" ]
-                                  [ HE.img [ HA.src $ SA.fromAvatar user, HA.title "Close avatar", HA.class' "bigger-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
-                                  ]
-                          ]
-                  ]
-            else
-                  [ HE.div [ HA.class' "avatar-info" ]
-                          [ HE.div [ HA.class' "big-avatar-info" ]
-                                  [ HE.img (if user.unseenPosts > 0 then [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar newly-posted", HA.onClick $ ToggleShowing user.id ForContacts ShowPosts ] else [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar", HA.onClick ToggleLargeAvatar ])
-                                  , HE.div [ HA.class' "big-suggestion-info" ]
-                                          ( HE.strong [ HA.class' "big-card-name" ] [ HE.text user.name ]
-                                                  : badges user.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user user ]
-                                          )
-                                  , HE.div [ HA.class' "big-suggestion-info auto-left" ]
-                                          ( [ HE.div_ $
-                                                    if user.temporary then
-                                                          temporary
-                                                    else
-                                                          [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands user.karma ]
-                                                          , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show user.karmaPosition ]
-                                                          ]
-                                            ]
-                                                  <> [ HE.div_ $ genderAge user <> countrySeparator user <> from user ]
-                                                  <> speaks user
-                                                  <> postsAsksCount user
-                                          )
-                                  ]
-                          ]
+--       profile =
+--             if model.showLargeAvatar then
+--                   [ HE.div [ HA.class' "avatar-info full" ]
+--                           [ HE.div [ HA.class' "big-suggestion-info" ]
+--                                   [ HE.strong [ HA.class' "big-card-name big-name-avatar" ] [ HE.text user.name ]
+--                                   ]
+--                           , HE.div [ HA.class' "big-avatar-info big-avatar-center" ]
+--                                   [ HE.img [ HA.src $ SA.fromAvatar user, HA.title "Close avatar", HA.class' "bigger-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
+--                                   ]
+--                           ]
+--                   ]
+--             else
+--                   [ HE.div [ HA.class' "avatar-info" ]
+--                           [ HE.div [ HA.class' "big-avatar-info" ]
+--                                   [ HE.img (if user.unseenPosts > 0 then [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar newly-posted", HA.onClick $ ToggleShowing user.id ForContacts ShowPosts ] else [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar", HA.onClick ToggleLargeAvatar ])
+--                                   , HE.div [ HA.class' "big-suggestion-info" ]
+--                                           ( HE.strong [ HA.class' "big-card-name" ] [ HE.text user.name ]
+--                                                   : badges user.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user user ]
+--                                           )
+--                                   , HE.div [ HA.class' "big-suggestion-info auto-left" ]
+--                                           ( [ HE.div_ $
+--                                                     if user.temporary then
+--                                                           temporary
+--                                                     else
+--                                                           [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands user.karma ]
+--                                                           , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show user.karmaPosition ]
+--                                                           ]
+--                                             ]
+--                                                   <> [ HE.div_ $ genderAge user <> countrySeparator user <> from user ]
+--                                                   <> speaks user
+--                                                   <> postsAsksCount user
+--                                           )
+--                                   ]
+--                           ]
 
-                  , HE.div [ HA.class' { "green-tab": true, hidden: user.temporary } ]
-                          [ HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowInfo } ] [ HE.text "Info" ]
-                          , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPraise, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPraise } ] [ HE.text "Praise" ]
-                          , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPosts } ] [ HE.text "Posts" ]
-                          , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowAsks, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowAsks } ] [ HE.text "Asks" ]
-                          ]
+--                   , HE.div [ HA.class' { "green-tab": true, hidden: user.temporary } ]
+--                           [ HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowInfo } ] [ HE.text "Info" ]
+--                           , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPraise, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPraise } ] [ HE.text "Praise" ]
+--                           , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPosts } ] [ HE.text "Posts" ]
+--                           , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowAsks, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowAsks } ] [ HE.text "Asks" ]
+--                           ]
 
-                  , HE.div [ HA.class' { "full-card-headline-tags": true, hidden: user.showing /= ShowInfo } ]
-                          ( [ HE.div [ HA.class' "card-headline" ] [ HE.text user.headline ]
-                            , HE.hr' [ HA.class' "tag-ruler" ]
-                            ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) user.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
-                          )
-                  , HE.div [ HA.class' { "card-description": true, hidden: user.showing /= ShowInfo }, HA.title "See full profile" ]
-                          [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                          , HE.div' [ HA.innerHtml $ SM.parse user.description ]
-                          ]
+--                   , HE.div [ HA.class' { "full-card-headline-tags": true, hidden: user.showing /= ShowInfo } ]
+--                           ( [ HE.div [ HA.class' "card-headline" ] [ HE.text user.headline ]
+--                             , SE.hr [ HA.class' "tag-ruler" ]
+--                             ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) user.tags <> [ SE.hr [ HA.class' "tag-ruler" ] ]
+--                           )
+--                   , HE.div [ HA.class' { "card-description": true, hidden: user.showing /= ShowInfo }, HA.title "See full profile" ]
+--                           [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
+--                        --   , HE.div' [ HA.innerHtml $ SM.parse user.description ]
+--                           ]
 
-                  , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
-                          [ SIVR.retry "Failed to load praise" (FetchPraise user.id) model.failedRequests
-                          , SIVPR.praiseForm model user
-                          , if model.praise.freeToFetch then
-                              HE.div [ HA.class' "ask-list" ] $ SIVPR.praised user.praise
-                          else
-                             HE.div' [ HA.class' "loading" ]
-                          ]
+--                   , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
+--                           [ SIVR.retry "Failed to load praise" (FetchPraise user.id) model.failedRequests
+--                           , SIVPR.praiseForm model user
+--                           , if model.praise.freeToFetch then
+--                               HE.div [ HA.class' "ask-list" ] $ SIVPR.praised user.praise
+--                           else
+--                              HE.div' [ HA.class' "loading" ]
+--                           ]
 
-                  , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts } ]
-                          [ SIVR.retry "Failed to load posts" (FetchPosts user.id) model.failedRequests
-                          , if model.posts.freeToFetch && DA.null user.posts then
-                                  HE.div_ [ HE.text $ user.name <> " has not posted yet" ]
-                            else if model.posts.freeToFetch then
-                                  HE.div [ HA.class' "post-list" ] $ map (SIVP.posted user.name) user.posts
-                            else
-                                  HE.div' [ HA.class' "loading" ]
-                          ]
+--                   , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts } ]
+--                           [ SIVR.retry "Failed to load posts" (FetchPosts user.id) model.failedRequests
+--                           , if model.posts.freeToFetch && DA.null user.posts then
+--                                   HE.div_ [ HE.text $ user.name <> " has not posted yet" ]
+--                             else if model.posts.freeToFetch then
+--                                   HE.div [ HA.class' "post-list" ] $ map (SIVP.posted user.name) user.posts
+--                             else
+--                                   HE.div' [ HA.class' "loading" ]
+--                           ]
 
-                  , HE.div [ HA.class' { asks: true, hidden: user.showing /= ShowAsks } ]
-                          [ SIVR.retry "Failed to load asks" (FetchAsks user.id) model.failedRequests
-                          , SIVA.askForm model user
-                          , if model.asks.freeToFetch then
-                                  HE.div [ HA.class' "asks-list" ] $ map SIVA.asked user.asks
-                            else
-                                  HE.div' [ HA.class' "loading" ]
-                          ]
-                  ]
+--                   , HE.div [ HA.class' { asks: true, hidden: user.showing /= ShowAsks } ]
+--                           [ SIVR.retry "Failed to load asks" (FetchAsks user.id) model.failedRequests
+--                           , SIVA.askForm model user
+--                           , if model.asks.freeToFetch then
+--                                   HE.div [ HA.class' "asks-list" ] $ map SIVA.asked user.asks
+--                             else
+--                                   HE.div' [ HA.class' "loading" ]
+--                           ]
+--                   ]
 
 individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
-individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "backing-card": suggestion.id == backerId } ] $
-      if model.showLargeAvatar then
-            [ HE.div [ HA.class' "avatar-info full" ]
+individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "backing-card": suggestion.id == backerId } ]  --$
+       if model.showLargeAvatar then
+             [ HE.div [ HA.class' "avatar-info full" ]
                     [ HE.div [ HA.class' "big-suggestion-header" ]
                             [ HE.strong [ HA.class' "big-card-name grown" ] [ HE.text suggestion.name ]
                             , HE.div [ HA.class' "close-cards", HA.title "Close avatar", HA.onClick ToggleLargeAvatar ]
@@ -233,8 +235,8 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                             [ HE.img [ HA.title "Close avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "bigger-suggestion-avatar" ]
                             ]
                     ]
-            ]
-      else
+             ]
+       else
             [ HE.div [ HA.class' "back-filter" ]
                     [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideModal ] ]
             , HE.div [ HA.class' "suggestion-arrow-mobile" ]
@@ -279,54 +281,54 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
 
             , HE.div [ HA.class' { hidden: suggestion.showing /= ShowInfo } ]
                     ( [ HE.div [ HA.class' "card-headline" ] [ HE.text suggestion.headline ]
-                      , HE.hr' [ HA.class' "tag-ruler" ]
-                      ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
+                      , SE.hr [ HA.class' "tag-ruler" ]
+                      ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags <> [ SE.hr [ HA.class' "tag-ruler" ] ]
                     )
             , HE.div [ HA.class' { "card-description": true, hidden: suggestion.showing /= ShowInfo } ]
                     [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
                     , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
                     ]
 
-            , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
-                    [ SIVR.retry "Failed to load asks" (FetchPraise suggestion.id) model.failedRequests
-                    , SIVPR.praiseForm model suggestion
-                    , if model.praise.freeToFetch then
-                              HE.div [ HA.class' "ask-list" ] $ SIVPR.praised suggestion.praise
-                          else
-                             HE.div' [ HA.class' "loading" ]
-                    ]
+--             , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
+--                     [ SIVR.retry "Failed to load asks" (FetchPraise suggestion.id) model.failedRequests
+--                     , SIVPR.praiseForm model suggestion
+--                     , if model.praise.freeToFetch then
+--                               HE.div [ HA.class' "ask-list" ] $ SIVPR.praised suggestion.praise
+--                           else
+--                              HE.div' [ HA.class' "loading" ]
+--                     ]
 
-            , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts } ]
-                    [ SIVR.retry "Failed to load posts" (FetchPosts suggestion.id) model.failedRequests
-                    , if model.posts.freeToFetch && DA.null suggestion.posts then
-                            HE.div_ [ HE.text $ suggestion.name <> " has not posted yet" ]
-                      else if model.posts.freeToFetch then
-                            HE.div [ HA.class' "post-list" ] $ map (SIVP.posted suggestion.name) suggestion.posts
-                      else
-                            HE.div' [ HA.class' "loading" ]
-                    ]
+--             , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts } ]
+--                     [ SIVR.retry "Failed to load posts" (FetchPosts suggestion.id) model.failedRequests
+--                     , if model.posts.freeToFetch && DA.null suggestion.posts then
+--                             HE.div_ [ HE.text $ suggestion.name <> " has not posted yet" ]
+--                       else if model.posts.freeToFetch then
+--                             HE.div [ HA.class' "post-list" ] $ map (SIVP.posted suggestion.name) suggestion.posts
+--                       else
+--                             HE.div' [ HA.class' "loading" ]
+--                     ]
 
-            , HE.div [ HA.class' { asks: true, hidden: suggestion.showing /= ShowAsks } ]
-                    [ SIVR.retry "Failed to load asks" (FetchAsks suggestion.id) model.failedRequests
-                    , SIVA.askForm model suggestion
-                    , if model.asks.freeToFetch then
-                            HE.div [ HA.class' "ask-list" ] $ map SIVA.asked suggestion.asks
-                      else
-                            HE.div' [ HA.class' "loading" ]
-                    ]
+--             , HE.div [ HA.class' { asks: true, hidden: suggestion.showing /= ShowAsks } ]
+--                     [ SIVR.retry "Failed to load asks" (FetchAsks suggestion.id) model.failedRequests
+--                     , SIVA.askForm model suggestion
+--                     , if model.asks.freeToFetch then
+--                             HE.div [ HA.class' "ask-list" ] $ map SIVA.asked suggestion.asks
+--                       else
+--                             HE.div' [ HA.class' "loading" ]
+--                     ]
 
-            , HE.div [ HA.class' "see-profile-chat suggestion-input" ]
-                    $
-                          if model.loadingContact == Just suggestion.id then
-                                [ HE.div' [ HA.class' "loading" ] ]
-                          else if suggestion.isContact then
-                                [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ] ]
-                          else if suggestion.id == backerId then
-                                [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "See donation options", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ] ]
-                          else
-                                [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model ]
+--             , HE.div [ HA.class' "see-profile-chat suggestion-input" ]
+--                     $
+--                           if model.loadingContact == Just suggestion.id then
+--                                 [ HE.div' [ HA.class' "loading" ] ]
+--                           else if suggestion.isContact then
+--                                 [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ] ]
+--                           else if suggestion.id == backerId then
+--                                 [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "See donation options", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ] ]
+--                           else
+--                                 [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model ]
 
-            ]
+             ]
 
 postsAsksCount ∷ Suggestion → Array (Html ImMessage)
 postsAsksCount user = [ HE.div_ [ HE.span_ [ HE.text $ show user.totalPosts <> " posts • " ], HE.span_ [ HE.text $ show user.totalAsks <> " asks" ] ] ]
@@ -412,11 +414,11 @@ suggestionCards model =
                           ]
                   , HE.div [ HA.class' "rest-card" ]
                           [ HE.div [ HA.class' "card-headline" ] [ HE.text suggestion.headline ]
-                          , HE.hr' [ HA.class' "tag-ruler" ]
-                          , HE.div_ $ map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
+                          , SE.hr [ HA.class' "tag-ruler" ]
+                          , HE.div_ $ map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags <> [ SE.hr [ HA.class' "tag-ruler" ] ]
                           , HE.div (HA.class' "card-description" : showProfile suggestion.id)
                                   [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                                  , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
+                  --                , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
                                   ]
                           ]
                   , case model.showSuggestionChatInput of
@@ -473,7 +475,7 @@ temporary =
               [ HE.p_ [ HE.text "Quick-sign up means users that just got started on MeroChat and have yet to finish creating their account" ]
               , HE.p_
                       [ HE.text "You can opt to not be seen (or messaged by) quick-sign up users on the "
-                      , HE.a [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings ] [ HE.text " settings" ]
+                      , SE.a [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings ] [ HE.text " settings" ]
                       , HE.text " page"
                       ]
               ]
@@ -512,17 +514,18 @@ welcomeTemporary model = HE.div [ HA.class' "card-top-welcome-filter" ]
               ]
       ]
 
-signUpCall ∷ DateTimeWrapper → Html ImMessage
-signUpCall joined = HE.div [ HA.class' "sign-up-call" ]
-      [ HE.text "Enjoying MeroChat?"
-      , HE.a [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile ] [ HE.text $ " Create an account  " <> remaining ]
-      , HE.text " to keep your chats"
-      ]
-      where
-      remaining = case DI.floor <<< SC.coerce $ SUR.temporaryUserExpiration joined of
-            0 → " today"
-            1 → " until tomorrow"
-            n → " in " <> show n <> " days"
+signUpCall ∷ _ → Html ImMessage
+signUpCall joined = HE.div [] []
+--  HE.div [ HA.class' "sign-up-call" ]
+--       [ HE.text "Enjoying MeroChat?"
+--       , SE.a [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile ] [ HE.text $ " Create an account  " <> remaining ]
+--       , HE.text " to keep your chats"
+--       ]
+--       where
+--       remaining = case DI.floor <<< SC.coerce $ SUR.temporaryUserExpiration joined of
+--             0 → " today"
+--             1 → " until tomorrow"
+--             n → " in " <> show n <> " days"
 
 welcome ∷ ImModel → Html ImMessage
 welcome model = HE.div [ HA.class' "card-top-welcome-filter" ]
@@ -530,7 +533,7 @@ welcome model = HE.div [ HA.class' "card-top-welcome-filter" ]
               [ HE.div [ HA.class' "welcome" ] [ HE.text $ "Welcome, " <> model.user.name <> "!" ]
               , HE.div [ HA.class' "welcome-new" ] $
                       if not SP.hasPrivilege StartChats model.user then
-                            [ HE.span [ HA.class' "no-self-start" ] [ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges) ]
+                            [ HE.span [ HA.class' "no-self-start" ] []-- [ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges) ]
                             ]
                       else
                             case model.user.profileVisibility of
@@ -549,7 +552,7 @@ welcome model = HE.div [ HA.class' "card-top-welcome-filter" ]
       where
       warn level =
             [ HE.text $ "Your profile is set to " <> level <> ". Change your "
-            , HE.a [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings ] [ HE.text " settings " ]
+            , SE.a [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings ] [ HE.text " settings " ]
             , HE.text "to see new chat suggestions"
             ]
 
@@ -614,7 +617,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                                   ]
                           , HE.div [ HA.class' "mini-headline-tags", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
                                   ( [ HE.div [ HA.class' "mini-headline" ] [ HE.text suggestion.headline ]
-                                    , HE.hr' [ HA.class' "tag-ruler" ]
+                                    , SE.hr [ HA.class' "tag-ruler" ]
                                     ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags
                                   )
 

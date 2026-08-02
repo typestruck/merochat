@@ -13,9 +13,9 @@ import Client.EventTypes (modalVisible)
 import Client.AppId (experimentsAppId)
 
 main ∷ Effect Unit
-main =
-      void $ F.resumeMount (QuerySelector "#chat-experiments") experimentsAppId
-            { view: SEV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
-            , update: CEU.update
-            }
+main = pure unit
+      -- void $ F.resumeMount (QuerySelector "#chat-experiments") experimentsAppId
+      --       { view: SEV.view
+      --       , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+      --       , update: CEU.update
+      --       }

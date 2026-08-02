@@ -16,9 +16,9 @@ import Shared.Feedback.View as SFV
 import Client.EventTypes (modalVisible)
 
 main ∷ Effect Unit
-main = do
-      void $ F.resumeMount (SE.toQuerySelector FeedbackForm) feedbackAppId
-            { view: SFV.view
-            , update: CFU.update
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
-            }
+main = pure unit
+      -- void $ F.resumeMount (SE.toQuerySelector FeedbackForm) feedbackAppId
+      --       { view: SFV.view
+      --       , update: CFU.update
+      --       , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+      --       }

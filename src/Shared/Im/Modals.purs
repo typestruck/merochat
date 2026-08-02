@@ -18,6 +18,7 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIS
 import Shared.Im.View.Posts as SIVP
+import Shared.Extra as SE
 import Shared.Im.View.Profile as CISP
 import Shared.Modal (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
@@ -30,7 +31,7 @@ import Shared.User as SUR
 import Type.Proxy (Proxy(..))
 
 lazyLoad ∷ Bundle → Html ImMessage
-lazyLoad resource = HE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.bundlePath resource Css, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
+lazyLoad resource = SE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.bundlePath resource Css, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
 
 modals ∷ ImModel → Html ImMessage
 modals model =
@@ -193,7 +194,7 @@ confirmTermination = HE.div [ HA.class' "modal-placeholder-overlay" ]
               , HE.span' [ HA.class' "request-error-message" ]
               , HE.span [ HA.class' "success-message right-align" ]
                       [ HE.text "Your data has been deleted"
-                      , HE.br
+                      , SE.br
                       , HE.text "You will be logged out..."
                       ]
               ]
@@ -204,7 +205,7 @@ temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { 
       HE.div [ HA.id $ show TemporaryUserSignUpForm ]
             [ if expired then
                     HE.div [ HA.class' "warning-temporary" ] [ HE.text "Your access has expired" ]
-              else HE.fragment
+              else SE.fragment
                     [ HE.div [ HA.class' "warning-temporary" ] [ HE.text $ "You have " <> remainingTime <> " to create an account" ]
                     , HE.div [ HA.class' "warning-temporary wall-text" ] [ HE.text "After that, all your data will be deleted and you won't be able to access the site unless you sign up again" ]
                     ]

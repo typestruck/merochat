@@ -10,6 +10,7 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
+import Shared.Extra as SE
 import Shared.Html (Html(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
@@ -25,14 +26,14 @@ template token = do
       Html <$> FRS.render contents
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Recover Js ]
+            [ SE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Recover Js ]
             ]
       content =
             [ HE.div [ HA.class' "pastel-area column" ]
                     [ HE.div [ HA.class' "sign-up-form form-up" ]
                             [ case token of
                                     Nothing →
-                                          HE.fragment
+                                          SE.fragment
                                                 [ HE.div [ HA.class' "input" ]
                                                         [ HE.input [ HA.placeholder "Email", HA.type' "text", HA.id "email", HA.maxlength emailMaxCharacters, HA.id $ show EmailInput ]
                                                         , HE.span [ HA.class' "error-message" ] [ HE.text "Please enter a valid email" ]
@@ -44,7 +45,7 @@ template token = do
                                                 , HE.span [ HA.id "routes-success-message", HA.class' "success-message" ] [ HE.text "Recovery email sent. Please check your inbox" ]
                                                 ]
                                     _ →
-                                          HE.fragment
+                                          SE.fragment
                                                 [ HE.div [ HA.class' "input" ]
                                                         [ HE.input [ HA.type' "password", HA.placeholder "Password", HA.maxlength passwordMaxCharacters, HA.id $ show PasswordInput ]
                                                         , HE.span [ HA.class' "error-message" ] [ HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more" ]
@@ -61,7 +62,7 @@ template token = do
 
                                                 ]
                             , HE.div [ HA.class' "forgot-sign-up" ]
-                                    [ HE.a [ HA.href $ routesSpec.landing {}, HA.class' "question-link" ] [ HE.text "Don't have an account?" ]
+                                    [ SE.a [ HA.href $ routesSpec.landing {}, HA.class' "question-link" ] [ HE.text "Don't have an account?" ]
 
                                     ]
                             ]

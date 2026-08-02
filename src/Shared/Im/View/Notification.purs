@@ -4,6 +4,7 @@ import Prelude
 
 import Flame (Html)
 import Shared.Im.Types
+import Shared.Extra as SE
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Im.View.Retry as SIR
@@ -13,7 +14,7 @@ reloadPage shouldReload = HE.div [ HA.class' { "notification": true, hidden: not
       [ SIR.retryIcon "notification-icon"
       , HE.div [ HA.class' "notification-message" ]
               [ HE.strong_ [ HE.text "Update available" ]
-              , HE.br
+              , SE.br
               , HE.span_ [ HE.text "Click to update MeroChat" ]
               ]
       ]
@@ -25,7 +26,7 @@ prompt enableNotificationsVisible = HE.div [ HA.class' { notification: true, hid
               ]
       , HE.div [ HA.class' "notification-message" ]
               [ HE.strong_ [ HE.text "Get notified of new messages" ]
-              , HE.br
+              , SE.br
               , HE.span_ [ HE.text "Click to enable notifications" ]
               ]
       ]

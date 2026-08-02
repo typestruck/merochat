@@ -10,6 +10,7 @@ import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
+import Shared.Extra as SE
 import Data.String as DS
 import Debug (spy)
 import Flame (Html)
@@ -126,23 +127,23 @@ edit model =
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "All fields are optional" ]
               , HE.div [ HA.class' "profile-section-wedge" ]
                       [ HE.input [ SC.onChange SetAge, HA.class' "modal-input margined", HA.type' "date", HA.placeholder "Your age", HA.value <<< DM.fromMaybe "" $ map SDT.formatIsoDate model.ageInputed ]
-                      , HE.select [ HA.class' "modal-select", HA.onInput SetGender ]
-                              [ HE.option [ HA.value "", HA.selected $ model.genderInputed == Nothing ] [ HE.text "Do not show my gender" ]
-                              , HE.option [ HA.value $ show Female, HA.selected $ model.genderInputed == Just Female ] [ HE.text $ show Female ]
-                              , HE.option [ HA.value $ show Male, HA.selected $ model.genderInputed == Just Male ] [ HE.text $ show Male ]
-                              , HE.option [ HA.value $ show NonBinary, HA.selected $ model.genderInputed == Just NonBinary ] [ HE.text $ show NonBinary ]
-                              , HE.option [ HA.value $ show Other, HA.selected $ model.genderInputed == Just Other ] [ HE.text $ show Other ]
+                      , SE.select [ HA.class' "modal-select", HA.onInput SetGender ]
+                              [ SE.option [ HA.value "", HA.selected $ model.genderInputed == Nothing ] [ HE.text "Do not show my gender" ]
+                              , SE.option [ HA.value $ show Female, HA.selected $ model.genderInputed == Just Female ] [ HE.text $ show Female ]
+                              , SE.option [ HA.value $ show Male, HA.selected $ model.genderInputed == Just Male ] [ HE.text $ show Male ]
+                              , SE.option [ HA.value $ show NonBinary, HA.selected $ model.genderInputed == Just NonBinary ] [ HE.text $ show NonBinary ]
+                              , SE.option [ HA.value $ show Other, HA.selected $ model.genderInputed == Just Other ] [ HE.text $ show Other ]
                               ]
                       ]
               , HE.div [ HA.class' "profile-section-wedge" ]
-                      [ HE.select [ HA.class' "modal-select margined", HA.onInput SetCountry ]
-                              ( HE.option [ HA.value "", HA.selected $ model.countryInputed == Nothing ] [ HE.text "Do not show my country" ]
-                                      : map (\c → HE.option [ HA.value $ show c.id, HA.selected $ model.countryInputed == Just c.id ] [ HE.text c.name ]) model.countries
+                      [ SE.select [ HA.class' "modal-select margined", HA.onInput SetCountry ]
+                              ( SE.option [ HA.value "", HA.selected $ model.countryInputed == Nothing ] [ HE.text "Do not show my country" ]
+                                      : map (\c → SE.option [ HA.value $ show c.id, HA.selected $ model.countryInputed == Just c.id ] [ HE.text c.name ]) model.countries
                               )
                       , HE.div [ HA.class' "profile-languages" ]
-                              [ HE.select [ HA.class' "modal-select", HA.onInput SetLanguage ]
-                                      ( HE.option [ HA.value "", HA.selected $ DA.null model.languagesInputed ] [ HE.text "Do not show my languages" ]
-                                              : map (\c → HE.option [ HA.value $ show c.id, HA.selected (Just c.id == firstLanguage) ] [ HE.text c.name ]) model.languages
+                              [ SE.select [ HA.class' "modal-select", HA.onInput SetLanguage ]
+                                      ( SE.option [ HA.value "", HA.selected $ DA.null model.languagesInputed ] [ HE.text "Do not show my languages" ]
+                                              : map (\c → SE.option [ HA.value $ show c.id, HA.selected (Just c.id == firstLanguage) ] [ HE.text c.name ]) model.languages
                                       )
                               , HE.div [ HA.class' { hidden: DA.null model.languagesInputed } ] $ map languageEntry model.languagesInputed
                               ]
@@ -215,8 +216,8 @@ preview model =
               ]
       , HE.div [ HA.class' "full-card-headline-tags" ]
               ( [ HE.div [ HA.class' "card-headline" ] [ HE.text $ DM.fromMaybe "" model.headlineInputed ]
-                , HE.hr' [ HA.class' "tag-ruler" ]
-                ] <> map (HE.span [ HA.class' "tag" ] <<< DA.singleton <<< HE.text) model.tagsInputed <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
+                , SE.hr [ HA.class' "tag-ruler" ]
+                ] <> map (HE.span [ HA.class' "tag" ] <<< DA.singleton <<< HE.text) model.tagsInputed <> [ SE.hr [ HA.class' "tag-ruler" ] ]
               )
       , HE.div [ HA.class' "card-description", HA.title "See full profile" ]
               [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]

@@ -56,6 +56,7 @@ import Flame.Subscription as FS
 import Flame.Subscription.Document as FSD
 import Flame.Subscription.Internal.Create as FSIC
 import Flame.Subscription.Window as FSW
+import Flame.Html.Element as HE
 import Flame.Types (Source(..))
 import Safe.Coerce as SC
 import Shared.Backer.Contact (backerId)
@@ -84,529 +85,659 @@ import Web.HTML as WH
 import Web.HTML.Event.PopStateEvent.EventTypes (popstate)
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window as WHW
-import Web.Socket.WebSocket (WebSocket)
+import Client.Im.WebSocket.Connection (WebSocket)
 
 main ∷ Effect Unit
 main = do
-      webSocketRef ← CIWE.startWebSocket
+    --  webSocketR ← CIWE.startWebSocket
       lastActiveRef ← ER.new true
-      --im is server side rendered
-      model ← F.resumeMount (SE.toQuerySelector Im) imAppId
-            { view: SIV.view true
-            , subscribe:
-                    [ FSD.onClick' ToggleUserContextMenu
-                    --possible workaround for a firefox bug
-                    , onBeforeUnload $ CloseWebSocket Desktop
-                    --we need focus blur and visibility change to handle all case of when the window is active or not
-                    , FSW.onFocus (Refocus FocusBlur)
-                    , onBlur (Refocus FocusBlur)
-                    , onVisibilityChange (Refocus VisibilityChange)
-                    , FSW.onOffline $ CloseWebSocket Always
-                    ]
-            , update: update { webSocketRef, lastActiveRef }
+      -- model ← F.resumeMount (SE.toQuerySelector Im) imAppId
+      --       { view: SIV.view true
+      --       , subscribe:
+      --               [ FSD.onClick' ToggleUserContextMenu
+      --               --possible workaround for a firefox bug
+      --               , onBeforeUnload $ CloseWebSocket Desktop
+      --               --we need focus blur and visibility change to handle all case of when the window is active or not
+      --               , FSW.onFocus (Refocus FocusBlur)
+      --               , onBlur (Refocus FocusBlur)
+      --               , onVisibilityChange (Refocus VisibilityChange)
+      --               , FSW.onOffline $ CloseWebSocket Always
+      --               ]
+      --       , update: update { webSocketRef, lastActiveRef }
+      --       }
+
+      let   model :: ImModel
+            model =
+                  { chatting: Nothing
+                  , freeToFetchSuggestions: true
+                  , temporaryId: 0
+                  , loadingContact: Nothing
+                  , typingIds: []
+                  , suggesting:
+                          Nothing
+                  , freeToFetchChatHistory: true
+                  , react: WithEmoji
+                  , suggestionsPage: 1
+                  , errorMessage: ""
+                  , suggestionsFrom: ThisWeek
+                  , showSuggestionChatInput: Nothing
+                  , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
+                  , showBuildProfile: false
+                  , smallScreen: false
+                  , showMiniChatInput: false
+                  , initialScreen: true
+                  , temporaryEmail: Nothing
+                  , changelogs: []
+                  , showChangelogs: false
+                  , showCollapsedMiniSuggestions: false
+                  , showSuggestionsPostForm: false
+                  , temporaryPassword: Nothing
+                  , enableNotificationsVisible: false
+                  , messageEnter: true
+                  , editing: Nothing
+                  , showLargeAvatar: false
+                  , imageCaption: Nothing
+                  , selectedImage: Nothing
+                  , webSocketMessages: []
+                  , fullContactProfileVisible: false
+                  , freeToFetchContactList: true
+                  , erroredFields: []
+                  , fortune: Nothing
+                  , toggleContextMenu: HideContextMenu
+                  , modal: HideModal
+                  , blockedUsers: []
+                  , reportReason: Nothing
+                  , reportComment: Nothing
+                  , imUpdated: false
+                  , praise:
+                          { freeToSave: true
+                          , selected: Nothing
+                          , other: Nothing
+                          , freeToFetch: true
+                          }
+                  , asks:
+                          { freeToFetch: true
+                          , freeToSend: true
+                          , unallowed: []
+                          , sent: []
+                          , question: Nothing
+                          }
+                  , posts:
+                          { freeToFetch: true
+                          , freeToSend: true
+                          , mode: TextOnly
+                          , text: Nothing
+                          , link: Nothing
+                          , image: Nothing
+                          , caption: Nothing
+                          }
+                  , webSocketStatus: Closed
+                  , failedRequests: []
+                  , modalsLoaded: []
+                  , hash: ""
+                  , contacts: []
+                  , suggestions: []
+                  , user:
+                          { id: 4
+                          , name: "Eduardo"
+                          , headline: "Hey"
+                          , posts: []
+                          , asks: []
+                          , praise: []
+                          , praiseStatus: HasNotPraised
+                          , unseenPosts: 0
+                          , postsVisibility: Everyone
+                          , ownBackground: false
+                          , chatBackground: Nothing
+                          , isContact: false
+                          , showing: ShowInfo
+                          , totalPosts: 0
+                          , totalAsks: 0
+                          , bin: 1
+                          , asksVisibility: Everyone
+                          , favorite: false
+                          , backer: true
+                          , profileVisibility: Everyone
+                          , readReceipts: false
+                          , messageTimestamps: false
+                          , typingStatus: false
+                          , onlineStatus: false
+                          , completedTutorial: true
+                          , description: "sdfsdf"
+                          , privileges: []
+                          , badges: []
+                          , temporary:  false
+                          , joined: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
+                          , completedFields: []
+                          , avatar: Just "856907bb-0a42-473e-8cf1-9c2ea8eecb09.jpg"
+                          , tags: []
+                          , karma: 333
+                          , availability: Online
+                          , karmaPosition: 1
+                          , gender: Just "Female"
+                          , country: Just "Brazil"
+                          , languages: []
+                          , age: Just 33
+                          }
+
+                  }
+
+      F.mount imAppId
+            { model
+            , view: SIV.view true
+            , subscribe: []
+                  --   [ FSD.onClick' ToggleUserContextMenu
+                  --   --possible workaround for a firefox bug
+                  --   , onBeforeUnload $ CloseWebSocket Desktop
+                  --   --we need focus blur and visibility change to handle all case of when the window is active or not
+                  --   , FSW.onFocus (Refocus FocusBlur)
+                  --   , onBlur (Refocus FocusBlur)
+                  --   , onVisibilityChange (Refocus VisibilityChange)
+                  --   , FSW.onOffline $ CloseWebSocket Always
+                  --   ]
+            , update: update {} --{ webSocketRef, lastActiveRef }
             }
 
-      smallScreen ← CISS.checkSmallScreen
-      pwa ← CIP.checkPwa
+      -- smallScreen ← CISS.checkSmallScreen
+      -- pwa ← CIP.checkPwa
 
-      when smallScreen CISS.sendSmallScreen
-      when (pwa || not smallScreen) CIN.checkNotifications
-      when pwa $ FS.send imAppId StartPwa
+      -- when smallScreen CISS.sendSmallScreen
+      -- when (pwa || not smallScreen) CIN.checkNotifications
+      -- when pwa $ FS.send imAppId StartPwa
 
-      --when the pwa is opened from a chat notification
-      resumeFromNotification
+      -- --when the pwa is opened from a chat notification
+      -- resumeFromNotification
 
-      --disable the back button on desktop/make the back button go back to previous screen on mobile
-      CCD.pushState $ routesSpec.im.get {}
-      historyChange smallScreen
+      -- --disable the back button on desktop/make the back button go back to previous screen on mobile
+      -- CCD.pushState $ routesSpec.im.get {}
+      -- historyChange smallScreen
 
-      --greet new users after they have created an account
-      unless (model.user.completedTutorial) $ FS.send imAppId FinishTutorial
+      -- --greet new users after they have created an account
+      -- unless (model.user.completedTutorial) $ FS.send imAppId FinishTutorial
 
 update ∷ _ → Update ImModel ImMessage
 update st model =
       case _ of
-            --chat
-            DropFile event → CIC.catchFile event model
-            ResizeChatInput event → SIR.resizeInputFrom event model
-            PrepareSelectedImage event → CIC.prepareSelectedImage event model
-            EnterSendMessage elementId event → CIC.enterSendMessage elementId event model
-            ForceSendMessage elementId → CIC.forceSendMessage elementId model
-            SendMessage elementId content dt → CIC.prepareSendMessage elementId content dt webSocket model
-            SetSelectedImage selected → CIC.setSelectedImage selected model
-            SetEmoji elementId event → CIC.setEmoji elementId event model
-            ToggleMessageEnter → CIC.toggleMessageEnter model
-            BeforeAudioMessage → CIC.beforeAudioMessage model
-            AudioMessage touch → CIC.audioMessage touch model
-            ResumeWebSocketMessage payload → CIWE.resumeWebSocketMessage payload webSocket model
-            ClearWebSocketMessages → CIWE.clearWebSocketMessages model
-            ToggleMiniChatInput → CIC.toggleMiniChatInput model
-            SendAudioMessage base64 → CIC.sendAudioMessage base64 model
-            FocusInput elementId → focusInput elementId model
-            QuoteMessage message et → CIC.quoteMessage message et model
-            EditMessage message id → CIC.editMessage message id model
-            ToggleSuggestionChatInput id → CIS.toggleSuggestionChatInput id model
-            DeleteMessage id → CIC.deleteMessage id webSocket model
-            SetTyping text → CIC.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
-            NoTyping id → F.noMessages $ CIC.toggleTyping id false model
-            TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
-            MessageFromExperiment userId message → CIC.messageFromExperiment userId message webSocket model
+            _ -> model /\ []
+            -- --chat
+            -- DropFile event → CIC.catchFile event model
+            -- ResizeChatInput event → SIR.resizeInputFrom event model
+            -- PrepareSelectedImage event → CIC.prepareSelectedImage event model
+            -- EnterSendMessage elementId event → CIC.enterSendMessage elementId event model
+            -- ForceSendMessage elementId → CIC.forceSendMessage elementId model
+            -- SendMessage elementId content dt → CIC.prepareSendMessage elementId content dt webSocket model
+            -- SetSelectedImage selected → CIC.setSelectedImage selected model
+            -- SetEmoji elementId event → CIC.setEmoji elementId event model
+            -- ToggleMessageEnter → CIC.toggleMessageEnter model
+            -- BeforeAudioMessage → CIC.beforeAudioMessage model
+            -- AudioMessage touch → CIC.audioMessage touch model
+            -- ResumeWebSocketMessage payload → CIWE.resumeWebSocketMessage payload webSocket model
+            -- ClearWebSocketMessages → CIWE.clearWebSocketMessages model
+            -- ToggleMiniChatInput → CIC.toggleMiniChatInput model
+            -- SendAudioMessage base64 → CIC.sendAudioMessage base64 model
+            -- FocusInput elementId → focusInput elementId model
+            -- QuoteMessage message et → CIC.quoteMessage message et model
+            -- EditMessage message id → CIC.editMessage message id model
+            -- ToggleSuggestionChatInput id → CIS.toggleSuggestionChatInput id model
+            -- DeleteMessage id → CIC.deleteMessage id webSocket model
+            -- SetTyping text → CIC.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
+            -- NoTyping id → F.noMessages $ CIC.toggleTyping id false model
+            -- TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
+            -- MessageFromExperiment userId message → CIC.messageFromExperiment userId message webSocket model
 
-            --contacts
-            ResumeChat userId → CICN.resumeChat userId model
-            SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
-            SetReadStatus userId → CICN.setReadStatus userId webSocket model
-            CheckFetchContacts event → CICN.checkFetchContacts event model
-            UpdateDraft userId draft → CICN.updateDraft userId draft model
-            SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
-            SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
-            DisplayContacts contacts → CICN.displayContacts contacts model
-            DisplayNewContacts contacts → CICN.displayNewContacts contacts model
-            DisplaySuggestionContact userId contacts → CICN.displaySuggestionContact userId contacts model
-            DisplayMissedContacts missed → CICN.displayMissedContacts missed model
+            -- --contacts
+            -- ResumeChat userId → CICN.resumeChat userId model
+            -- SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
+            -- SetReadStatus userId → CICN.setReadStatus userId webSocket model
+            -- CheckFetchContacts event → CICN.checkFetchContacts event model
+            -- UpdateDraft userId draft → CICN.updateDraft userId draft model
+            -- SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
+            -- SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
+            -- DisplayContacts contacts → CICN.displayContacts contacts model
+            -- DisplayNewContacts contacts → CICN.displayNewContacts contacts model
+            -- DisplaySuggestionContact userId contacts → CICN.displaySuggestionContact userId contacts model
+            -- DisplayMissedContacts missed → CICN.displayMissedContacts missed model
 
-            --history
-            SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
-            DisplayHistory userId history → CIH.displayHistory userId history model
-            SetReactWithText id event → CIH.setReacWithText id event model
-            React userId messageId value event → CIH.react userId messageId value event model
-            DisplayReaction userId messageId reaction → CIH.displayReaction userId messageId reaction model
+            -- --history
+            -- SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
+            -- DisplayHistory userId history → CIH.displayHistory userId history model
+            -- SetReactWithText id event → CIH.setReacWithText id event model
+            -- React userId messageId value event → CIH.react userId messageId value event model
+            -- DisplayReaction userId messageId reaction → CIH.displayReaction userId messageId reaction model
 
-            --asks
-            SpecialRequest (FetchAsks userId) → CIA.fetchAsks userId model
-            SetAsk value → CIA.setAsk value model
-            SendAsk userId → CIA.sendAsk userId model
-            AfterSendAsk userId allowed → CIA.afterSendAsk userId allowed model
-            ToggleShowing userId for ShowAsks → CIA.toggleShowing userId for model
-            DisplayAsks userId asks → CIA.displayAsks userId asks model
+            -- --asks
+            -- SpecialRequest (FetchAsks userId) → CIA.fetchAsks userId model
+            -- SetAsk value → CIA.setAsk value model
+            -- SendAsk userId → CIA.sendAsk userId model
+            -- AfterSendAsk userId allowed → CIA.afterSendAsk userId allowed model
+            -- ToggleShowing userId for ShowAsks → CIA.toggleShowing userId for model
+            -- DisplayAsks userId asks → CIA.displayAsks userId asks model
 
-            --praise
-            SpecialRequest (FetchPraise userId) → CIPR.fetchPraise userId model
-            ToggleShowing userId for ShowPraise → CIPR.toggleShowing userId for model
-            TogglePraise userId praise → CIPR.togglePraise userId praise model
-            SetOtherPraise praise → CIPR.setOtherPraise praise model
-            SavePraise → CIPR.savePraise model
-            AfterSavePraise userId allowed → CIPR.afterSavePraise userId allowed model
-            DisplayPraise userId praise → CIPR.displayPraise userId praise model
+            -- --praise
+            -- SpecialRequest (FetchPraise userId) → CIPR.fetchPraise userId model
+            -- ToggleShowing userId for ShowPraise → CIPR.toggleShowing userId for model
+            -- TogglePraise userId praise → CIPR.togglePraise userId praise model
+            -- SetOtherPraise praise → CIPR.setOtherPraise praise model
+            -- SavePraise → CIPR.savePraise model
+            -- AfterSavePraise userId allowed → CIPR.afterSavePraise userId allowed model
+            -- DisplayPraise userId praise → CIPR.displayPraise userId praise model
 
-            --posts
-            DisplayPosts userId posts → CIPS.displayPosts userId posts model
-            SpecialRequest (FetchPosts userId) → CIPS.fetchPosts userId model
-            ToggleSuggestionPostForm → CIPS.togglePostForm model
-            SetPostMode mode → CIPS.setPostMode mode model
-            SetPostText content → CIPS.setPostText content model
-            SetPostLink content → CIPS.setPostLink content model
-            PreparePostImage event → CIPS.preparePostImage event model
-            SetPostImage selected → CIPS.setPostImage selected model
-            SetPostCaption content → CIPS.setPostCaption content model
-            SendPost → CIPS.sendPost model
-            AfterSendPost id → CIPS.afterSendPost id webSocket model
-            ToggleShowing userId for ShowPosts → CIPS.toggleShowing userId ShowPosts for model
+            -- --posts
+            -- DisplayPosts userId posts → CIPS.displayPosts userId posts model
+            -- SpecialRequest (FetchPosts userId) → CIPS.fetchPosts userId model
+            -- ToggleSuggestionPostForm → CIPS.togglePostForm model
+            -- SetPostMode mode → CIPS.setPostMode mode model
+            -- SetPostText content → CIPS.setPostText content model
+            -- SetPostLink content → CIPS.setPostLink content model
+            -- PreparePostImage event → CIPS.preparePostImage event model
+            -- SetPostImage selected → CIPS.setPostImage selected model
+            -- SetPostCaption content → CIPS.setPostCaption content model
+            -- SendPost → CIPS.sendPost model
+            -- AfterSendPost id → CIPS.afterSendPost id webSocket model
+            -- ToggleShowing userId for ShowPosts → CIPS.toggleShowing userId ShowPosts for model
 
-            --suggestion
-            FetchMoreSuggestions → CIS.fetchMoreSuggestions webSocket model
-            ResumeSuggesting → CIS.resumeSuggesting model
-            ToggleContactProfile → CIS.toggleContactProfile model
-            ToggleLargeAvatar → CIS.toggleLargeAvatar model
-            ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
-            RefreshOnlineSuggestions → CIS.refreshOnlineSuggestions webSocket model
-            SpecialRequest (Favorite id) → CIS.favorite id model
-            SpecialRequest PreviousSuggestion → CIS.previousSuggestion webSocket model
-            SpecialRequest NextSuggestion → CIS.nextSuggestion webSocket model
-            SpecialRequest (BlockUser id) → blockUser webSocket id model
-            DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions webSocket suggestions model
-            ToggleSuggestionsFrom from → CIS.toggleSuggestionsFrom webSocket from model
-            ResumeSuggestionChat userId → CIS.resumeSuggestionChat userId model
+            -- --suggestion
+            -- FetchMoreSuggestions → CIS.fetchMoreSuggestions webSocket model
+            -- ResumeSuggesting → CIS.resumeSuggesting model
+            -- ToggleContactProfile → CIS.toggleContactProfile model
+            -- ToggleLargeAvatar → CIS.toggleLargeAvatar model
+            -- ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
+            -- RefreshOnlineSuggestions → CIS.refreshOnlineSuggestions webSocket model
+            -- SpecialRequest (Favorite id) → CIS.favorite id model
+            -- SpecialRequest PreviousSuggestion → CIS.previousSuggestion webSocket model
+            -- SpecialRequest NextSuggestion → CIS.nextSuggestion webSocket model
+            -- SpecialRequest (BlockUser id) → blockUser webSocket id model
+            -- DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions webSocket suggestions model
+            -- ToggleSuggestionsFrom from → CIS.toggleSuggestionsFrom webSocket from model
+            -- ResumeSuggestionChat userId → CIS.resumeSuggestionChat userId model
 
-            --user menu
-            ToggleInitialScreen toggle → CIU.toggleInitialScreen toggle model
-            Logout after → CIU.logout after model
-            ToggleUserContextMenu event → toggleUserContextMenu event model
-            SpecialRequest (ToggleModal toggle) → CIU.modal toggle model
-            SetModalContents file root html → CIU.setModalContents file root html model
+            -- --user menu
+            -- ToggleInitialScreen toggle → CIU.toggleInitialScreen toggle model
+            -- Logout after → CIU.logout after model
+            -- ToggleUserContextMenu event → toggleUserContextMenu event model
+            -- SpecialRequest (ToggleModal toggle) → CIU.modal toggle model
+            -- SetModalContents file root html → CIU.setModalContents file root html model
 
-            --websocket
-            ReconnectWebSocket → CIWE.reconnectWebSocket st.webSocketRef model
-            TrackAvailability → CIWE.trackAvailability webSocket model
-            UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
-            CloseWebSocket when → CIWE.closeWebSocket when st.webSocketRef model
-            ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
+            -- --websocket
+            -- ReconnectWebSocket → CIWE.reconnectWebSocket st.webSocketRef model
+            -- TrackAvailability → CIWE.trackAvailability webSocket model
+            -- UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
+            -- CloseWebSocket when → CIWE.closeWebSocket when st.webSocketRef model
+            -- ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
 
-            --changelogs
-            FetchChangelog → CICL.fetchChangelog model
-            DisplayChangelog changelogs → CICL.displayChangelog changelogs model
-            ToggleChangelog → CICL.toggleChangelog model
-            PerformChangelogAction action value → CICL.performChangelogAction action value model
+            -- --changelogs
+            -- FetchChangelog → CICL.fetchChangelog model
+            -- DisplayChangelog changelogs → CICL.displayChangelog changelogs model
+            -- ToggleChangelog → CICL.toggleChangelog model
+            -- PerformChangelogAction action value → CICL.performChangelogAction action value model
 
-            --main
-            StartPwa → CIP.startPwa model
-            SetContextMenuToggle toggle → toggleContextMenu toggle model
-            ReloadPage → reloadPage model
-            RemoveChatBackground → removeChatBackground model
-            PushedMessages payload → CIP.receiveMessageFromPush payload model
-            HideBuildProfile → hideBuildProfile model
-            SetNameFromProfile name → setName name model
-            SetAvatarFromProfile base64 → setAvatar base64 model
-            AskNotification → askNotification model
-            SetCompletedFields fields → setCompletedFields fields model
-            ToggleAskNotification → toggleAskNotification model
-            CreateUserFromTemporary → registerUser model
-            FinishTutorial → finishTutorial model
-            PreventStop event → preventStop event model
-            CheckUserExpiration → checkUserExpiration model
-            Refocus e → refocus e st.lastActiveRef webSocket model
-            SetChatBackgroundFromProfile toggle url → setChatBackgroundFromProfile toggle url model
-            SetTheme theme → CIT.setTheme theme model
-            TerminateTemporaryUser → terminateAccount model
-            SpecialRequest FetchMissedContacts → fetchMissedContacts model
-            SetField setter → F.noMessages $ setter model
-            ToggleFortune isVisible → toggleFortune isVisible model
-            ToggleScrollChatDown scroll userId → toggleScrollChatDown scroll userId model
-            DisplayFortune sequence → displayFortune sequence model
-            RequestFailed failure → handleRequestFailure failure model
-            SpecialRequest (ReportUser userId) → report userId webSocket model
-            SetSmallScreen → CISS.setSmallScreen model
-            UpdateSubscription → CIP.updateSubscription model
-            SetRegistered → setRegistered model
-            SetPrivacySettings ps → setPrivacySettings ps model
-            ToggleShowing userId for ShowInfo → toggleShowing userId ShowInfo for model
-      where
-      { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
+            -- --main
+            -- StartPwa → CIP.startPwa model
+            -- SetContextMenuToggle toggle → toggleContextMenu toggle model
+            -- ReloadPage → reloadPage model
+            -- RemoveChatBackground → removeChatBackground model
+            -- PushedMessages payload → CIP.receiveMessageFromPush payload model
+            -- HideBuildProfile → hideBuildProfile model
+            -- SetNameFromProfile name → setName name model
+            -- SetAvatarFromProfile base64 → setAvatar base64 model
+            -- AskNotification → askNotification model
+            -- SetCompletedFields fields → setCompletedFields fields model
+            -- ToggleAskNotification → toggleAskNotification model
+            -- CreateUserFromTemporary → registerUser model
+            -- FinishTutorial → finishTutorial model
+            -- PreventStop event → preventStop event model
+            -- CheckUserExpiration → checkUserExpiration model
+            -- Refocus e → refocus e st.lastActiveRef webSocket model
+            -- SetChatBackgroundFromProfile toggle url → setChatBackgroundFromProfile toggle url model
+            -- SetTheme theme → CIT.setTheme theme model
+            -- TerminateTemporaryUser → terminateAccount model
+            -- SpecialRequest FetchMissedContacts → fetchMissedContacts model
+            -- SetField setter → F.noMessages $ setter model
+            -- ToggleFortune isVisible → toggleFortune isVisible model
+            -- ToggleScrollChatDown scroll userId → toggleScrollChatDown scroll userId model
+            -- DisplayFortune sequence → displayFortune sequence model
+            -- RequestFailed failure → handleRequestFailure failure model
+            -- SpecialRequest (ReportUser userId) → report userId webSocket model
+            -- SetSmallScreen → CISS.setSmallScreen model
+            -- UpdateSubscription → CIP.updateSubscription model
+            -- SetRegistered → setRegistered model
+            -- SetPrivacySettings ps → setPrivacySettings ps model
+            -- ToggleShowing userId for ShowInfo → toggleShowing userId ShowInfo for model
+      -- where
+      -- { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
 
+-- toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
+-- toggleShowing userId toggle for model =
+--       case for of
+--             ForSuggestions → toggleShowingSuggestions userId toggle model
+--             ForContacts → toggleShowingContacts userId toggle model
 
+-- toggleShowingSuggestions ∷ Int → ProfileTab → ImModel → MoreMessages
+-- toggleShowingSuggestions userId toggle model =
+--       model
+--             { suggestions = map upd model.suggestions
+--             --we need this bookkeeping for big suggestion cards
+--             , suggesting = Just userId
+--             , modal = Special $ ShowSuggestionCard userId
+--             } /\ []
+--       where
+--       upd suggestion
+--             | suggestion.id == userId = suggestion { showing = toggle }
+--             | otherwise = suggestion
 
-toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
-toggleShowing userId toggle for model =
-      case for of
-            ForSuggestions → toggleShowingSuggestions userId toggle model
-            ForContacts → toggleShowingContacts userId toggle model
+-- toggleShowingContacts ∷ Int → ProfileTab → ImModel → MoreMessages
+-- toggleShowingContacts userId toggle model =
+--       model
+--             { contacts = map upd model.contacts
+--             , fullContactProfileVisible = true
+--             } /\ []
+--       where
+--       upd contact
+--             | contact.user.id == userId = contact { user = contact.user { showing = toggle } }
+--             | otherwise = contact
 
-toggleShowingSuggestions ∷ Int → ProfileTab → ImModel → MoreMessages
-toggleShowingSuggestions userId toggle model =
-      model
-            { suggestions = map upd model.suggestions
-            --we need this bookkeeping for big suggestion cards
-            , suggesting = Just userId
-            , modal = Special $ ShowSuggestionCard userId
-            } /\ []
-      where
-      upd suggestion
-            | suggestion.id == userId = suggestion { showing = toggle }
-            | otherwise = suggestion
+-- removeChatBackground ∷ ImModel → NoMessages
+-- removeChatBackground model = model { toggleContextMenu = HideContextMenu, user { ownBackground = true } } /\ [ save ]
+--       where
+--       save = do
+--             void <<< CNN.silentRequest $ routes.settings.chat.background { body: { ownBackground: true, image: model.user.chatBackground } }
+--             pure Nothing
 
-toggleShowingContacts ∷ Int → ProfileTab → ImModel → MoreMessages
-toggleShowingContacts userId toggle model =
-      model
-            { contacts = map upd model.contacts
-            , fullContactProfileVisible = true
-            } /\ []
-      where
-      upd contact
-            | contact.user.id == userId = contact { user = contact.user { showing = toggle } }
-            | otherwise = contact
+-- setChatBackgroundFromProfile ∷ Boolean → Maybe String → ImModel → NoMessages
+-- setChatBackgroundFromProfile toggle url model = model { user { ownBackground = toggle, chatBackground = url } } /\ []
 
-removeChatBackground ∷ ImModel → NoMessages
-removeChatBackground model = model { toggleContextMenu = HideContextMenu, user { ownBackground = true } } /\ [ save ]
-      where
-      save = do
-            void <<< CNN.silentRequest $ routes.settings.chat.background { body: { ownBackground: true, image: model.user.chatBackground } }
-            pure Nothing
+-- resumeFromNotification ∷ Effect Unit
+-- resumeFromNotification = do
+--       raw ← CCL.queryParameter "resume"
+--       case raw >>= DI.fromString of
+--             Just userId → FS.send imAppId $ ResumeChat userId
+--             _ → pure unit
 
-setChatBackgroundFromProfile ∷ Boolean → Maybe String → ImModel → NoMessages
-setChatBackgroundFromProfile toggle url model = model { user { ownBackground = toggle, chatBackground = url } } /\ []
+-- toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
+-- toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
 
-resumeFromNotification ∷ Effect Unit
-resumeFromNotification = do
-      raw ← CCL.queryParameter "resume"
-      case raw >>= DI.fromString of
-            Just userId → FS.send imAppId $ ResumeChat userId
-            _ → pure unit
+-- setRegistered ∷ ImModel → NoMessages
+-- setRegistered model = model { user { temporary = false } } /\
+--       [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile
+--       , do
+--               EA.delay $ Milliseconds 1000.0
+--               EC.liftEffect $ FS.send profileAppId SPT.AfterRegistration
+--               pure Nothing
+--       ]
 
-toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
-toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
+-- refocus ∷ FocusEvent → Ref Boolean → WebSocket → ImModel → MoreMessages
+-- refocus focusEvent lastActiveRef webSocket model =
+--       if model.webSocketStatus /= Connected then
+--             model /\ [ whenActive (pure <<< Just $ UpdateWebSocketStatus Reconnect) ]
+--       else
+--             model /\ [ updateLastSeen, whenActive (pure <<< Just $ SetReadStatus Nothing) ]
+--       where
+--       whenActive action = EC.liftEffect do
+--             active ← case focusEvent of
+--                   VisibilityChange → CCD.documentIsNotHidden
+--                   FocusBlur → CCD.documentHasFocus
+--             if active then action else pure Nothing
 
-setRegistered ∷ ImModel → NoMessages
-setRegistered model = model { user { temporary = false } } /\
-      [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile
-      , do
-              EA.delay $ Milliseconds 1000.0
-              EC.liftEffect $ FS.send profileAppId SPT.AfterRegistration
-              pure Nothing
-      ]
+--       updateLastSeen = EC.liftEffect do
+--             active ← case focusEvent of
+--                   VisibilityChange → CCD.documentIsNotHidden
+--                   FocusBlur → CCD.documentHasFocus
+--             lastActive ← ER.read lastActiveRef
+--             when (active /= lastActive) do
+--                   CIW.sendPayload webSocket $ UpdateAvailability { online: active }
+--                   ER.write active lastActiveRef
+--             pure Nothing
 
-refocus ∷ FocusEvent → Ref Boolean → WebSocket → ImModel → MoreMessages
-refocus focusEvent lastActiveRef webSocket model =
-      if model.webSocketStatus /= Connected then
-            model /\ [ whenActive (pure <<< Just $ UpdateWebSocketStatus Reconnect) ]
-      else
-            model /\ [ updateLastSeen, whenActive (pure <<< Just $ SetReadStatus Nothing) ]
-      where
-      whenActive action = EC.liftEffect do
-            active ← case focusEvent of
-                  VisibilityChange → CCD.documentIsNotHidden
-                  FocusBlur → CCD.documentHasFocus
-            if active then action else pure Nothing
+-- registerUser ∷ ImModel → MoreMessages
+-- registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
+--       if invalidEmail then
+--             F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol (Proxy ∷ _ "temporaryEmail") }
+--       else if invalidPassword then
+--             F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol (Proxy ∷ _ "temporaryPassword") }
+--       else
+--             model { erroredFields = [] } /\
+--                   [ do
+--                           status ← CCN.formRequest (show TemporaryUserSignUpForm) $ routes.im.register { body: { email: SU.fromJust temporaryEmail, password: SU.fromJust temporaryPassword } }
+--                           case status of
+--                                 Failure _ → pure Nothing
+--                                 Success → pure $ Just SetRegistered
+--                   ]
+--       where
+--       invalidEmail = DM.maybe true (\email → DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email)) temporaryEmail
+--       invalidPassword = DM.maybe true (\password → DS.length password < passwordMinCharacters) temporaryPassword
 
-      updateLastSeen = EC.liftEffect do
-            active ← case focusEvent of
-                  VisibilityChange → CCD.documentIsNotHidden
-                  FocusBlur → CCD.documentHasFocus
-            lastActive ← ER.read lastActiveRef
-            when (active /= lastActive) do
-                  CIW.sendPayload webSocket $ UpdateAvailability { online: active }
-                  ER.write active lastActiveRef
-            pure Nothing
+-- terminateAccount ∷ ImModel → NextMessage
+-- terminateAccount model = model /\
+--       [ do
+--               status ← CNN.formRequest (show ConfirmAccountTerminationForm) $ routes.settings.account.terminate { body: {} }
+--               when (status == Success) do
+--                     EA.delay $ Milliseconds 3000.0
+--                     EC.liftEffect <<< CCL.setLocation $ routesSpec.login.get {}
+--               pure Nothing
+--       ]
 
-registerUser ∷ ImModel → MoreMessages
-registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
-      if invalidEmail then
-            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol (Proxy ∷ _ "temporaryEmail") }
-      else if invalidPassword then
-            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol (Proxy ∷ _ "temporaryPassword") }
-      else
-            model { erroredFields = [] } /\
-                  [ do
-                          status ← CCN.formRequest (show TemporaryUserSignUpForm) $ routes.im.register { body: { email: SU.fromJust temporaryEmail, password: SU.fromJust temporaryPassword } }
-                          case status of
-                                Failure _ → pure Nothing
-                                Success → pure $ Just SetRegistered
-                  ]
-      where
-      invalidEmail = DM.maybe true (\email → DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email)) temporaryEmail
-      invalidPassword = DM.maybe true (\password → DS.length password < passwordMinCharacters) temporaryPassword
+-- checkUserExpiration ∷ ImModel → MoreMessages
+-- checkUserExpiration model@{ user: { temporary, joined } }
+--       | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile ]
+--       | otherwise = F.noMessages model
 
-terminateAccount ∷ ImModel → NextMessage
-terminateAccount model = model /\
-      [ do
-              status ← CNN.formRequest (show ConfirmAccountTerminationForm) $ routes.settings.account.terminate { body: {} }
-              when (status == Success) do
-                    EA.delay $ Milliseconds 3000.0
-                    EC.liftEffect <<< CCL.setLocation $ routesSpec.login.get {}
-              pure Nothing
-      ]
+-- setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
+-- setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model =
+--       model
+--             { user
+--                     { profileVisibility = profileVisibility
+--                     , readReceipts = readReceipts
+--                     , typingStatus = typingStatus
+--                     , onlineStatus = onlineStatus
+--                     , messageTimestamps = messageTimestamps
+--                     }
+--             } /\ [ pure $ Just FetchMoreSuggestions ]
 
-checkUserExpiration ∷ ImModel → MoreMessages
-checkUserExpiration model@{ user: { temporary, joined } }
-      | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile ]
-      | otherwise = F.noMessages model
+-- finishTutorial ∷ ImModel → NextMessage
+-- finishTutorial model = model { user { completedTutorial = true }, suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ greet ]
+--       where
+--       sender = 4
+--       greet = do
+--             void <<< CCNT.silentRequest $ routes.im.tutorial {}
+--             EA.delay $ Milliseconds 2000.0
+--             void <<< CCNT.silentRequest $ routes.im.greeting {}
+--             contact ← CCNT.silentRequest $ routes.im.contact { query: { id: sender } }
+--             pure <<< Just $ DisplayNewContacts contact
 
-setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
-setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model =
-      model
-            { user
-                    { profileVisibility = profileVisibility
-                    , readReceipts = readReceipts
-                    , typingStatus = typingStatus
-                    , onlineStatus = onlineStatus
-                    , messageTimestamps = messageTimestamps
-                    }
-            } /\ [ pure $ Just FetchMoreSuggestions ]
+-- blockUser ∷ WebSocket → Int → ImModel → NextMessage
+-- blockUser webSocket id model = updateAfterBlock id model /\ [ block, track ]
+--       where
+--       block = do
+--             result ← CCN.request $ routes.im.block { body: { id } }
+--             case result of
+--                   Left _ → pure <<< Just $ RequestFailed { routes: BlockUser id, errorMessage: Nothing }
+--                   _ → do
+--                         EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
+--                         pure Nothing
+--       track = pure $ Just TrackAvailability
 
-finishTutorial ∷ ImModel → NextMessage
-finishTutorial model = model { user { completedTutorial = true }, suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ greet ]
-      where
-      sender = 4
-      greet = do
-            void <<< CCNT.silentRequest $ routes.im.tutorial {}
-            EA.delay $ Milliseconds 2000.0
-            void <<< CCNT.silentRequest $ routes.im.greeting {}
-            contact ← CCNT.silentRequest $ routes.im.contact { query: { id: sender } }
-            pure <<< Just $ DisplayNewContacts contact
+-- updateAfterBlock ∷ Int → ImModel → ImModel
+-- updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
+--       model
+--             { contacts = DA.filter ((blocked /= _) <<< fromContact) contacts
+--             , suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions
+--             , blockedUsers = blocked : blockedUsers
+--             , chatting = Nothing
+--             , failedRequests = []
+--             , initialScreen = true
+--             , modal = HideModal
+--             , toggleContextMenu = HideContextMenu
+--             }
+--       where
+--       fromContact { user } = fromUser user
+--       fromUser { id } = id
 
-blockUser ∷ WebSocket → Int → ImModel → NextMessage
-blockUser webSocket id model = updateAfterBlock id model /\ [ block, track ]
-      where
-      block = do
-            result ← CCN.request $ routes.im.block { body: { id } }
-            case result of
-                  Left _ → pure <<< Just $ RequestFailed { routes: BlockUser id, errorMessage: Nothing }
-                  _ → do
-                        EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
-                        pure Nothing
-      track = pure $ Just TrackAvailability
+-- report ∷ Int → WebSocket → ImModel → MoreMessages
+-- report userId webSocket model = case model.reportReason of
+--       Just rs →
+--             updateAfterBlock userId
+--                   ( model
+--                           { reportReason = Nothing
+--                           , reportComment = Nothing
+--                           }
+--                   ) /\ [ reportIt rs, track ]
+--       Nothing → F.noMessages model
+--       where
+--       reportIt rs = do
+--             result ← CCN.request $ routes.im.report { body: { userId, reason: rs, comment: model.reportComment } }
+--             case result of
+--                   Left _ → pure <<< Just $ RequestFailed { routes: ReportUser userId, errorMessage: Nothing }
+--                   _ → do
+--                         EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
+--                         pure Nothing
+--       track = pure $ Just TrackAvailability
 
-updateAfterBlock ∷ Int → ImModel → ImModel
-updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
-      model
-            { contacts = DA.filter ((blocked /= _) <<< fromContact) contacts
-            , suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions
-            , blockedUsers = blocked : blockedUsers
-            , chatting = Nothing
-            , failedRequests = []
-            , initialScreen = true
-            , modal = HideModal
-            , toggleContextMenu = HideContextMenu
-            }
-      where
-      fromContact { user } = fromUser user
-      fromUser { id } = id
+-- reloadPage ∷ ImModel → NextMessage
+-- reloadPage model = model /\ [ EC.liftEffect CCL.reload *> pure Nothing ]
 
-report ∷ Int → WebSocket → ImModel → MoreMessages
-report userId webSocket model = case model.reportReason of
-      Just rs →
-            updateAfterBlock userId
-                  ( model
-                          { reportReason = Nothing
-                          , reportComment = Nothing
-                          }
-                  ) /\ [ reportIt rs, track ]
-      Nothing → F.noMessages model
-      where
-      reportIt rs = do
-            result ← CCN.request $ routes.im.report { body: { userId, reason: rs, comment: model.reportComment } }
-            case result of
-                  Left _ → pure <<< Just $ RequestFailed { routes: ReportUser userId, errorMessage: Nothing }
-                  _ → do
-                        EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
-                        pure Nothing
-      track = pure $ Just TrackAvailability
+-- askNotification ∷ ImModel → MoreMessages
+-- askNotification model = model { enableNotificationsVisible = false } /\ [ ask ]
+--       where
+--       ask = do
+--             EC.liftEffect $ CCD.requestNotificationPermission (FS.send imAppId UpdateSubscription)
+--             pure Nothing
 
-reloadPage ∷ ImModel → NextMessage
-reloadPage model = model /\ [ EC.liftEffect CCL.reload *> pure Nothing ]
+-- toggleAskNotification ∷ ImModel → NoMessages
+-- toggleAskNotification model =
+--       model
+--             { enableNotificationsVisible = not model.enableNotificationsVisible
+--             } /\ []
 
-askNotification ∷ ImModel → MoreMessages
-askNotification model = model { enableNotificationsVisible = false } /\ [ ask ]
-      where
-      ask = do
-            EC.liftEffect $ CCD.requestNotificationPermission (FS.send imAppId UpdateSubscription)
-            pure Nothing
+-- toggleUserContextMenu ∷ Event → ImModel → MoreMessages
+-- toggleUserContextMenu event model
+--       | model.toggleContextMenu /= HideContextMenu =
+--               F.noMessages model { toggleContextMenu = HideContextMenu }
+--       | otherwise =
+--               model /\
+--                     [
+--                       --we cant use node.contains as some of the elements are dynamically created/destroyed
+--                       EC.liftEffect do
+--                             let
+--                                   element = SU.fromJust $ do
+--                                         target ← WEE.target event
+--                                         WDE.fromEventTarget target
+--                             id ← WDE.id element
+--                             parent ← WDN.parentElement $ WDE.toNode element
+--                             parentId ← case parent of
+--                                   Just e → WDE.id e
+--                                   Nothing → pure ""
+--                             pure <<< Just <<< SetContextMenuToggle $ toggle id parentId
+--                     ]
+--               where
+--               toggle elementId parentId
+--                     | elementId == show SuggestionContextMenu || parentId == show SuggestionContextMenu = ShowSuggestionContextMenu
+--                     | elementId == show SuggestionsFilterMenu || parentId == show SuggestionsFilterMenu = ShowSuggestionsFilterMenu
+--                     | elementId == show CompactProfileContextMenu || parentId == show CompactProfileContextMenu = ShowCompactProfileContextMenu
+--                     | elementId == show FullProfileContextMenu || parentId == show FullProfileContextMenu = ShowFullProfileContextMenu
+--                     | elementId == show MiniSuggestionContextMenu || parentId == show MiniSuggestionContextMenu = ShowMiniSuggestionContextMenu
+--                     | otherwise = HideContextMenu
 
-toggleAskNotification ∷ ImModel → NoMessages
-toggleAskNotification model =
-      model
-            { enableNotificationsVisible = not model.enableNotificationsVisible
-            } /\ []
+-- focusInput ∷ ElementId → ImModel → NextMessage
+-- focusInput elementId model = model /\
+--       [ EC.liftEffect do
+--               element ← CCD.getElementById elementId
+--               WHHE.focus $ SU.fromJust do
+--                     e ← element
+--                     WHHE.fromElement e
+--               pure Nothing
+--       ]
 
-toggleUserContextMenu ∷ Event → ImModel → MoreMessages
-toggleUserContextMenu event model
-      | model.toggleContextMenu /= HideContextMenu =
-              F.noMessages model { toggleContextMenu = HideContextMenu }
-      | otherwise =
-              model /\
-                    [
-                      --we cant use node.contains as some of the elements are dynamically created/destroyed
-                      EC.liftEffect do
-                            let
-                                  element = SU.fromJust $ do
-                                        target ← WEE.target event
-                                        WDE.fromEventTarget target
-                            id ← WDE.id element
-                            parent ← WDN.parentElement $ WDE.toNode element
-                            parentId ← case parent of
-                                  Just e → WDE.id e
-                                  Nothing → pure ""
-                            pure <<< Just <<< SetContextMenuToggle $ toggle id parentId
-                    ]
-              where
-              toggle elementId parentId
-                    | elementId == show SuggestionContextMenu || parentId == show SuggestionContextMenu = ShowSuggestionContextMenu
-                    | elementId == show SuggestionsFilterMenu || parentId == show SuggestionsFilterMenu = ShowSuggestionsFilterMenu
-                    | elementId == show CompactProfileContextMenu || parentId == show CompactProfileContextMenu = ShowCompactProfileContextMenu
-                    | elementId == show FullProfileContextMenu || parentId == show FullProfileContextMenu = ShowFullProfileContextMenu
-                    | elementId == show MiniSuggestionContextMenu || parentId == show MiniSuggestionContextMenu = ShowMiniSuggestionContextMenu
-                    | otherwise = HideContextMenu
+-- handleRequestFailure ∷ RequestFailure → ImModel → NoMessages
+-- handleRequestFailure failure model =
+--       model
+--             { failedRequests = failure : model.failedRequests
+--             , errorMessage = case failure.routes of
+--                     BlockUser _ → "Could not block user. Please try again"
+--                     ReportUser _ → "Could not report user. Please try again"
+--                     PreviousSuggestion → suggestionsError
+--                     NextSuggestion → suggestionsError
+--                     FetchMissedContacts → "Cannot sync contacts. Please reload the page"
+--                     _ → model.errorMessage
+--             } /\ []
+--       where
+--       suggestionsError = "Could not fetch suggestions. Please try again"
 
-focusInput ∷ ElementId → ImModel → NextMessage
-focusInput elementId model = model /\
-      [ EC.liftEffect do
-              element ← CCD.getElementById elementId
-              WHHE.focus $ SU.fromJust do
-                    e ← element
-                    WHHE.fromElement e
-              pure Nothing
-      ]
+-- toggleFortune ∷ Boolean → ImModel → MoreMessages
+-- toggleFortune isVisible model
+--       | isVisible = model /\ [ Just <<< DisplayFortune <$> CCNT.silentRequest (routes.im.fortune {}) ]
+--       | otherwise = F.noMessages $ model
+--               { fortune = Nothing
+--               }
 
-handleRequestFailure ∷ RequestFailure → ImModel → NoMessages
-handleRequestFailure failure model =
-      model
-            { failedRequests = failure : model.failedRequests
-            , errorMessage = case failure.routes of
-                    BlockUser _ → "Could not block user. Please try again"
-                    ReportUser _ → "Could not report user. Please try again"
-                    PreviousSuggestion → suggestionsError
-                    NextSuggestion → suggestionsError
-                    FetchMissedContacts → "Cannot sync contacts. Please reload the page"
-                    _ → model.errorMessage
-            } /\ []
-      where
-      suggestionsError = "Could not fetch suggestions. Please try again"
+-- toggleScrollChatDown ∷ Boolean → Int → ImModel → MoreMessages
+-- toggleScrollChatDown scroll userId model =
+--       --avoid unnecessary ui updates since this event could be high frequence (scroll)
+--       case SCN.findContact userId model.contacts of
+--             Just contact | contact.scrollChatDown /= scroll → F.noMessages model { contacts = map upd model.contacts }
+--             _ → F.noMessages model
+--       where
+--       upd contact
+--             | contact.user.id == userId = contact { scrollChatDown = scroll }
+--             | otherwise = contact
 
-toggleFortune ∷ Boolean → ImModel → MoreMessages
-toggleFortune isVisible model
-      | isVisible = model /\ [ Just <<< DisplayFortune <$> CCNT.silentRequest (routes.im.fortune {}) ]
-      | otherwise = F.noMessages $ model
-              { fortune = Nothing
-              }
+-- displayFortune ∷ String → ImModel → NoMessages
+-- displayFortune sequence model = F.noMessages $ model
+--       { fortune = Just sequence
+--       }
 
-toggleScrollChatDown ∷ Boolean → Int → ImModel → MoreMessages
-toggleScrollChatDown scroll userId model =
-      --avoid unnecessary ui updates since this event could be high frequence (scroll)
-      case SCN.findContact userId model.contacts of
-            Just contact | contact.scrollChatDown /= scroll → F.noMessages model { contacts = map upd model.contacts }
-            _ → F.noMessages model
-      where
-      upd contact
-            | contact.user.id == userId = contact { scrollChatDown = scroll }
-            | otherwise = contact
+-- fetchMissedContacts ∷ ImModel → MoreMessages
+-- fetchMissedContacts model = model /\ [ fetchIt ]
+--       where
+--       fetchIt = do
+--             since ← EC.liftEffect $ sinceLastMessage model
+--             let last = (map _.history <<< DA.last <<< DA.sortWith _.lastMessageDate $ DA.filter ((backerId /= _) <<< _.id <<< _.user) model.contacts) >>= (map _.id <<< DA.last)
+--             CCNT.retryableRequest FetchMissedContacts DisplayMissedContacts $ routes.im.missedContacts { query: { since, last } }
 
-displayFortune ∷ String → ImModel → NoMessages
-displayFortune sequence model = F.noMessages $ model
-      { fortune = Just sequence
-      }
+-- sinceLastMessage ∷ ImModel → Effect DateTime
+-- sinceLastMessage model = case _.lastMessageDate <$> DA.last model.contacts of
+--       Nothing → map (SU.fromJust <<< DDT.adjust (Minutes (-1.5))) EN.nowDateTime
+--       Just dt → pure $ SC.coerce dt
 
-fetchMissedContacts ∷ ImModel → MoreMessages
-fetchMissedContacts model = model /\ [ fetchIt ]
-      where
-      fetchIt = do
-            since ← EC.liftEffect $ sinceLastMessage model
-            let last = (map _.history <<< DA.last <<< DA.sortWith _.lastMessageDate $ DA.filter ((backerId /= _) <<< _.id <<< _.user) model.contacts) >>= (map _.id <<< DA.last)
-            CCNT.retryableRequest FetchMissedContacts DisplayMissedContacts $ routes.im.missedContacts { query: { since, last } }
+-- setName ∷ String → ImModel → NoMessages
+-- setName name model =
+--       F.noMessages model
+--             { user
+--                     { name = name
+--                     }
+--             }
 
-sinceLastMessage ∷ ImModel → Effect DateTime
-sinceLastMessage model = case _.lastMessageDate <$> DA.last model.contacts of
-      Nothing → map (SU.fromJust <<< DDT.adjust (Minutes (-1.5))) EN.nowDateTime
-      Just dt → pure $ SC.coerce dt
+-- setAvatar ∷ Maybe String → ImModel → NoMessages
+-- setAvatar base64 model = F.noMessages model
+--       { user
+--               { avatar = base64
+--               }
+--       }
 
-setName ∷ String → ImModel → NoMessages
-setName name model =
-      F.noMessages model
-            { user
-                    { name = name
-                    }
-            }
+-- preventStop ∷ Event → ImModel → NoMessages
+-- preventStop event model = model /\ [ EC.liftEffect $ CCD.preventStop event *> pure Nothing ]
 
-setAvatar ∷ Maybe String → ImModel → NoMessages
-setAvatar base64 model = F.noMessages model
-      { user
-              { avatar = base64
-              }
-      }
+-- --refactor use popstate subscription
+-- historyChange ∷ Boolean → Effect Unit
+-- historyChange smallScreen = do
+--       popStateListener ← WET.eventListener $ const handler
+--       window ← WH.window
+--       WET.addEventListener popstate popStateListener false $ WHW.toEventTarget window
+--       where
+--       handler = do
+--             CCD.pushState $ routesSpec.im.get {}
+--             when smallScreen <<< FS.send imAppId $ ToggleInitialScreen true
 
-preventStop ∷ Event → ImModel → NoMessages
-preventStop event model = model /\ [ EC.liftEffect $ CCD.preventStop event *> pure Nothing ]
+-- onVisibilityChange ∷ ∀ message. message → Subscription message
+-- onVisibilityChange = FSIC.createSubscription Document "visibilitychange"
 
---refactor use popstate subscription
-historyChange ∷ Boolean → Effect Unit
-historyChange smallScreen = do
-      popStateListener ← WET.eventListener $ const handler
-      window ← WH.window
-      WET.addEventListener popstate popStateListener false $ WHW.toEventTarget window
-      where
-      handler = do
-            CCD.pushState $ routesSpec.im.get {}
-            when smallScreen <<< FS.send imAppId $ ToggleInitialScreen true
+-- onBlur ∷ ∀ message. message → Subscription message
+-- onBlur = FSIC.createSubscription Window "blur"
 
-onVisibilityChange ∷ ∀ message. message → Subscription message
-onVisibilityChange = FSIC.createSubscription Document "visibilitychange"
+-- onBeforeUnload ∷ ∀ message. message → Subscription message
+-- onBeforeUnload = FSIC.createSubscription Window "beforeunload"
 
-onBlur ∷ ∀ message. message → Subscription message
-onBlur = FSIC.createSubscription Window "blur"
+-- hideBuildProfile ∷ ImModel → NoMessages
+-- hideBuildProfile model = model { showBuildProfile = false } /\ []
 
-onBeforeUnload ∷ ∀ message. message → Subscription message
-onBeforeUnload = FSIC.createSubscription Window "beforeunload"
-
-hideBuildProfile ∷ ImModel → NoMessages
-hideBuildProfile model = model { showBuildProfile = false } /\ []
-
-setCompletedFields ∷ Array ProfileColumn → ImModel → NoMessages
-setCompletedFields fields model = model { user = model.user { completedFields = fields } } /\ []
+-- setCompletedFields ∷ Array ProfileColumn → ImModel → NoMessages
+-- setCompletedFields fields model = model { user = model.user { completedFields = fields } } /\ []

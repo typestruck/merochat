@@ -1,10 +1,11 @@
-module Server.Terms where
+module Shared.Terms where
 
 import Prelude
 
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Extra as SE
 import Shared.Routes (routesSpec)
 
 terms ∷ ∀ m. Html m
@@ -17,7 +18,7 @@ terms =
                     [ HE.h2_ [ HE.text "Privacy policy" ]
                     , HE.p_
                             [ HE.text "You can view the privacy policy at "
-                            , HE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "https://mero.chat/privacy." ]
+                            , SE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "https://mero.chat/privacy." ]
                             ]
                     ]
             , HE.h2_ [ HE.text "Limitations and liability" ]
@@ -26,7 +27,7 @@ terms =
             , HE.h2_ [ HE.text "Intellectual property rights" ]
             , HE.p_
                     [ HE.text "MeroChat is free (as in freedom) software. You can view the source code license at "
-                    , HE.a [ HA.href "https://github.com/typestruck/merochat/blob/master/LICENSE", HA.target "_blank" ] [ HE.text "https://github.com/typestruck/merochat/LICENSE." ]
+                    , SE.a [ HA.href "https://github.com/typestruck/merochat/blob/master/LICENSE", HA.target "_blank" ] [ HE.text "https://github.com/typestruck/merochat/LICENSE." ]
                     ]
             , HE.p_ [ HE.text """The branding including, but not limited to, the logo, name ("MeroChat") and description ("Friendly Random Chat") may not be copied or otherwise reproduced without our written permission.""" ]
             , HE.p_ [ HE.text "You may not post copyrighted material on the Site." ]

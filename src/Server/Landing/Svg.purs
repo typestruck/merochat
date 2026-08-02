@@ -3,6 +3,7 @@ module Server.Landing.Svg where
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Extra as SE
 
 invertedLogo ∷ ∀ m. Html m
 invertedLogo = HE.svg [ HA.viewBox "0 0 135 121", HA.fill "none" ]

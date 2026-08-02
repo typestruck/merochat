@@ -12,9 +12,9 @@ import Shared.InternalHelp.Types (InternalHelpMessage(..))
 import Shared.InternalHelp.View as SIHV
 
 main ∷ Effect Unit
-main =
-      void $ F.resumeMount_ (QuerySelector "#internal-help")
-            { view: SIHV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
-            , update: CIHU.update
-            }
+main = pure unit
+      -- void $ F.resumeMount_ (QuerySelector "#internal-help")
+      --       { view: SIHV.view
+      --       , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+      --       , update: CIHU.update
+      --       }

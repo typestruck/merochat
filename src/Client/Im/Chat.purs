@@ -60,7 +60,7 @@ import Web.HTML.Event.DataTransfer as WHEDT
 import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.HTMLTextAreaElement as WHHTA
-import Web.Socket.WebSocket (WebSocket)
+import Client.Im.WebSocket.Connection (WebSocket)
 
 -- | Send a message on enter
 enterSendMessage ∷ ElementId → Event → ImModel → NoMessages
