@@ -37,6 +37,7 @@ data ConfirmationModal
 data SpecialModal
       = ShowSuggestionCard Int
       | ShowPostForm
+      | ShowRules
 
 data ChatModal
       = ShowSelectedImage

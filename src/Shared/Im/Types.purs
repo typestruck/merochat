@@ -367,6 +367,7 @@ data ImMessage
       | SetTheme Theme
       | SpecialRequest RetryableRequest
       | RemoveChatBackground
+      | AcknowledgeRules String
       | ReconnectWebSocket
       | PushedMessages (Array ClientMessagePayload)
       | SetSmallScreen
@@ -392,7 +393,6 @@ data ImMessage
       | RequestFailed RequestFailure
       | SetPrivacySettings PrivacySettings
       | CreateUserFromTemporary
-      | FinishTutorial
       | SetRegistered
 
 data For = ForSuggestions | ForContacts

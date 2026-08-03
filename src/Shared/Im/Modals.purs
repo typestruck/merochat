@@ -9,6 +9,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Time.Duration (Days(..))
+import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
@@ -64,8 +65,20 @@ modals model =
                   -- _ should be synced to model.suggesting
                   ShowSuggestionCard _ → [ CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model ]
                   ShowPostForm → [ postForm model ]
-
+                  ShowRules → [ rulesForm ]
             _ → []
+
+rulesForm ∷ Html ImMessage
+rulesForm = HE.div [ HA.class' "post-card post-modal" ]
+      [ HE.div [ HA.class' "loading rule-loading" ] []
+      , HE.div [ HA.class' "rule-header" ] [ HE.text "Hello there! MeroChat is NOT the place for:" ]
+      , HE.div [ HA.class' "rule-item" ] [ HE.text "❌ Dating, nudes, sexting, or anything romantic / sexual" ]
+      , HE.div [ HA.class' "rule-item" ] [ HE.text "❌ Selling, buying, spamming or gathering followers" ]
+      , HE.div [ HA.class' "rule-item" ] [ HE.text "❌ Being mean, harrassing or promoting hate" ]
+      , HE.div [ HA.class' "rule-disclaimer" ] [ HE.text "Of course, that's not you. So please report any bad behavior, and our team will take care of it!" ]
+      , HE.div [ HA.class' "rule-typing" ] [ HE.text """Please type "I understand" in the box bellow to continue:""" ]
+      , HE.input [ HA.class' "rule-input", HA.type' "input", HA.placeholder """Type here "I understand" to continue""", HA.onInput $ \txt → AcknowledgeRules txt ]
+      ]
 
 postForm ∷ ImModel → Html ImMessage
 postForm model = HE.div [ HA.class' "post-card post-modal" ] $ SIVP.postForm model

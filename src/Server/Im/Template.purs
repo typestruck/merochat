@@ -20,7 +20,7 @@ import Shared.Element as SE
 import Shared.Html (Html(..))
 import Shared.Im.Unread as SIU
 import Shared.Im.View as SIV
-import Shared.Modal (Modal(..))
+import Shared.Modal (Modal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
 
@@ -81,7 +81,7 @@ template payload = do
             , erroredFields: []
             , fortune: Nothing
             , toggleContextMenu: HideContextMenu
-            , modal: HideModal
+            , modal: if payload.user.completedTutorial then HideModal else Special ShowRules
             , blockedUsers: []
             , reportReason: Nothing
             , reportComment: Nothing

@@ -12,6 +12,7 @@ generated-docs
 output-es/
 todo
 .cache/
+dist/
 .spago/
 file/bundle/
 file/upload

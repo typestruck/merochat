@@ -3136,6 +3136,42 @@ label {
     position: static;
 }
 
+.rule-header {
+    font-weight: bold;
+    font-size: 1.3em;
+    margin-bottom: 5px;
+    color: var(--merochat-red)
+}
+
+.rule-item {
+    margin: 5px 0;
+    margin-left: 5px;
+    font-style: italic;
+}
+
+.rule-disclaimer {
+    margin: 10px 0
+}
+
+.rule-typing {
+    font-weight: bold;
+    font-size: 1em
+}
+
+.rule-input {
+    margin-top: 5px;
+    border: 2px solid var(--merochat-red);
+    padding: 10px;
+    background: #fff;
+    color: #1B1F3B;
+    border-radius: 5px;
+}
+
+.rule-loading {
+    margin-top: -50px;
+    align-self: center !important;
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;

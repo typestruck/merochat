@@ -120,9 +120,6 @@ main = do
       CCD.pushState $ routesSpec.im.get {}
       historyChange smallScreen
 
-      --greet new users after they have created an account
-      unless (model.user.completedTutorial) $ FS.send imAppId FinishTutorial
-
 update ∷ _ → Update ImModel ImMessage
 update st model =
       case _ of
@@ -251,7 +248,7 @@ update st model =
             SetCompletedFields fields → setCompletedFields fields model
             ToggleAskNotification → toggleAskNotification model
             CreateUserFromTemporary → registerUser model
-            FinishTutorial → finishTutorial model
+            AcknowledgeRules inputted → acknowledgeRules inputted model
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
             Refocus e → refocus e st.lastActiveRef webSocket model
@@ -272,8 +269,6 @@ update st model =
             ToggleShowing userId for ShowInfo → toggleShowing userId ShowInfo for model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
-
-
 
 toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
 toggleShowing userId toggle for model =
@@ -402,9 +397,19 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
                     }
             } /\ [ pure $ Just FetchMoreSuggestions ]
 
-finishTutorial ∷ ImModel → NextMessage
-finishTutorial model = model { user { completedTutorial = true }, suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ greet ]
+acknowledgeRules ∷ String → ImModel → NextMessage
+acknowledgeRules inputted model =
+      if cleaned == "i understand" || cleaned == "\"i understand\"" then
+            model { suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ hide, greet ]
+      else
+            model /\ []
       where
+      cleaned = DS.trim $ DS.toLower inputted
+
+      hide = do
+            EA.delay $ Milliseconds 400.0
+            pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
+
       sender = 4
       greet = do
             void <<< CCNT.silentRequest $ routes.im.tutorial {}
