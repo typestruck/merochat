@@ -669,7 +669,11 @@ a {
 }
 
 .section-label {
-    margin-right: 40px;
+    margin-bottom: 10px
+}
+
+.column {
+    flex-direction: column;
 }
 
 .modal-section label {
@@ -3267,11 +3271,6 @@ label {
 
     #temporary-user-sign-up-form div {
         width: auto;
-    }
-
-    .section-label {
-        margin-right: 0;
-        margin-bottom: 10px
     }
 
     .modal-section {

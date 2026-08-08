@@ -1,7 +1,7 @@
 const { webcrypto } = await import('node:crypto');
 
 export function randomInts_(n, min, max) {
-      return shuffle([...Array(max).keys()].map(i => i + min)).slice(0, n - 1);
+      return shuffle([...Array(max).keys()].map(i => i + min)).slice(0, n );
 }
 
 //returns random integer r with equal chance in min <= r < max.

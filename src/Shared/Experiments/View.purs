@@ -8,6 +8,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Experiments.Doppelganger as SED
+import Shared.Experiments.Debate as SEDB
 import Shared.Experiments.PaperPlane as SEP
 import Shared.Experiments.WordChain as SEW
 
@@ -16,12 +17,21 @@ view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.vi
       [ HE.div [ HA.class' "modal-section" ] $ map toDiv model.experiments
       ]
       where
-      toDiv experiment = HE.div [ HA.class' "modal-part" ]
-            [ HE.div [ HA.class' "section-label" ]
-                    [ HE.label [ HA.class' "bold" ] [ HE.text experiment.name ]
-                    , HE.div [ HA.class' "duller experiment-description" ] [ HE.text experiment.description ]
+      toDiv experiment = HE.div [ HA.class' "modal-part column" ]
+            [ HE.div [ HA.class' "section-label experiment-desc-head", HA.onClick $ SetCurrentExperiment experiment.code ]
+                    [ HE.div [ HA.class' "experiment-side-desc" ]
+                            [ HE.label [ HA.class' "bold" ] [ HE.text experiment.name ]
+                            , HE.div [ HA.class' "duller" ] [ HE.text experiment.description ]
+                            ]
+                    , HE.input
+                            [ HA.type' "button"
+                            , HA.class' "green-button show-button"
+                            , HA.value $ if model.current == Just experiment.code then "-" else "+"
+                            ]
+
                     ]
-            , HE.fragment [ extra model experiment.code ]
+            , HE.div [ HA.class' { hidden: model.current /= Just experiment.code, extra: true } ] [ extra model experiment.code ]
+
             ]
 
 extra ∷ ExperimentsModel → Experiment → Html ExperimentsMessage
@@ -29,3 +39,4 @@ extra model = case _ of
       WordChain → SEW.view model
       Doppelganger → SED.view model
       PaperPlanes → SEP.view model
+      Debate → SEDB.view model

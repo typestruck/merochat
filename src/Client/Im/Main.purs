@@ -399,8 +399,8 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
 
 acknowledgeRules ∷ String → ImModel → NextMessage
 acknowledgeRules inputted model =
-      if cleaned == "i understand" || cleaned == "\"i understand\"" then
-            model { suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ hide, greet ]
+      if DS.contains (Pattern "i understand") cleaned then
+            model { user { completedTutorial = true}, suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ hide, greet ]
       else
             model /\ []
       where

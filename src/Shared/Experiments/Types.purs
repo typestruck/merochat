@@ -31,6 +31,7 @@ data ExperimentsMessage
       = ToggleVisibility ScreenModal
       | RedirectKarma
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
+      | SetCurrentExperiment Experiment
 
       | ResumeQuestions
       | SelectChoice Int Int
@@ -55,6 +56,12 @@ data ExperimentsMessage
       | ReportPlane Int Int
       | MessagePaperPlane Int String
 
+      | ToggleDebateSection DebateSection
+      | SetDebateTopic String
+      | SetDebateStatement String
+      | SetInFavor String
+      | StartDebate
+
 type Match =
       { name ∷ String
       , id ∷ Int
@@ -72,6 +79,7 @@ type ExperimentsModel =
       { experiments ∷ Array ChatExperiment
       , user ∷ ChatExperimentUser
       , visible ∷ Boolean
+      , current ∷ Maybe Experiment
       , doppelganger ∷
               { questions ∷ Array Question
               , loading ∷ Boolean
@@ -79,6 +87,14 @@ type ExperimentsModel =
               , matches ∷ Array Match
               , section ∷ DoppelgangerSection
               , completed ∷ Boolean
+              }
+      , debate ∷
+              { section ∷ DebateSection
+              , loading ∷ Boolean
+              , topic ∷ Maybe String
+              , inFavor ∷ Maybe Boolean
+              , statement ∷ Maybe String
+
               }
       , paperPlane ∷
               { loading ∷ Boolean
@@ -107,12 +123,18 @@ type Question =
       , choices ∷ Array Choice
       }
 
-data Experiment = WordChain | Doppelganger | PaperPlanes
+data Experiment = WordChain | Doppelganger | PaperPlanes | Debate
 
 data PaperPlaneSection
       = ShowNew
       | ShowFlyingBy
       | ShowCaught
+
+data DebateSection
+      = ShowNewDebate
+      | ShowJoin
+      | ShowPublic
+      | ShowMine
 
 data DoppelgangerSection
       = ShowDoppelganger
@@ -121,6 +143,7 @@ data DoppelgangerSection
 
 derive instance Eq Experiment
 derive instance Eq PaperPlaneStatus
+derive instance Eq DebateSection
 derive instance Eq PaperPlaneSection
 
 derive instance Ord Experiment
@@ -132,7 +155,7 @@ instance Bounded PaperPlaneStatus where
 
 instance Bounded Experiment where
       bottom = WordChain
-      top = PaperPlanes
+      top = Debate
 
 instance BoundedEnum PaperPlaneStatus where
       cardinality = Cardinality 1
@@ -152,10 +175,12 @@ instance BoundedEnum Experiment where
             WordChain → 10
             Doppelganger → 20
             PaperPlanes → 30
+            Debate → 40
       toEnum = case _ of
             10 → Just WordChain
             20 → Just Doppelganger
             30 → Just PaperPlanes
+            40 → Just Debate
             _ → Nothing
 
 instance Enum PaperPlaneStatus where
@@ -172,18 +197,24 @@ instance Enum Experiment where
       succ = case _ of
             WordChain → Just Doppelganger
             Doppelganger → Just PaperPlanes
-            PaperPlanes → Nothing
+            PaperPlanes → Just Debate
+            Debate → Nothing
       pred = case _ of
             WordChain → Nothing
             Doppelganger → Just WordChain
             PaperPlanes → Just Doppelganger
+            Debate → Just PaperPlanes
 
 derive instance Generic Experiment _
+derive instance Generic DebateSection _
 derive instance Generic DoppelgangerSection _
 derive instance Generic PaperPlaneStatus _
 derive instance Generic PaperPlaneSection _
 
 instance DecodeJson PaperPlaneSection where
+      decodeJson = DADGR.genericDecodeJson
+
+instance DecodeJson DebateSection where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson DoppelgangerSection where
@@ -196,6 +227,9 @@ instance DecodeJson Experiment where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson Experiment where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson DebateSection where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson PaperPlaneStatus where

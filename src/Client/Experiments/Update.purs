@@ -37,6 +37,7 @@ update model =
                           pure Nothing
                   ]
             UpdatePrivileges { privileges } → F.noMessages model { user { privileges = privileges } }
+            SetCurrentExperiment experiment → setCurrentExperiment experiment model
 
             ResumeQuestions → resumeQuestions model
             DisplayQuestions questions → displayQuestions questions model
@@ -60,6 +61,12 @@ update model =
             AfterPassPlane id → afterPassPlane id model
             ReportPlane id userId → reportPlane id userId model
             MessagePaperPlane userId message → messagePaperPlane userId message model
+
+            ToggleDebateSection section → toggleDebateSection section model
+            SetDebateStatement s → model /\ []
+            SetDebateTopic t → setDebateTopic t model
+            SetInFavor s → setInFavor s model
+            StartDebate → startDebate model
 
 messagePaperPlane ∷ Int → String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 messagePaperPlane userId message model = model /\ [ send ]
@@ -119,6 +126,16 @@ togglePaperPlaneSection section model = model { paperPlane = model.paperPlane { 
             pure <<< Just $ DisplayFlyingPaperPlanes r
       effects
             | model.paperPlane.section /= section && section == ShowFlyingBy && DA.null model.paperPlane.flyingBy = [ fetch ]
+            | otherwise = []
+
+toggleDebateSection ∷ DebateSection → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+toggleDebateSection section model = model { debate = model.debate { section = section } } /\ effects
+      where
+      -- fetch = do
+      --       r ← CCN.silentRequest $ routes.experiments.flying {}
+      --       pure <<< Just $ DisplayFlyingPaperPlanes r
+      effects
+            --    | model.paperPlane.section /= section && section == ShowFlyingBy && DA.null model.paperPlane.flyingBy = [ fetch ]
             | otherwise = []
 
 setPlaneMessage ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
@@ -202,3 +219,18 @@ messageDoppelganger userId model = model /\ [ send ]
       send = EC.liftEffect do
             FS.send imAppId $ SIT.MessageFromExperiment userId SDO.message
             pure Nothing
+
+setDebateTopic ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+setDebateTopic topic model = model { debate = model.debate { inFavor = Nothing, topic = if DS.null topic then Nothing else Just topic } } /\ []
+
+setInFavor ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+setInFavor favor model = model { debate = model.debate { inFavor = if DS.null favor then Nothing else Just (favor == "true") } } /\ []
+
+startDebate ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+startDebate model = model { debate = model.debate { section = ShowMine } } /\ []
+
+setCurrentExperiment ∷ Experiment → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+setCurrentExperiment experiment model =
+      model
+            { current = if model.current == Just experiment then Nothing else Just experiment
+            } /\ []

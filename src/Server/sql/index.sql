@@ -860,7 +860,8 @@ values
 insert into experiments (code, name, description) values
     (10, 'Word chain', 'Play Word Chain with other users'),
     (20, 'Doppelganger', 'Answer 9 questions and find your evil clone'),
-    (30, 'Paper plane', 'Throw or catch paper planes with messages');
+    (30, 'Paper plane', 'Throw or catch paper planes with messages'),
+    (40, 'Debate', 'Debate your favorite hot takes');
 
 insert into stock_text (contents, text_type) values
     ('I stayed up all night wondering where the sun went, then it dawned on me', 0),

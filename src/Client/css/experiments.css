@@ -11,8 +11,27 @@
     flex-direction: column;
 }
 
-.experiment-description {
-    max-width: 18em;
+.arguing {
+    margin: 10px 0;
+}
+
+.debate-topic {
+    width: 100%;
+}
+
+.experiment-desc-head {
+    display: flex;
+    cursor: pointer;
+}
+
+.show-button {
+    align-self: center !important;
+    padding: 5px 10px;
+    font-weight: normal !important;
+}
+
+.experiment-side-desc {
+    flex-grow: 1;
 }
 
 .new-throw {
@@ -52,7 +71,7 @@
 }
 
 .word-chain {
-    margin: 23px 25px;
+    margin: 23px 0px;
 }
 
 .paper-thrown-message {
@@ -64,9 +83,13 @@
     width: 850px;
 }
 
+.extra {
+    margin-bottom: 20px;
+}
+
 .paper-input {
     margin: 10px 0;
-    width: 500px;
+    /* width: 500px; */
     height: 22px;
     padding: 10px 20px;
     padding-bottom: 12px;
@@ -97,6 +120,7 @@
 
 #chat-experiments .modal-part {
     margin-bottom: 40px;
+    border-bottom: 1px solid gray;
 }
 
 .paper-flown-message {
@@ -106,7 +130,7 @@
 }
 
 .paper-catch {
-    color:var(--light-color);
+    color: var(--light-color);
     margin-left: 10px;
     margin-bottom: 15px;
 }
@@ -130,17 +154,16 @@
         width: 100%;
     }
 
-    .experiment-description {
-        width: auto;
-        max-width: unset;
-    }
-
     #chat-experiments .modal-section {
         width: auto;
     }
 
     .word-chain {
         margin-left: 0;
+    }
+
+    .debate-topic {
+        width: 95%;
     }
 
     .paper-input {
