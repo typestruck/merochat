@@ -31,7 +31,7 @@ performChangelogAction action value model = model /\ effects
       effects = case action of
             Nothing → []
             Just OpenBackerPage → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen ShowBacker ]
-            Just OpenExperimentsPage → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen ShowExperiments ]
+            Just (OpenExperimentsPage e) → [ pure <<< Just $ SpecialRequest <<< ToggleModal <<< Screen $ ShowExperiments e ]
             Just OpenProfilePage → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen ShowProfile ]
             Just SendDoppelgangerMessage → [ pure <<< Just $ MessageFromExperiment (SU.fromJust value) SOD.message ]
 

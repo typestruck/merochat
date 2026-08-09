@@ -169,7 +169,7 @@ modalMenu model =
                       [ HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] [ HE.text $ show ShowProfile ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings, HA.class' { entry: true, selected: model.modal == Screen ShowSettings } ] [ HE.text $ show ShowSettings ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.class' { entry: true, selected: model.modal == Screen ShowKarmaPrivileges } ] [ HE.text $ show ShowKarmaPrivileges ]
-                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowExperiments, HA.class' { entry: true, selected: model.modal == Screen ShowExperiments } ] [ HE.text $ show ShowExperiments ]
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal <<< Screen $ ShowExperiments Nothing, HA.class' { entry: true, selected: isExperimentTab } ] [ HE.text <<< show $ ShowExperiments Nothing ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker, HA.class' { entry: true, selected: model.modal == Screen ShowBacker } ] [ HE.text $ show ShowBacker ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowHelp, HA.class' { entry: true, selected: model.modal == Screen ShowHelp } ] [ HE.text $ show ShowHelp ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowFeedback, HA.class' { entry: true, selected: model.modal == Screen ShowFeedback } ] [ HE.text $ show ShowFeedback ]
@@ -190,6 +190,10 @@ modalMenu model =
                     )
             )
       where
+      isExperimentTab = case model.modal of
+            Screen (ShowExperiments _) → true
+            _ → false
+
       screenModal = case model.modal of
             Screen _ → true
             _ → false

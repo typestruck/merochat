@@ -15,6 +15,7 @@ import Droplet.Language as DL
 import Foreign as F
 import Shared.Modal (ScreenModal)
 import Shared.Privilege (Privilege)
+import Shared.Experiment
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 
@@ -123,7 +124,6 @@ type Question =
       , choices ∷ Array Choice
       }
 
-data Experiment = WordChain | Doppelganger | PaperPlanes | Debate
 
 data PaperPlaneSection
       = ShowNew
@@ -141,21 +141,16 @@ data DoppelgangerSection
       | ShowNextQuestion
       | ShowMatches
 
-derive instance Eq Experiment
+
 derive instance Eq PaperPlaneStatus
 derive instance Eq DebateSection
 derive instance Eq PaperPlaneSection
 
-derive instance Ord Experiment
 derive instance Ord PaperPlaneStatus
 
 instance Bounded PaperPlaneStatus where
       bottom = Flying
       top = Crashed
-
-instance Bounded Experiment where
-      bottom = WordChain
-      top = Debate
 
 instance BoundedEnum PaperPlaneStatus where
       cardinality = Cardinality 1
@@ -169,20 +164,6 @@ instance BoundedEnum PaperPlaneStatus where
             3 → Just Crashed
             _ → Nothing
 
-instance BoundedEnum Experiment where
-      cardinality = Cardinality 1
-      fromEnum = case _ of
-            WordChain → 10
-            Doppelganger → 20
-            PaperPlanes → 30
-            Debate → 40
-      toEnum = case _ of
-            10 → Just WordChain
-            20 → Just Doppelganger
-            30 → Just PaperPlanes
-            40 → Just Debate
-            _ → Nothing
-
 instance Enum PaperPlaneStatus where
       succ = case _ of
             Flying → Just Caught
@@ -193,19 +174,7 @@ instance Enum PaperPlaneStatus where
             Caught → Just Flying
             Crashed → Just Caught
 
-instance Enum Experiment where
-      succ = case _ of
-            WordChain → Just Doppelganger
-            Doppelganger → Just PaperPlanes
-            PaperPlanes → Just Debate
-            Debate → Nothing
-      pred = case _ of
-            WordChain → Nothing
-            Doppelganger → Just WordChain
-            PaperPlanes → Just Doppelganger
-            Debate → Just PaperPlanes
 
-derive instance Generic Experiment _
 derive instance Generic DebateSection _
 derive instance Generic DoppelgangerSection _
 derive instance Generic PaperPlaneStatus _
@@ -223,12 +192,6 @@ instance DecodeJson DoppelgangerSection where
 instance DecodeJson PaperPlaneStatus where
       decodeJson = DADGR.genericDecodeJson
 
-instance DecodeJson Experiment where
-      decodeJson = DADGR.genericDecodeJson
-
-instance EncodeJson Experiment where
-      encodeJson = DAEGR.genericEncodeJson
-
 instance EncodeJson DebateSection where
       encodeJson = DAEGR.genericEncodeJson
 
@@ -241,16 +204,10 @@ instance EncodeJson PaperPlaneSection where
 instance EncodeJson DoppelgangerSection where
       encodeJson = DAEGR.genericEncodeJson
 
-instance ToValue Experiment where
-      toValue = F.unsafeToForeign <<< DE.fromEnum
-
 instance ToValue PaperPlaneStatus where
       toValue = F.unsafeToForeign <<< DE.fromEnum
 
 instance FromValue PaperPlaneStatus where
-      fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
-
-instance FromValue Experiment where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
 
 instance Show PaperPlaneStatus where

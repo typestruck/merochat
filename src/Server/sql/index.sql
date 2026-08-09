@@ -454,6 +454,31 @@ create table paper_planes(
     constraint thrower_user foreign key (thrower) references users(id) on delete cascade
 );
 
+create table debates(
+    id integer generated always as identity primary key,
+    topic text not null,
+    created timestamptz not null default (utc_now()),
+    pro integer,
+    con integer,
+    is_public boolean default true,
+
+    constraint pro_user foreign key (pro) references users(id) on delete cascade,
+    constraint con_user foreign key (con) references users(id) on delete cascade
+);
+
+create table debate_statements(
+    id integer generated always as identity primary key,
+    debate integer not null
+    statement text not null,
+    created timestamptz not null default (utc_now()),
+    who integer not null
+
+    constraint who_user foreign key (who) references users(id) on delete cascade
+);
+
+
+
+
 create table asks(
     id integer generated always as identity primary key,
     question text not null,

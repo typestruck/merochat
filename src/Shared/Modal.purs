@@ -6,6 +6,8 @@ import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
+import Data.Maybe (Maybe)
+import Shared.Experiment (Experiment)
 
 --| A modal is anything that pops up only after user interaction
 data Modal
@@ -18,7 +20,7 @@ data Modal
 -- | Modals that have their own mount points
 data ScreenModal
       = ShowMenu
-      | ShowExperiments
+      | ShowExperiments (Maybe Experiment)
       | ShowProfile
       | ShowSettings
       | ShowKarmaPrivileges
@@ -84,7 +86,7 @@ instance Show ScreenModal where
             ShowSettings → "Settings"
             ShowKarmaPrivileges → "Karma"
             ShowHelp → "Help"
-            ShowExperiments → "Experiments"
+            ShowExperiments _ → "Experiments"
             ShowBacker → "Support us"
             ShowFeedback → "Send feedback"
             _ → ""

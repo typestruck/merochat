@@ -90,8 +90,8 @@ data Media
       | AppGet
       | AppHome
       | AppMore
-      | AppAdd
       | BackerAvatar
+      | AppAdd
       | Upload String
 
 bundlePath ∷ Bundle → ResourceType → String

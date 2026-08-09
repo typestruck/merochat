@@ -5,8 +5,8 @@ import Droplet.Language
 import Data.Date (Date)
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
-import Shared.Experiments.Types (Experiment)
 import Data.Tuple.Nested (type (/\))
+import Shared.Experiment (Experiment)
 import Type.Proxy (Proxy(..))
 
 type Experiments =

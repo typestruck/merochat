@@ -72,7 +72,7 @@ modal toggled model =
             Screen ShowSettings → showModal routes.settings.get ShowSettings Settings SettingsEditionRoot
             Screen ShowKarmaPrivileges → showModal routes.leaderboard ShowKarmaPrivileges KarmaPrivileges KarmaPrivilegesRoot
             Screen ShowHelp → showModal routes.internalHelp ShowHelp InternalHelp HelpRoot
-            Screen ShowExperiments → showModal routes.experiments.get ShowExperiments Experiments ExperimentsRoot
+            Screen (ShowExperiments e) → showModal routes.experiments.get (ShowExperiments e) Experiments ExperimentsRoot
             Screen ShowBacker → showModal routes.internalBacker ShowBacker InternalBacker BackerRoot
             Screen ShowFeedback → showModal routes.feedback.get ShowFeedback Feedback FeedbackRoot
             Special ShowPostForm → model { modal = toggled, showSuggestionsPostForm = false } /\ []

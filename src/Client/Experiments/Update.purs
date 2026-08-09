@@ -19,6 +19,7 @@ import Effect.Class as EC
 import Flame (Update)
 import Flame as F
 import Flame.Subscription as FS
+import Shared.Experiment (Experiment)
 import Shared.Im.Types (ReportReason(..), RetryableRequest(..))
 import Shared.Im.Types as SIT
 import Shared.Modal (Modal(..), ScreenModal(..))
@@ -30,7 +31,7 @@ import Shared.Unsafe as SU
 update ∷ Update ExperimentsModel ExperimentsMessage
 update model =
       case _ of
-            ToggleVisibility modal → model { visible = modal == ShowExperiments } /\ []
+            ToggleVisibility modal → toggleVisibility modal model
             RedirectKarma → model /\
                   [ do
                           liftEffect <<< FS.send imAppId <<< SIT.SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
@@ -67,6 +68,13 @@ update model =
             SetDebateTopic t → setDebateTopic t model
             SetInFavor s → setInFavor s model
             StartDebate → startDebate model
+
+toggleVisibility ∷ ScreenModal → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+toggleVisibility modal model = model { current = current, visible = isExperimentTab } /\ []
+      where
+      (current /\ isExperimentTab) = case modal of
+            ShowExperiments e → e /\ true
+            _ → model.current /\ false
 
 messagePaperPlane ∷ Int → String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 messagePaperPlane userId message model = model /\ [ send ]
@@ -227,7 +235,7 @@ setInFavor ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (
 setInFavor favor model = model { debate = model.debate { inFavor = if DS.null favor then Nothing else Just (favor == "true") } } /\ []
 
 startDebate ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
-startDebate model = model { debate = model.debate { section = ShowMine } } /\ []
+startDebate model = model { debate = model.debate { loading = true } } /\ []
 
 setCurrentExperiment ∷ Experiment → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 setCurrentExperiment experiment model =

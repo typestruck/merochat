@@ -7,8 +7,9 @@ import Data.Maybe (Maybe(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Experiments.Doppelganger as SED
+import Shared.Experiment (Experiment(..))
 import Shared.Experiments.Debate as SEDB
+import Shared.Experiments.Doppelganger as SED
 import Shared.Experiments.PaperPlane as SEP
 import Shared.Experiments.WordChain as SEW
 

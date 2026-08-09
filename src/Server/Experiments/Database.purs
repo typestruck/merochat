@@ -26,6 +26,7 @@ import Server.Database.Users (users)
 import Server.Effect (ServerEffect)
 import Server.Experiments.Database.Flat (FlatQuestion)
 import Shared.Changelog (ChangelogAction(..))
+import Shared.Experiment (Experiment(..))
 import Shared.Options.Doppelganger (totalQuestions)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
@@ -90,7 +91,7 @@ fetchPaperPlanesCaught ∷ Int → ServerEffect (Array PaperPlane)
 fetchPaperPlanesCaught loggedUserId = SD.query $ select ((p ... _id # as _id) /\ _name /\ _message /\ _thrower /\ _status) # from (join (paper_planes # as p) (users # as u) # on (u ... _id .=. _thrower)) # wher (_by .=. loggedUserId .&&. _status .=. Caught) # orderBy _byAt
 
 notifyPlaneCaught ∷ Connection → Int → String → _
-notifyPlaneCaught connection userId description = SD.executeWith connection $ insert # into changelogs (_changed /\ _description /\ _action) # values (Just userId /\ description /\ Just OpenExperimentsPage)
+notifyPlaneCaught connection userId description = SD.executeWith connection $ insert # into changelogs (_changed /\ _description /\ _action) # values (Just userId /\ description /\ Just (OpenExperimentsPage $ Just PaperPlanes))
 
 q ∷ Proxy "q"
 q = Proxy
