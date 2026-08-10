@@ -29,6 +29,9 @@ answer routes = do
 throw ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { message ∷ String } } → ServerEffect { id ∷ Int }
 throw routes = SEA.throwPlane routes.guards.loggedUserId routes.body.message
 
+start ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { topic ∷ String, pro :: Boolean } } → ServerEffect { id ∷ Int }
+start routes = SEA.startDebate routes.guards.loggedUserId routes.body.topic routes.body.pro
+
 catch ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Empty
 catch routes = do
       SEA.catchPlane routes.guards.loggedUserId routes.body.id

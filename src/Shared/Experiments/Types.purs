@@ -62,6 +62,7 @@ data ExperimentsMessage
       | SetDebateStatement String
       | SetInFavor String
       | StartDebate
+      | AfterStartDebate Int
 
 type Match =
       { name ∷ String
@@ -74,6 +75,13 @@ type PaperPlane =
       , thrower ∷ Int
       , name ∷ String
       , status ∷ PaperPlaneStatus
+      }
+
+type Debate =
+      { id ∷ Int
+      , topic ∷ String
+      , pro ∷ Maybe Int
+      , con ∷ Maybe Int
       }
 
 type ExperimentsModel =
@@ -95,6 +103,7 @@ type ExperimentsModel =
               , topic ∷ Maybe String
               , inFavor ∷ Maybe Boolean
               , statement ∷ Maybe String
+              , mine ∷ Array Debate
 
               }
       , paperPlane ∷
@@ -124,7 +133,6 @@ type Question =
       , choices ∷ Array Choice
       }
 
-
 data PaperPlaneSection
       = ShowNew
       | ShowFlyingBy
@@ -140,7 +148,6 @@ data DoppelgangerSection
       = ShowDoppelganger
       | ShowNextQuestion
       | ShowMatches
-
 
 derive instance Eq PaperPlaneStatus
 derive instance Eq DebateSection
@@ -173,7 +180,6 @@ instance Enum PaperPlaneStatus where
             Flying → Nothing
             Caught → Just Flying
             Crashed → Just Caught
-
 
 derive instance Generic DebateSection _
 derive instance Generic DoppelgangerSection _

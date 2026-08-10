@@ -593,6 +593,10 @@ a {
     display: flex;
 }
 
+.arguing.debate-topic.hidden + .green-button {
+    margin-top: 10px !important;
+}
+
 .contact-list-last-message blockquote {
     margin: 0;
     padding: 0;

@@ -17,7 +17,7 @@ template payload = Html <$> F.preMount (QuerySelector "#chat-experiments")
               { experiments: payload.experiments
               , visible: true
               , user: payload.user
-              , current : Nothing
+              , current: Nothing
               , doppelganger:
                       { questions: []
                       , matches: []
@@ -31,6 +31,7 @@ template payload = Html <$> F.preMount (QuerySelector "#chat-experiments")
                       , topic: Nothing
                       , statement: Nothing
                       , loading: false
+                      , mine: []
                       , inFavor: Nothing
                       }
 

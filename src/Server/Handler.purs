@@ -135,6 +135,7 @@ handlers reading =
               , matches: runJson reading SEH.matches
               , answer: runJson reading SEH.answer
               , throw: runJson reading SEH.throw
+              , start: runJson reading SEH.start
               , catch: runJson reading SEH.catch
               , pass: runJson reading SEH.pass
               , flying: runJson reading SEH.flying

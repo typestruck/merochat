@@ -19,14 +19,14 @@ data Experiment
       = WordChain
       | Doppelganger
       | PaperPlanes
-      | Debate
+      | Debates
 
 derive instance Eq Experiment
 derive instance Ord Experiment
 
 instance Bounded Experiment where
       bottom = WordChain
-      top = Debate
+      top = Debates
 
 instance BoundedEnum Experiment where
       cardinality = Cardinality 1
@@ -34,25 +34,25 @@ instance BoundedEnum Experiment where
             WordChain → 10
             Doppelganger → 20
             PaperPlanes → 30
-            Debate → 40
+            Debates → 40
       toEnum = case _ of
             10 → Just WordChain
             20 → Just Doppelganger
             30 → Just PaperPlanes
-            40 → Just Debate
+            40 → Just Debates
             _ → Nothing
 
 instance Enum Experiment where
       succ = case _ of
             WordChain → Just Doppelganger
             Doppelganger → Just PaperPlanes
-            PaperPlanes → Just Debate
-            Debate → Nothing
+            PaperPlanes → Just Debates
+            Debates → Nothing
       pred = case _ of
             WordChain → Nothing
             Doppelganger → Just WordChain
             PaperPlanes → Just Doppelganger
-            Debate → Just PaperPlanes
+            Debates → Just PaperPlanes
 
 derive instance Generic Experiment _
 

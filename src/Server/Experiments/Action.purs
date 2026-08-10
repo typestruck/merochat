@@ -51,6 +51,9 @@ throwPlane loggedUserId message = do
       when (c == Just (BI.fromInt maxPaperPlanes)) <<< RE.throw $ BadRequest { reason: "too many planes" }
       SED.savePlane loggedUserId message
 
+startDebate ∷ Int → String → Boolean -> ServerEffect { id ∷ Int }
+startDebate loggedUserId topic pro = SED.saveDebate loggedUserId topic pro
+
 catchPlane ∷ Int → Int → ServerEffect Unit
 catchPlane loggedUserId id = SD.withTransaction $ \connection → do
       SED.updatePlaneStatus connection loggedUserId id Caught

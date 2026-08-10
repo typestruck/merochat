@@ -68,6 +68,7 @@ update model =
             SetDebateTopic t → setDebateTopic t model
             SetInFavor s → setInFavor s model
             StartDebate → startDebate model
+            AfterStartDebate id → afterStartDebate id model
 
 toggleVisibility ∷ ScreenModal → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 toggleVisibility modal model = model { current = current, visible = isExperimentTab } /\ []
@@ -235,10 +236,29 @@ setInFavor ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (
 setInFavor favor model = model { debate = model.debate { inFavor = if DS.null favor then Nothing else Just (favor == "true") } } /\ []
 
 startDebate ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
-startDebate model = model { debate = model.debate { loading = true } } /\ []
+startDebate model = model { debate = model.debate { loading = true } } /\ [ startIt ]
+      where
+      startIt = do
+            r ← CCN.silentRequest $ routes.experiments.start { body: { topic: SU.fromJust model.debate.topic, pro: SU.fromJust model.debate.inFavor } }
+            pure <<< Just $ AfterStartDebate r.id
+
+afterStartDebate ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+afterStartDebate id model =
+      model
+            { debate = model.debate
+                    { loading = false
+                    , topic = Nothing
+                    , inFavor = Nothing
+                    , section = ShowMine
+                    , mine = { id, pro, con, topic: SU.fromJust model.debate.topic } : model.debate.mine
+                    }
+            } /\ []
+      where
+      (pro /\ con) = if model.debate.inFavor == Just true then Just model.user.id /\ Nothing else Nothing /\ Just model.user.id
 
 setCurrentExperiment ∷ Experiment → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 setCurrentExperiment experiment model =
       model
             { current = if model.current == Just experiment then Nothing else Just experiment
             } /\ []
+

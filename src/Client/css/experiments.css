@@ -13,7 +13,17 @@
 
 .arguing {
     margin: 10px 0;
+    display: flex;
+    flex-direction: column;
 }
+
+.debate-how {
+    color: var(--merochat-green);
+    font-weight: bold;
+    margin-bottom: 20px;
+    display: block;
+}
+
 
 .debate-topic {
     width: 100%;
@@ -51,7 +61,7 @@
 .paper-thrown-entry {
     display: flex;
     justify-content: space-between;
-    width: 534px;
+    /* width: 534px; */
 }
 
 .paper-thrown-from {

@@ -15,6 +15,7 @@ import Data.Tuple.Nested ((/\))
 import Droplet.Driver.Internal.Query (Connection(..))
 import Server.Database as SD
 import Server.Database.Changelogs (_action, _changed, _value, changelogs)
+import Server.Database.Debates (_con, _pro, _topic, debates)
 import Server.Database.DoppelgangerAnswers (_taker, doppelganger_answers)
 import Server.Database.DoppelgangerChoices (_asked, _choice, doppelganger_choices)
 import Server.Database.DoppelgangerQuestions (_question, doppelganger_questions)
@@ -92,6 +93,11 @@ fetchPaperPlanesCaught loggedUserId = SD.query $ select ((p ... _id # as _id) /\
 
 notifyPlaneCaught ∷ Connection → Int → String → _
 notifyPlaneCaught connection userId description = SD.executeWith connection $ insert # into changelogs (_changed /\ _description /\ _action) # values (Just userId /\ description /\ Just (OpenExperimentsPage $ Just PaperPlanes))
+
+saveDebate ∷ Int → String → Boolean → ServerEffect { id :: Int }
+saveDebate loggedUserId topic = case _ of
+      true → SU.fromJust <$> SD.single (insert # into debates (_topic /\ _pro) # values (topic /\ Just loggedUserId) # returning _id)
+      false → SU.fromJust <$> SD.single (insert # into debates (_topic /\ _con) # values (topic /\ Just loggedUserId) # returning _id)
 
 q ∷ Proxy "q"
 q = Proxy

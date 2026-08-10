@@ -376,6 +376,12 @@ spec ∷
                                                 , body ∷ { message ∷ String }
                                                 , response ∷ { id ∷ Int }
                                                 }
+                                    , start ∷
+                                          POST "/start"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , body ∷ { topic ∷ String, pro :: Boolean }
+                                                , response ∷ { id ∷ Int }
+                                                }
                                   , catch ∷
                                           POST "/catch"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)

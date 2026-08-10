@@ -14,12 +14,14 @@ import Shared.Options.Debate (maxStatementCharacters, maxTopicCharacters)
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.class' "paper-plane duller" ]
-      [ HE.div [ HA.class' "green-tab" ]
+      [ HE.a [HA.class' "debate-how"] [ HE.text "Click here to check the debate format" ]
+      , HE.div [ HA.class' "green-tab" ]
               [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.debate.section == ShowNewDebate }, HA.onClick $ ToggleDebateSection ShowNewDebate ] [ HE.text "New" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.debate.section == ShowMine }, HA.onClick $ ToggleDebateSection ShowMine ] [ HE.text "Mine" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.debate.section == ShowJoin }, HA.onClick $ ToggleDebateSection ShowJoin ] [ HE.text "Join" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.debate.section == ShowPublic }, HA.onClick $ ToggleDebateSection ShowPublic ] [ HE.text "Public" ]
               ]
+
       , case model.debate.section of
               ShowNewDebate → new model
               ShowMine → mine model
@@ -62,10 +64,16 @@ new model =
                     , HE.option [ HA.value "false" ] [ HE.text $ "No, I DO NOT agree with: " <> DM.fromMaybe "" model.debate.topic ]
                     ]
 
-            , HE.div [ HA.class' "arguing debate-topic" ]
-                    [ HE.text $ case model.debate.inFavor of
-                            Nothing → ""
-                            Just b → "You will be arguing" <> (if b then " for " else " against: ") <> DM.fromMaybe "" model.debate.topic
+            , HE.div [ HA.class' { "arguing debate-topic": true, hidden: DM.isNothing model.debate.inFavor } ]
+                    [ HE.text $ "Please write your initial statement" <> (DM.maybe "" (\b → if b then " for: " else " against: ") model.debate.inFavor) <> DM.fromMaybe "" model.debate.topic
+                    , HE.textarea'
+                            [ HA.maxlength maxStatementCharacters
+                            , HA.onInput' ResizeMessageInput
+                            , HA.autocomplete "off"
+                            , HA.class' "modal-input paper-input "
+                            , HA.onInput SetDebateStatement
+                            , HA.placeholder "Be as through as you'd like"
+                            ]
                     ]
 
             , if model.debate.loading then
@@ -74,13 +82,19 @@ new model =
                     HE.input
                           [ HA.type' "button"
                           , HA.onClick StartDebate
-                          , HA.disabled (DM.isNothing model.debate.topic || DM.isNothing model.debate.statement)
+                          , HA.disabled (DM.isNothing model.debate.topic || DM.isNothing model.debate.inFavor || DM.isNothing model.debate.statement)
                           , HA.class' "green-button"
                           , HA.value "Start debate"
                           ]
             ]
 
-mine model = HE.div [] [ HE.text "Currently unavailable" ]
+mine ∷ ExperimentsModel → Html ExperimentsMessage
+mine model = HE.div [] $ map entry model.debate.mine
+      where
+      entry debate = HE.div [ HA.class' "paper-thrown-entry" ]
+            [ HE.div [ HA.class' "paper-thrown-message" ] [ HE.text debate.topic ]
+            , HE.div [] [ HE.text $ if DM.isJust debate.pro && DM.isJust debate.con then "Ongoing" else "Waiting" ]
+            ]
 
 join model = HE.div [] [ HE.text "Currently unavailable" ]
 

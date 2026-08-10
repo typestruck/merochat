@@ -40,4 +40,4 @@ extra model = case _ of
       WordChain → SEW.view model
       Doppelganger → SED.view model
       PaperPlanes → SEP.view model
-      Debate → SEDB.view model
+      Debates → SEDB.view model
