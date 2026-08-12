@@ -240,8 +240,10 @@ finishTutorial loggedUserId = SIDE.updateTutorialCompleted loggedUserId
 greet ∷ Int → ServerEffect Unit
 greet loggedUserId =
       if production then do
-            starter ← ST.generateConversationStarter
-            void $ SIDE.insertMessage sender loggedUserId ("hey there! " <> starter)
+            greeted <- SIDE.hasGreeting loggedUserId sender
+            unless greeted $ do
+                  starter ← ST.generateConversationStarter
+                  void $ SIDE.insertMessage sender loggedUserId ("hey there! " <> starter)
       else
             pure unit
       where

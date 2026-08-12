@@ -11,6 +11,7 @@ import Data.Argonaut as DAR
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Droplet.Driver.Internal.Query (Connection(..))
 import Effect.Class as EC
 import Effect.Now as EN
@@ -95,7 +96,7 @@ fieldForApproval = case _ of
       CP.ChatBackground → "chat_backgrounded"
       _ → ""
 
-saveForApproval connection loggedUserId field value = SD.unsafeExecuteWith connection ("UPDATE moderated_profile_fields SET " <> fieldForApproval field <> " = @value WHERE moderated = @loggedUserId") { value, loggedUserId }
+saveForApproval connection loggedUserId field value = SD.unsafeExecuteWith connection ("UPDATE moderated_profile_fields SET " <> (spy "bad flield for user" fieldForApproval field) <> " = @value WHERE moderated = @loggedUserId") { value, loggedUserId : spy "id" loggedUserId }
 
 saveField ∷ ∀ t. ToValue t ⇒ Connection → Int → CP.ProfileColumn → Maybe t → _
 saveField connection loggedUserId field value = do

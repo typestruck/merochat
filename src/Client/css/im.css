@@ -589,11 +589,15 @@ a {
     text-overflow: ellipsis;
 }
 
+#temporary-user-sign-up-form input {
+    margin: 10px 0;
+}
+
 .settings-name {
     display: flex;
 }
 
-.arguing.debate-topic.hidden + .green-button {
+.arguing.debate-topic.hidden+.green-button {
     margin-top: 10px !important;
 }
 

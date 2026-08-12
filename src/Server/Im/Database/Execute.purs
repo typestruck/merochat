@@ -9,7 +9,7 @@ import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
-import Droplet.Language (as, delete, exists, from, in_, insert, into, isNotNull, leftJoin, not, on, returning, select, set, update, values, wher, (.&&.), (...), (.=.), (.>=.), (.||.))
+import Droplet.Language (as, count, delete, exists, from, in_, insert, into, isNotNull, leftJoin, not, on, returning, select, set, update, values, wher, (.&&.), (...), (.=.), (.>=.), (.||.))
 import Effect.Class as ER
 import Effect.Now as EN
 import Prelude (Unit, bind, discard, map, otherwise, pure, unit, void, when, (#), ($), (&&), (<$>), (<<<), (<=), (>))
@@ -60,6 +60,9 @@ insertMessage loggedUserId recipient content = SD.withTransaction $ \connection 
 
 updateMessage ∷ ∀ r. Int → String → BaseEffect { pool ∷ Pool | r } Unit
 updateMessage messageId content = void <<< SD.execute $ update messages # set ((_content .=. content) /\ (_edited .=. Checked true)) # wher (_id .=. messageId)
+
+hasGreeting ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
+hasGreeting loggedUserId sender = DM.isJust <$> (SD.single $ select _id # from messages # wher (_sender .=. sender .&&. _recipient .=. loggedUserId))
 
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
 insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)
