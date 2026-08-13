@@ -14,7 +14,20 @@ import Shared.Options.Debate (maxStatementCharacters, maxTopicCharacters)
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.class' "paper-plane duller" ]
-      [ HE.a [HA.class' "debate-how"] [ HE.text "Click here to check the debate format" ]
+      [ HE.a [ HA.class' "debate-how", HA.onClick ToggleFormat ] [ HE.text "Click here to check the debate format" ]
+      , HE.div [ HA.class' { "debate-format": true, hidden: not model.debate.showFormat } ]
+              [ HE.text "To start a debate, select a topic and pick a side (either pro or against). Someone else will join the debate arguing of the opposite site. Debates are divided into rounds: "
+              , HE.br
+              , HE.text "- Every round has a statement from both sides"
+              , HE.br
+              , HE.text "- Under each statement a maximum of six clarifying questions are allowed. Each question is allowed one response"
+              , HE.br
+              , HE.text "- A round ends when either all questions have been answered or both parties agreed to move into the next round"
+              , HE.br
+              , HE.text "There is no limit to the number of rounds. At any start either participant may decide to end the debate"
+              , HE.br
+              , HE.text "Debates may be either private or public. Public debates are visible to users besides the arguing parties, and users may vote on who they think argued better"
+              ]
       , HE.div [ HA.class' "green-tab" ]
               [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.debate.section == ShowNewDebate }, HA.onClick $ ToggleDebateSection ShowNewDebate ] [ HE.text "New" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.debate.section == ShowMine }, HA.onClick $ ToggleDebateSection ShowMine ] [ HE.text "Mine" ]
@@ -59,7 +72,7 @@ new model =
                     ]
             , HE.label [] [ HE.text "Is your position pro or against?" ]
             , HE.select [ HA.class' "modal-select debate-topic", HA.onInput SetInFavor ]
-                    [ HE.option [ HA.value "" ] [ HE.text $ "Select your position" ]
+                    [ HE.option [ HA.value "", HA.selected $ DM.isNothing model.debate.inFavor ] [ HE.text $ "Select your position" ]
                     , HE.option [ HA.value "true" ] [ HE.text $ "Yes, I agree with: " <> DM.fromMaybe "" model.debate.topic ]
                     , HE.option [ HA.value "false" ] [ HE.text $ "No, I DO NOT agree with: " <> DM.fromMaybe "" model.debate.topic ]
                     ]

@@ -69,9 +69,10 @@ update model =
             SetInFavor s → setInFavor s model
             StartDebate → startDebate model
             AfterStartDebate id → afterStartDebate id model
+            ToggleFormat -> toggleFormat model
 
 toggleVisibility ∷ ScreenModal → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
-toggleVisibility modal model = model { current = current, visible = isExperimentTab } /\ []
+toggleVisibility modal model = model { debate = model.debate { showFormat = false }, current = current, visible = isExperimentTab } /\ []
       where
       (current /\ isExperimentTab) = case modal of
             ShowExperiments e → e /\ true
@@ -260,5 +261,11 @@ setCurrentExperiment ∷ Experiment → ExperimentsModel → ExperimentsModel /\
 setCurrentExperiment experiment model =
       model
             { current = if model.current == Just experiment then Nothing else Just experiment
+            } /\ []
+
+toggleFormat ∷  ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+toggleFormat model =
+      model
+            { debate = model.debate { showFormat = not model.debate.showFormat }
             } /\ []
 

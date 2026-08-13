@@ -63,6 +63,7 @@ data ExperimentsMessage
       | SetInFavor String
       | StartDebate
       | AfterStartDebate Int
+      | ToggleFormat
 
 type Match =
       { name ∷ String
@@ -101,6 +102,7 @@ type ExperimentsModel =
               { section ∷ DebateSection
               , loading ∷ Boolean
               , topic ∷ Maybe String
+              , showFormat :: Boolean
               , inFavor ∷ Maybe Boolean
               , statement ∷ Maybe String
               , mine ∷ Array Debate

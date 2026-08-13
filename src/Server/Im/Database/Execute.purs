@@ -61,9 +61,6 @@ insertMessage loggedUserId recipient content = SD.withTransaction $ \connection 
 updateMessage ∷ ∀ r. Int → String → BaseEffect { pool ∷ Pool | r } Unit
 updateMessage messageId content = void <<< SD.execute $ update messages # set ((_content .=. content) /\ (_edited .=. Checked true)) # wher (_id .=. messageId)
 
-hasGreeting ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
-hasGreeting loggedUserId sender = DM.isJust <$> (SD.single $ select _id # from messages # wher (_sender .=. sender .&&. _recipient .=. loggedUserId))
-
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
 insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)
       | senderKarma <= 0 && recipientKarma <= 0 = pure unit

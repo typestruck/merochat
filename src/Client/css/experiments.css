@@ -17,6 +17,11 @@
     flex-direction: column;
 }
 
+.debate-format {
+    margin-top: -5px;
+    margin-bottom: 20px;
+}
+
 .debate-how {
     color: var(--merochat-green);
     font-weight: bold;
