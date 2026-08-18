@@ -4,6 +4,7 @@ import Droplet.Language
 import Prelude
 import Prim hiding (Constraint)
 
+import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Driver (Pool)
 import Server.Database as SD
@@ -28,3 +29,6 @@ _subscriber = Proxy
 
 fetchSubscriptions ∷ ∀ r. BaseEffect { pool ∷ Pool | r } (Array { subscriber ∷ Int, token ∷ String })
 fetchSubscriptions = SD.query $ select (_subscriber /\ _token) # from subscriptions # orderBy _subscriber
+
+deleteSubscriptions ∷ ∀ r. Int → NonEmptyArray String → BaseEffect { pool ∷ Pool | r } Unit
+deleteSubscriptions userId tokens = SD.execute $ delete # from subscriptions # wher (_subscriber .=. userId .&&. _token `in_` tokens)

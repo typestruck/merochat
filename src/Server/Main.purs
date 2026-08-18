@@ -29,7 +29,7 @@ main ∷ Effect Unit
 main = do
       pool ← SD.newPool
       allUserSubscriptionsRef ← ER.new DH.empty
-      SP.initiazeSubscriptions pool allUserSubscriptionsRef
+      SP.initializeSubscriptions pool allUserSubscriptionsRef
       startWebSocketServer pool allUserSubscriptionsRef
       startHttpServer pool allUserSubscriptionsRef
 
