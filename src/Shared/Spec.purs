@@ -95,7 +95,7 @@ spec ∷
                     , praise ∷
                             Routes "/praise"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
-                                   , get ∷
+                                  , get ∷
                                           GET "/?praised=<praised>"
                                                 { query ∷ { praised ∷ Int }
                                                 , response ∷ PraiseDisplay
@@ -376,10 +376,10 @@ spec ∷
                                                 , body ∷ { message ∷ String }
                                                 , response ∷ { id ∷ Int }
                                                 }
-                                    , start ∷
+                                  , start ∷
                                           POST "/start"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
-                                                , body ∷ { topic ∷ String, pro :: Boolean }
+                                                , body ∷ { topic ∷ String, statement ∷ String, pro ∷ Boolean }
                                                 , response ∷ { id ∷ Int }
                                                 }
                                   , catch ∷

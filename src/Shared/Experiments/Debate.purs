@@ -106,7 +106,12 @@ mine model = HE.div [] $ map entry model.debate.mine
       where
       entry debate = HE.div [ HA.class' "paper-thrown-entry" ]
             [ HE.div [ HA.class' "paper-thrown-message" ] [ HE.text debate.topic ]
-            , HE.div [] [ HE.text $ if DM.isJust debate.pro && DM.isJust debate.con then "Ongoing" else "Waiting" ]
+            , HE.div []
+                    [ HE.text $
+                            if not debate.ongoing then "Ended"
+                            else if DM.isJust debate.pro && DM.isJust debate.con then "Ongoing"
+                            else "Waiting"
+                    ]
             ]
 
 join model = HE.div [] [ HE.text "Currently unavailable" ]

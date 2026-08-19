@@ -64,12 +64,12 @@ update model =
             MessagePaperPlane userId message → messagePaperPlane userId message model
 
             ToggleDebateSection section → toggleDebateSection section model
-            SetDebateStatement s → model /\ []
+            SetDebateStatement s → setDebateStatement s model
             SetDebateTopic t → setDebateTopic t model
             SetInFavor s → setInFavor s model
             StartDebate → startDebate model
             AfterStartDebate id → afterStartDebate id model
-            ToggleFormat -> toggleFormat model
+            ToggleFormat → toggleFormat model
 
 toggleVisibility ∷ ScreenModal → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 toggleVisibility modal model = model { debate = model.debate { showFormat = false }, current = current, visible = isExperimentTab } /\ []
@@ -231,7 +231,10 @@ messageDoppelganger userId model = model /\ [ send ]
             pure Nothing
 
 setDebateTopic ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
-setDebateTopic topic model = model { debate = model.debate { inFavor = Nothing, topic = if DS.null topic then Nothing else Just topic } } /\ []
+setDebateTopic topic model = model { debate = model.debate { inFavor = Nothing, statement = Nothing, topic = if DS.null topic then Nothing else Just topic } } /\ []
+
+setDebateStatement ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+setDebateStatement statement model = model { debate = model.debate { statement = if DS.null statement then Nothing else Just statement } } /\ []
 
 setInFavor ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 setInFavor favor model = model { debate = model.debate { inFavor = if DS.null favor then Nothing else Just (favor == "true") } } /\ []
@@ -240,7 +243,13 @@ startDebate ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe Expe
 startDebate model = model { debate = model.debate { loading = true } } /\ [ startIt ]
       where
       startIt = do
-            r ← CCN.silentRequest $ routes.experiments.start { body: { topic: SU.fromJust model.debate.topic, pro: SU.fromJust model.debate.inFavor } }
+            r ← CCN.silentRequest $ routes.experiments.start
+                  { body:
+                          { topic: SU.fromJust model.debate.topic
+                          , pro: SU.fromJust model.debate.inFavor
+                          , statement: SU.fromJust model.debate.statement
+                          }
+                  }
             pure <<< Just $ AfterStartDebate r.id
 
 afterStartDebate ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
@@ -250,8 +259,9 @@ afterStartDebate id model =
                     { loading = false
                     , topic = Nothing
                     , inFavor = Nothing
+                    , statement = Nothing
                     , section = ShowMine
-                    , mine = { id, pro, con, topic: SU.fromJust model.debate.topic } : model.debate.mine
+                    , mine = { id, pro, con, topic: SU.fromJust model.debate.topic, ongoing: true } : model.debate.mine
                     }
             } /\ []
       where
@@ -263,7 +273,7 @@ setCurrentExperiment experiment model =
             { current = if model.current == Just experiment then Nothing else Just experiment
             } /\ []
 
-toggleFormat ∷  ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+toggleFormat ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 toggleFormat model =
       model
             { debate = model.debate { showFormat = not model.debate.showFormat }

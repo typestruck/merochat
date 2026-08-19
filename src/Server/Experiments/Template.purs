@@ -31,8 +31,8 @@ template payload = Html <$> F.preMount (QuerySelector "#chat-experiments")
                       , topic: Nothing
                       , statement: Nothing
                       , loading: false
-                      , mine: []
-                      , showFormat : false
+                      , mine: payload.mine
+                      , showFormat: false
                       , inFavor: Nothing
                       }
 

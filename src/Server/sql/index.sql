@@ -461,6 +461,7 @@ create table debates(
     pro integer,
     con integer,
     is_public boolean default true,
+    ongoing boolean default true,
 
     constraint pro_user foreign key (pro) references users(id) on delete cascade,
     constraint con_user foreign key (con) references users(id) on delete cascade
@@ -468,14 +469,14 @@ create table debates(
 
 create table debate_statements(
     id integer generated always as identity primary key,
-    debate integer not null
+    debate integer not null,
     statement text not null,
     created timestamptz not null default (utc_now()),
-    who integer not null
+    who integer not null,
 
+    constraint debate_statement_debate foreign key (debate) references debates(id) on delete cascade,
     constraint who_user foreign key (who) references users(id) on delete cascade
 );
-
 
 create table asks(
     id integer generated always as identity primary key,

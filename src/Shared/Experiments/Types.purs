@@ -83,6 +83,7 @@ type Debate =
       , topic ∷ String
       , pro ∷ Maybe Int
       , con ∷ Maybe Int
+      , ongoing ∷ Boolean
       }
 
 type ExperimentsModel =
@@ -102,7 +103,7 @@ type ExperimentsModel =
               { section ∷ DebateSection
               , loading ∷ Boolean
               , topic ∷ Maybe String
-              , showFormat :: Boolean
+              , showFormat ∷ Boolean
               , inFavor ∷ Maybe Boolean
               , statement ∷ Maybe String
               , mine ∷ Array Debate

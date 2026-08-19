@@ -7,9 +7,12 @@ import Data.Array.NonEmpty as DAN
 import Data.BigInt as BI
 import Data.Maybe (Maybe(..))
 import Debug (spy)
+import Record as R
 import Run.Except as RE
+import Safe.Coerce as SC
 import Server.Database as SD
 import Server.Effect (ServerEffect)
+import Server.Database.Types (Checked(..))
 import Server.Experiments.Database as SED
 import Shared.Experiments.Types (Match, PaperPlane, PaperPlaneStatus(..), Question)
 import Shared.Options.Doppelganger (changelogEntry, totalQuestions)
@@ -24,7 +27,10 @@ experiments loggedUserId = do
       thrown ← SED.fetchPaperPlanes loggedUserId
       flyingBy ← SED.fetchPaperPlanesFlying loggedUserId
       caught ← SED.fetchPaperPlanesCaught loggedUserId
-      pure { experiments: list, user, completedDoppelganger: count == totalQuestions, thrown, flyingBy, caught }
+      mine ← map unwrap <$> SED.fetchMyDebates loggedUserId
+      pure { experiments: list, user, completedDoppelganger: count == totalQuestions, thrown, flyingBy, caught, mine }
+      where
+      unwrap r = R.merge { ongoing: SC.coerce r.ongoing ∷ Boolean } r
 
 buildQuestions ∷ Int → ServerEffect (Array Question)
 buildQuestions loggedUserId = do
@@ -51,8 +57,11 @@ throwPlane loggedUserId message = do
       when (c == Just (BI.fromInt maxPaperPlanes)) <<< RE.throw $ BadRequest { reason: "too many planes" }
       SED.savePlane loggedUserId message
 
-startDebate ∷ Int → String → Boolean -> ServerEffect { id ∷ Int }
-startDebate loggedUserId topic pro = SED.saveDebate loggedUserId topic pro
+startDebate ∷ Int → String → String → Boolean → ServerEffect { id ∷ Int }
+startDebate loggedUserId topic statement pro = SD.withTransaction $ \connection → do
+      record ← SED.saveDebate connection loggedUserId topic pro
+      SED.saveDebateStatement connection loggedUserId record.id statement
+      pure record
 
 catchPlane ∷ Int → Int → ServerEffect Unit
 catchPlane loggedUserId id = SD.withTransaction $ \connection → do
