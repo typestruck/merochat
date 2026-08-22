@@ -15,7 +15,7 @@ import Safe.Coerce as SC
 import Shared.Change as SCN
 import Shared.DateTime as SDT
 import Shared.Im.Svg as SIS
-import Shared.Im.Types (ImMessage(..), ImModel, PostMode(..), RetryableRequest(..))
+import Shared.Im.Types (ImMessage(..), ImModel, IntWrapper(..), PostMode(..), RetryableRequest(..))
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Markdown as SM
 import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
@@ -29,7 +29,7 @@ import Type.Proxy (Proxy(..))
 posted ∷ ∀ message. String → Post → Html message
 posted userName post = HE.div [ HA.class' "post-entry" ]
       [ HE.div [ HA.class' "post-header" ] [ HE.div_ [ HE.text userName ], HE.div [ HA.class' "post-header-separator duller" ] [ HE.text " • " ], HE.div [ HA.class' "duller" ] [ HE.text <<< SDT.ago $ SC.coerce post.date ] ]
-      , HE.div' [ HA.class' "post-content", HA.innerHtml $ SM.parse post.content ]
+      , HE.div' [ HA.class' "post-content", HA.innerHtml $ SM.parse post.content {id : _} ]
       ]
 
 postForm ∷ ImModel → Array (Html ImMessage)

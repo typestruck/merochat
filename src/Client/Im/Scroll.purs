@@ -8,6 +8,7 @@ import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Shared.Element as SE
 import Shared.Element (ElementId(..))
 import Shared.Im.Types (HistoryMessage, ImMessage)
 import Shared.Unsafe as SU
@@ -29,9 +30,9 @@ scrollLastMessageAff = do
       liftEffect scrollLastMessage
       pure Nothing
 
-scrollIntoView ∷ HistoryMessage → Effect Unit
+scrollIntoView ∷ ∀ r. { id ∷ Int | r } → Effect Unit
 scrollIntoView message = do
-      element ← CCD.unsafeQuerySelector ("#m" <> show message.id)
+      element ← CCD.unsafeQuerySelector ("#" <> SE.messageElementId message.id)
       CCD.scrollIntoView element
 
 isScrolledDown ∷ Event → Effect Boolean

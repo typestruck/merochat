@@ -26,6 +26,7 @@ import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg (contextMenuElements)
 import Shared.Im.Svg as SIA
+import Shared.Im.Types (IntWrapper(..))
 import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SICI
 import Shared.Im.View.Posts as SIVPS
@@ -232,7 +233,7 @@ preview model =
               )
       , HE.div [ HA.class' "card-description", HA.title "See full profile" ]
               [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-              , HE.div' [ HA.innerHtml <<< SM.parse $ DM.fromMaybe "" model.descriptionInputed ]
+              , HE.div' [ HA.innerHtml $ SM.parse (DM.fromMaybe "" model.descriptionInputed) { id: _ } ]
               ]
       ]
       where

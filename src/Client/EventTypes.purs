@@ -7,3 +7,6 @@ import Web.Event.Event (EventType(..))
 -- | This event is always triggered from the im page and not the modals themselves
 modalVisible ∷ EventType
 modalVisible = EventType "modal-visible"
+
+toQuote ∷ EventType
+toQuote = EventType "ToQuote"

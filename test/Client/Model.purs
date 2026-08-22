@@ -31,6 +31,7 @@ model =
       { freeToFetchSuggestions: true
       , typingIds: []
       , showBuildProfile: true
+      , highlighted: Nothing
       , showChangelogs: false
       , loadingContact: Nothing
       , initialScreen: true

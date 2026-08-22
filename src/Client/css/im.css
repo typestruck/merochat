@@ -606,6 +606,26 @@ a {
     padding: 0;
 }
 
+
+.highlighted {
+    animation: highlighted 0.5s ease-in-out;
+    color: inherit;
+}
+
+@keyframes highlighted {
+    0% {
+        background-color: var(--merochat-green);
+    }
+
+    60% {
+        background-color: var(--merochat-green);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+
 .message-status {
     font-size: 0.7em;
     text-align: right;

@@ -8,6 +8,7 @@ import Shared.User
 
 import Client.AppId (imAppId, profileAppId)
 import Client.Dom as CCD
+import Client.EventTypes (toQuote)
 import Client.File as CCF
 import Client.Im.Asks as CIA
 import Client.Im.Changelog as CICL
@@ -20,6 +21,7 @@ import Client.Im.Notification as CIN
 import Client.Im.Posts as CIPS
 import Client.Im.Praise as CIPR
 import Client.Im.Pwa as CIP
+import Client.Im.Scroll as CISL
 import Client.Im.SmallScreen as CISS
 import Client.Im.Suggestion as CIS
 import Client.Im.Theme as CIT
@@ -77,6 +79,7 @@ import Shared.User as SUR
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
+import Web.Event.Event (EventType(..))
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
@@ -102,6 +105,7 @@ main = do
                     , onBlur (Refocus FocusBlur)
                     , onVisibilityChange (Refocus VisibilityChange)
                     , FSW.onOffline $ CloseWebSocket Always
+                    , FS.onCustomEvent toQuote HighlightMessage
                     ]
             , update: update { webSocketRef, lastActiveRef }
             }
@@ -140,7 +144,7 @@ update st model =
             ToggleMiniChatInput → CIC.toggleMiniChatInput model
             SendAudioMessage base64 → CIC.sendAudioMessage base64 model
             FocusInput elementId → focusInput elementId model
-            QuoteMessage message et → CIC.quoteMessage message et model
+            QuoteMessage messageId message et → CIC.quoteMessage messageId message et model
             EditMessage message id → CIC.editMessage message id model
             ToggleSuggestionChatInput id → CIS.toggleSuggestionChatInput id model
             DeleteMessage id → CIC.deleteMessage id webSocket model
@@ -254,6 +258,8 @@ update st model =
             Refocus e → refocus e st.lastActiveRef webSocket model
             SetChatBackgroundFromProfile toggle url → setChatBackgroundFromProfile toggle url model
             SetTheme theme → CIT.setTheme theme model
+            HighlightMessage id → highlightMessage id model
+            ClearHighlightedMessage → F.noMessages $ model { highlighted = Nothing }
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
             SetField setter → F.noMessages $ setter model
@@ -269,6 +275,14 @@ update st model =
             ToggleShowing userId for ShowInfo → toggleShowing userId ShowInfo for model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
+
+highlightMessage ∷ IntWrapper → ImModel → NoMessages
+highlightMessage w model = model { highlighted = Just w.id } /\ [ scroll ]
+      where
+      scroll = do
+            EC.liftEffect $ CISL.scrollIntoView { id: w.id }
+            EA.delay $ Milliseconds 500.0
+            pure $ Just ClearHighlightedMessage
 
 toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
 toggleShowing userId toggle for model =
@@ -402,7 +416,7 @@ acknowledgeRules inputted model =
       if not model.user.completedTutorial && DS.contains (Pattern "i understand") cleaned then
             model { user { completedTutorial = true }, suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ hide, greet ]
       else
-             model /\ []
+            model /\ []
       where
       cleaned = DS.trim $ DS.toLower inputted
 

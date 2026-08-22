@@ -187,7 +187,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                           )
                   , HE.div [ HA.class' { "card-description": true, hidden: user.showing /= ShowInfo }, HA.title "See full profile" ]
                           [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                          , HE.div' [ HA.innerHtml $ SM.parse user.description ]
+                          , HE.div' [ HA.innerHtml $ SM.parse user.description {id : _} ]
                           ]
 
                   , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
@@ -284,7 +284,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                     )
             , HE.div [ HA.class' { "card-description": true, hidden: suggestion.showing /= ShowInfo } ]
                     [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                    , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
+                    , HE.div' [ HA.innerHtml $ SM.parse suggestion.description {id : _} ]
                     ]
 
             , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
@@ -416,7 +416,7 @@ suggestionCards model =
                           , HE.div_ $ map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
                           , HE.div (HA.class' "card-description" : showProfile suggestion.id)
                                   [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                                  , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
+                                  , HE.div' [ HA.innerHtml $ SM.parse suggestion.description {id : _} ]
                                   ]
                           ]
                   , case model.showSuggestionChatInput of

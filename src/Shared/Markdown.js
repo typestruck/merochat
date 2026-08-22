@@ -9,7 +9,14 @@ export function lexer(value) {
       return marked.lexer(value);
 }
 
-function defaultOptions() {
+//we need all this because flame expects a custom event detail to be a json string
+if (typeof window !== "undefined") {
+      window.___raiseCustomEvent = function (name, w) {
+            document.dispatchEvent(new CustomEvent(name, { detail: `${JSON.stringify(w)}` }));
+      };
+}
+
+function defaultOptions(wrapper) {
       marked.use({
             renderer: {
                   link(href, title, text) {
@@ -29,6 +36,15 @@ function defaultOptions() {
                         return tag;
                   },
                   blockquote(q) {
+                        let parsed = /\[[A-Za-z](\d+)\]\s(.+)/.exec(q);
+
+                        if (parsed?.length === 3) {
+                              let id = parseInt(parsed[1]),
+                                    text = parsed[2];
+
+                              return `<blockquote onclick='___raiseCustomEvent("ToQuote", ${JSON.stringify(wrapper(id))})'>${text}</blockquote>`;
+                        }
+
                         return `<blockquote>${q}</blockquote>`;
                   },
                   html(token) {
@@ -78,12 +94,14 @@ function restrictedOptions() {
 }
 
 export function parse(plainMarkdown) {
-      defaultOptions();
+      return function (wrapper) {
+            defaultOptions(wrapper);
 
-      return marked.parse(plainMarkdown, {
-            gfm: true,
-            breaks: true
-      });
+            return marked.parse(plainMarkdown, {
+                  gfm: true,
+                  breaks: true
+            });
+      };
 }
 
 export function parseRestricted(plainMarkdown) {

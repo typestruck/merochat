@@ -41,6 +41,7 @@ import Safe.Coerce as SC
 import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
+import Shared.Element as SE
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), SelectedImage, ShowContextMenu(..), Touch, Turn, WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
@@ -411,8 +412,8 @@ sendAudioMessage base64 model =
             pure <<< Just $ SendMessage ChatInput (Audio base64) date
 
 -- | Messages can be quote from context menu, double click on desktop and swipe on mobile
-quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage
-quoteMessage contents touchEvent model =
+quoteMessage ∷ Int → String → Either Touch (Maybe Event) → ImModel → NextMessage
+quoteMessage messageId contents touchEvent model =
       case touchEvent of
             Right Nothing →
                   model { toggleContextMenu = HideContextMenu } /\ [ quoteIt ]
@@ -423,8 +424,8 @@ quoteMessage contents touchEvent model =
       where
       threshold = 40
       sanitized = case DA.find notSpaceQuote $ SM.lexer contents of
-            Nothing → "> *quote*"
-            Just (Token token) → "> " <> token.raw
+            Nothing → "> [" <> SE.messageElementId messageId <> "] *quote*"
+            Just (Token token) → "> [" <> SE.messageElementId messageId <> "] " <> token.raw
       notSpaceQuote (Token token) = token."type" /= "space" && token."type" /= "blockquote"
 
       fromDoubleClick event = do

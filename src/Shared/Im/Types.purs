@@ -148,6 +148,7 @@ type Im =
       , showMiniChatInput ∷ Boolean
       , showCollapsedMiniSuggestions ∷ Boolean
       , editing ∷ Maybe Int
+      , highlighted ∷ Maybe Int
       --used to signal that the page should be reloaded
       , hash ∷ String
       --visibility switches
@@ -310,7 +311,7 @@ data ImMessage
       | ResumeWebSocketMessage (Maybe WebSocketPayloadServer)
       | ToggleMessageEnter
       | FocusInput ElementId
-      | QuoteMessage String (Either Touch (Maybe Event))
+      | QuoteMessage Int String (Either Touch (Maybe Event))
       | EditMessage String Int
       | DeleteMessage Int
       | HideBuildProfile
@@ -377,6 +378,8 @@ data ImMessage
       | AskNotification
       | ToggleAskNotification
       | CloseWebSocket When
+      | HighlightMessage IntWrapper
+      | ClearHighlightedMessage
       | SetNameFromProfile String
       | SetChatBackgroundFromProfile Boolean (Maybe String)
       | SetAvatarFromProfile (Maybe String)
@@ -402,6 +405,11 @@ data PostMode = TextOnly | LinkOnly | ImageOnly
 data Theme = Light | Dark
 
 data When = Always | Desktop
+
+type IntWrapper = { id ∷ Int }
+
+intWrapper ∷ Int → IntWrapper
+intWrapper i = { id: i }
 
 type StatusUpdate =
       { status ∷ MessageStatus
@@ -768,6 +776,8 @@ derive instance Generic FullWebSocketPayloadClient _
 derive instance Generic WebSocketPayloadServer _
 derive instance Generic ShowContextMenu _
 derive instance Generic RetryableRequest _
+-- IntWrapper is now a type alias; Generic instance not needed
+
 
 instance ToValue MessageStatus where
       toValue v = F.unsafeToForeign $ DE.fromEnum v

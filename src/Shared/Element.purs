@@ -1,6 +1,7 @@
 module Shared.Element
       ( ElementId(..)
       , toQuerySelector
+      , messageElementId
       ) where
 
 import Prelude
@@ -57,6 +58,9 @@ data ElementId
 
 toQuerySelector ∷ ElementId → QuerySelector
 toQuerySelector id = QuerySelector $ "#" <> show id
+
+messageElementId ∷ Int → String
+messageElementId i = "m" <> show i
 
 instance Hashable ElementId where
       hash = HS.hash <<< show
