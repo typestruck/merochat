@@ -25,6 +25,7 @@ import Server.Email as SE
 import Server.File as SF
 import Server.Generate as ST
 import Server.Im.Action as SIA
+import Server.Praise.Database as SPRD
 import Server.Profile.BadWords (badWords)
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
@@ -55,11 +56,13 @@ profile loggedUserId = do
       countries ← SPD.presentCountries
       languages ← SPD.presentLanguages
       asks ← SAD.presentAllAsks loggedUserId Nothing
+      praise ← SPRD.presentPraise loggedUserId
       pure
             { user: profileUser
             , countries
             , posts
             , asks
+            , praise
             , languages
             }
 

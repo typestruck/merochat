@@ -29,6 +29,7 @@ import Shared.Im.Svg as SIA
 import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SICI
 import Shared.Im.View.Posts as SIVPS
+import Shared.Im.View.Praise as SIVPR
 import Shared.Im.View.Profile (separator)
 import Shared.Im.View.Profile as SIVP
 import Shared.Intl as SI
@@ -47,6 +48,7 @@ view model = HE.div [ HA.id $ show ProfileEditionForm ]
               ( [ HE.div [ HA.class' "green-tab" ]
                         [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [ HE.text "Edit" ]
                         , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview } ] [ HE.text "Preview" ]
+                        , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Praise }, HA.onClick RefreshPraise ] [ HE.text "Praise" ]
                         , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == OwnPosts }, HA.onClick RefreshPosts ] [ HE.text "Posts" ]
                         , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Asked }, HA.onClick RefreshAsks ] [ HE.text $ unasweredAsks <> "Asks" ]
                         ]
@@ -55,6 +57,8 @@ view model = HE.div [ HA.id $ show ProfileEditionForm ]
                             edit model
                       else if model.mode == Preview then
                             preview model
+                      else if model.mode == Praise then
+                            praises model
                       else if model.mode == OwnPosts then
                             posts model
                       else
@@ -66,15 +70,16 @@ view model = HE.div [ HA.id $ show ProfileEditionForm ]
             let count = DA.length $ DA.filter (DM.isNothing <<< _.answer) model.asks in if count == 0 then "" else "(" <> show count <> ") "
 
 asks ∷ ProfileModel → Array (Html ProfileMessage)
-asks model =
-      [ HE.div [] <<< map unaswered $ DA.filter (DM.isNothing <<< _.answer) model.asks
-      , HE.div [ HA.class' "ask-list" ] <<< map SIVA.asked $ DA.filter (DM.isJust <<< _.answer) model.asks
-
-      ]
+asks model = case model.asks of
+      [] → [ HE.div_ [ HE.text "You haven't received any questions yet" ] ]
+      _ →
+            [ HE.div [] <<< map unaswered $ DA.filter (DM.isNothing <<< _.answer) model.asks
+            , HE.div [ HA.class' "ask-list" ] <<< map SIVA.asked $ DA.filter (DM.isJust <<< _.answer) model.asks
+            ]
       where
       unaswered ask = HE.div_
             [ HE.text "MeroChat user asks: "
-            , HE.b [] [ HE.i [] [ HE.text ask.question ] ]
+            , HE.b [ HA.class' "ask-q" ] [ HE.i [] [ HE.text ask.question ] ]
             , HE.div [ HA.class' "ask-answer-form" ]
                     $
                           if model.loading then
@@ -100,9 +105,16 @@ asks model =
             ]
 
 posts ∷ ProfileModel → Array (Html ProfileMessage)
-posts model =
-      [ HE.div [ HA.class' "posts" ] [ HE.div [ HA.class' "post-list" ] $ map (SIVPS.posted model.user.name) model.posts ]
-      ]
+posts model = case model.posts of
+      [] → [ HE.div [ HA.class' "posts" ] [ HE.text "You haven't posted yet" ] ]
+      pts →
+            [ HE.div [ HA.class' "posts" ] [ HE.div [ HA.class' "post-list" ] $ map (SIVPS.posted model.user.name) pts ]
+            ]
+
+praises ∷ ProfileModel → Array (Html ProfileMessage)
+praises model = case model.praise of
+      [] → [ HE.div [ HA.class' "praise" ] [ HE.text "You haven't received any praise yet" ] ]
+      prs → [ HE.div [ HA.class' "praise" ] [ HE.div [ HA.class' "ask-list" ] <<< SIVPR.praised $ map _.content prs ] ]
 
 edit ∷ ProfileModel → Array (Html ProfileMessage)
 edit model =

@@ -40,6 +40,7 @@ import Shared.Network as SN
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (PM, ProfileAsk, ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
+import Shared.Praise (PraisedFor)
 import Shared.ProfileColumn as SP
 import Shared.ResizeInput as SIR
 import Shared.User (Gender(..))
@@ -53,6 +54,8 @@ update model = case _ of
       SelectAvatar → selectAvatar model
       PrepareAvatar event → prepareAvatar event model
       RefreshPosts → refreshPosts model
+      RefreshAsks → refreshAsks model
+      RefreshPraise → refreshPraise model
       SetCountry value → setCountry value model
       SetAge value → setAge value model
       SetGender value → setGender value model
@@ -65,7 +68,6 @@ update model = case _ of
       ResizeChatInput event → SIR.resizeInputFrom event model
       AfterRegistration → setFromTemporary model
       UpdatePrivileges _ → model /\ []
-      RefreshAsks → refreshAsks model
       SetAnswer id value → setAnswer id value model
       SendAnswer id → sendAnswer id model
       AfterSendAnswer id → afterSendAnswer id model
@@ -125,6 +127,15 @@ refreshAsks model = model { mode = Asked } /\ [ fetch ]
                   Right (Response response) → pure <<< Just <<< SetPField $ _ { asks = map extend response.body <> model.asks }
                   _ → pure Nothing
       extend ask = (R.merge (ask ∷ Ask) { typedAnswer: Nothing ∷ Maybe String }) ∷ ProfileAsk
+
+refreshPraise ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+refreshPraise model = model { mode = Praise } /\ [ fetch ]
+      where
+      fetch = do
+            result ← routes.praise.get { query: { praised: model.user.id } }
+            case result of
+                  Right (Response response) → pure <<< Just <<< SetPField $ _ { praise = response.body.praise }
+                  _ → pure Nothing
 
 refreshPosts ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 refreshPosts model = model { mode = OwnPosts } /\ [ fetch ]

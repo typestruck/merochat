@@ -30,6 +30,7 @@ template payload = do
                     , countryInputed: payload.user.country
                     , posts: payload.posts
                     , asks: extend <$> payload.asks
+                    , praise: payload.praise
                     , languagesInputed: payload.user.languages
                     , visible: true
                     , contextMenuFor: Nothing

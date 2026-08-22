@@ -2761,6 +2761,7 @@ label {
     align-self: flex-end;
 }
 
+.asks,
 .posts {
     display: flex;
     overflow-y: scroll;
@@ -2792,7 +2793,6 @@ label {
     font-size: 0.95em;
 }
 
-.asks,
 .praise {
     display: flex;
     flex-direction: column;
@@ -3184,6 +3184,13 @@ label {
     align-self: center !important;
 }
 
+.ask-q {
+    display: block;
+    padding-bottom: 10px;
+    max-width: 500px;
+}
+
+
 @media (max-width:1279px) {
     #im {
         display: flex;
@@ -3229,10 +3236,15 @@ label {
         display: none;
     }
 
+    .ask-q {
+        width: 95%;
+    }
+
     .audio-button {
         display: block;
     }
 
+    .asks,
     .posts {
         overflow-y: unset;
     }
