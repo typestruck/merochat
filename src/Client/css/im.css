@@ -1109,6 +1109,10 @@ svg.toolbar-action {
     margin-left: 8px;
 }
 
+.suggestions-filter-gear {
+    fill: var(--text-color);
+}
+
 .svg-55.emoji-access {
     width: 30px;
     height: 30px;
@@ -1588,6 +1592,7 @@ input:not(type=button):focus {
 
 .inbox-entry {
     padding: 5px 0;
+    color: var(--light-link-color);
 }
 
 .unread-inbox-entry {
@@ -2414,6 +2419,10 @@ input:not(type=button):focus {
     height: 38px;
 }
 
+.close-x {
+    stroke: var(--text-color);
+}
+
 .profile-name,
 .profile-edition-name {
     margin-top: 11px;
@@ -2710,6 +2719,7 @@ label {
 .inbox-inverted-merochat-svg {
     width: 110px;
     height: 20px;
+    fill: var(--light-color);
 }
 
 .svg-32.svg-user-menu-context {
@@ -3022,11 +3032,11 @@ label {
 .inbox-entry-action {
     cursor: pointer;
     text-decoration: underline;
-    color: var(--merochat-green);
+    color: var(--light-link-color);
 }
 
 .inbox-entry-action .svg-inbox-unread {
-    fill: var(--merochat-green);
+    fill: var(--light-link-color);
 }
 
 .backing-card {
@@ -3162,6 +3172,10 @@ label {
 
 .filter-selected {
     color: var(--merochat-green);
+}
+
+.suggestions-filter .filter-selected {
+    color: var(--light-link-color);
 }
 
 .contact-box .app-banner {

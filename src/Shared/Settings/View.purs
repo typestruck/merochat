@@ -123,7 +123,7 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               ]
         , HE.div_
                   [ HE.input [ HA.id "last-message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.lastMessageOnContactList, HA.onChange (SetSField (_ { lastMessageOnContactList = not model.lastMessageOnContactList })) ]
-                  , HE.label [ HA.for "last-message-toggle", HA.class' "inline" ] [ HE.text "Last message on contact list" ]
+                  , HE.label [ HA.for "last-message-toggle", HA.class' "inline" ] [ HE.text "Last messages on contact list" ]
                   ]
       , HE.br
       , HE.div [ HA.class' "section-buttons privacy" ]

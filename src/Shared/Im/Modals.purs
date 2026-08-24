@@ -184,7 +184,7 @@ modalMenu model =
                               HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmLogout ] [ HE.text "Logout" ]
                       ]
               , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SUR.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
-                      [ SIS.closeX []
+                      [ SIS.closeX [HA.class' "close-x"]
                       ]
               ] <>
                     ( if model.user.temporary then [ temporaryUserSignUp model ] else []

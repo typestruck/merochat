@@ -558,7 +558,7 @@ suggestionsFilter ∷ ImModel → Html ImMessage
 suggestionsFilter model =
       HE.div [ HA.class' { "suggestions-filter": true, hidden: model.user.profileVisibility == Nobody } ]
             [ HE.text $ "Showing: " <> filterName
-            , SIS.gear [ HA.id $ show SuggestionsFilterMenu ]
+            , SIS.gear [ HA.id $ show SuggestionsFilterMenu, HA.class' "suggestions-filter-gear" ]
             , HE.div [ HA.class' { "user-menu mini": true, visible: model.toggleContextMenu == ShowSuggestionsFilterMenu } ]
                     [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom /= OnlineOnly && model.suggestionsFrom /= ContactsOnly && model.suggestionsFrom /= FavoritesOnly }, HA.onClick $ ToggleSuggestionsFrom ThisWeek ] [ HE.text "New suggestions" ]
                     , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom == OnlineOnly }, HA.onClick $ ToggleSuggestionsFrom OnlineOnly ] [ HE.text "Online users" ]
