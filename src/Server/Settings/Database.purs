@@ -40,6 +40,7 @@ userSettings loggedUserId = SSDF.toUserSettings <<< SU.fromJust <$>
                             /\ (_postsVisibility # as postsVisibility)
                             /\ (_asksVisibility # as asksVisibility)
                             /\ (_messageTimestamps # as messageTimestamps)
+                            /\ (_lastMessageOnContactList # as lastMessageOnContactList)
                     ) # from (join (users # as u) (moderated_profile_fields # as p) # on (u ... _id .=. p ... _moderated)) # wher (_id .=. loggedUserId)
       )
 
@@ -54,6 +55,7 @@ changePrivacySettings loggedUserId ps = do
                             /\ (_typingStatus .=. Checked ps.typingStatus)
                             /\ (_onlineStatus .=. Checked ps.onlineStatus)
                             /\ (_messageTimestamps .=. Checked ps.messageTimestamps)
+                            /\ (_lastMessageOnContactList .=. Checked ps.lastMessageOnContactList)
                             /\ (_postsVisibility .=. ps.postsVisibility)
                             /\ (_asksVisibility .=. ps.asksVisibility)
                     )

@@ -51,6 +51,7 @@ backerUser =
       , chatBackground: Nothing
       , showing: ShowInfo
       , messageTimestamps: true
+      , lastMessageOnContactList: true
       , postsVisibility: Everyone
       , unseenPosts: 0
       , isContact: false

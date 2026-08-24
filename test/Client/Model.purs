@@ -128,6 +128,7 @@ imUser =
       , isContact: false
       , readReceipts: true
       , messageTimestamps: true
+      , lastMessageOnContactList: true
       , joined: DateTimeWrapper epoch
       , temporary: false
       , typingStatus: true

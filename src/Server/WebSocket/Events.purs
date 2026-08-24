@@ -237,6 +237,7 @@ sendBan allUsersAvailability userId = do
       let userAvailability = DH.lookup userId allUsersAvailability
       SSA.changePrivacySettings userId
             { messageTimestamps: true
+            , lastMessageOnContactList: true
             , onlineStatus: true
             , readReceipts: true
             , typingStatus: true

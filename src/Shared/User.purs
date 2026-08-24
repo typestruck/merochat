@@ -73,6 +73,7 @@ type User = Record
               , asksVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
               , isContact ∷ Boolean
+              , lastMessageOnContactList ∷ Boolean
               , temporary ∷ Boolean
               , backer ∷ Boolean
               , messageTimestamps ∷ Boolean

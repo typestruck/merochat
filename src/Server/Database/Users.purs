@@ -36,6 +36,7 @@ type Users =
       , temporary ∷ Column Checked Default
       , online_status ∷ Column Checked Default
       , message_timestamps ∷ Column Checked Default
+      , last_message_on_contact_list ∷ Column Checked Default
       , chat_background ∷ Maybe String
       , own_background ∷ Column Checked Default
       , visibility ∷ Column ProfileVisibility Default
@@ -119,6 +120,9 @@ _onlineStatus = Proxy
 
 _messageTimestamps ∷ Proxy "message_timestamps"
 _messageTimestamps = Proxy
+
+_lastMessageOnContactList ∷ Proxy "last_message_on_contact_list"
+_lastMessageOnContactList = Proxy
 
 data By
       = Id Int

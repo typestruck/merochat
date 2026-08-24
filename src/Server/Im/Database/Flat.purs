@@ -45,6 +45,7 @@ type FlatFields rest =
       , joined ∷ DateTime
       , readReceipts ∷ Checked
       , messageTimestamps ∷ Checked
+      , lastMessageOnContactList ∷ Checked
       , typingStatus ∷ Checked
       , temporary ∷ Checked
       , completedFields ∷ Maybe (Array ProfileColumn)
@@ -109,6 +110,7 @@ fromFlatUser fc =
       , profileVisibility: fc.profileVisibility
       , readReceipts: SC.coerce fc.readReceipts
       , messageTimestamps: SC.coerce fc.messageTimestamps
+      , lastMessageOnContactList: SC.coerce fc.lastMessageOnContactList
       , typingStatus: SC.coerce fc.typingStatus
       , onlineStatus: SC.coerce fc.onlineStatus
       , completedTutorial: SC.coerce fc.completedTutorial

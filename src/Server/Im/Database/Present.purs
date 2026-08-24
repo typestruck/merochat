@@ -51,6 +51,7 @@ userFields =
             /\ (_completedTutorial # as completedTutorial)
             /\ (l ... _date # as _lastSeen)
             /\ (_messageTimestamps # as messageTimestamps)
+            /\ (_lastMessageOnContactList # as lastMessageOnContactList)
             /\ (select (array_agg (l ... _name # orderBy (l ... _name)) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
             /\ _joined
             /\ _headline
@@ -102,6 +103,7 @@ presentUserContactFields =
       , array[]::integer[] as "completedFields"
       , online_status "onlineStatus"
       , message_timestamps "messageTimestamps"
+      , last_message_on_contact_list "lastMessageOnContactList"
       , headline
       , description
       , (SELECT name from countries WHERE id = u.country) country

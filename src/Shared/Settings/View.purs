@@ -121,6 +121,10 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               [ HE.input [ HA.id "typing-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.typingStatus, HA.onChange (SetSField (_ { typingStatus = not model.typingStatus })) ]
               , HE.label [ HA.for "typing-toggle", HA.class' "inline" ] [ HE.text "Typing status" ]
               ]
+        , HE.div_
+                  [ HE.input [ HA.id "last-message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.lastMessageOnContactList, HA.onChange (SetSField (_ { lastMessageOnContactList = not model.lastMessageOnContactList })) ]
+                  , HE.label [ HA.for "last-message-toggle", HA.class' "inline" ] [ HE.text "Last message on contact list" ]
+                  ]
       , HE.br
       , HE.div [ HA.class' "section-buttons privacy" ]
               [ HE.input

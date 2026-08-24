@@ -36,6 +36,7 @@ type PS =
       , postsVisibility ∷ ProfileVisibility
       , onlineStatus ∷ Boolean
       , messageTimestamps ∷ Boolean
+      , lastMessageOnContactList ∷ Boolean
       )
 
 type PrivacySettings = Record PS

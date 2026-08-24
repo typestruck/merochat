@@ -92,6 +92,9 @@ onlineStatus = Proxy
 messageTimestamps ∷ Proxy "messageTimestamps"
 messageTimestamps = Proxy
 
+lastMessageOnContactList ∷ Proxy "lastMessageOnContactList"
+lastMessageOnContactList = Proxy
+
 completedTutorial ∷ Proxy "completedTutorial"
 completedTutorial = Proxy
 

@@ -15,6 +15,7 @@ toUserSettings ∷
       , asksVisibility ∷ ProfileVisibility
       , onlineStatus ∷ Checked
       , messageTimestamps ∷ Checked
+      , lastMessageOnContactList ∷ Checked
       , postsVisibility ∷ ProfileVisibility
       } →
       UserSettings
