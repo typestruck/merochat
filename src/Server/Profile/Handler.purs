@@ -15,11 +15,12 @@ import Server.Profile.Template as SPT
 import Shared.Ask (Ask)
 import Shared.Html (Html)
 import Shared.Post (Post)
+import Shared.Profile.Mode (ProfileMode)
 
-profile ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
-profile { guards: { loggedUserId } } = do
+profile ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { mode ∷ ProfileMode } } → ServerEffect Html
+profile { guards: { loggedUserId }, query } = do
       payload ← SPA.profile loggedUserId
-      R.liftEffect $ SPT.template payload
+      R.liftEffect $ SPT.template payload query.mode
 
 generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What } } → ServerEffect String
 generated { body } = SPA.generateField body.field

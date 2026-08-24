@@ -12,6 +12,7 @@ import Data.Tuple.Nested ((/\))
 import Shared.Changelog (Changelog, ChangelogAction(..))
 import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Modal (Modal(..), ScreenModal(..))
+import Shared.Profile.Mode (ProfileMode(..))
 import Shared.Options.Doppelganger as SOD
 import Shared.Unsafe as SU
 
@@ -32,7 +33,7 @@ performChangelogAction action value model = model /\ effects
             Nothing → []
             Just OpenBackerPage → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen ShowBacker ]
             Just (OpenExperimentsPage e) → [ pure <<< Just $ SpecialRequest <<< ToggleModal <<< Screen $ ShowExperiments e ]
-            Just OpenProfilePage → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen ShowProfile ]
+            Just (OpenProfilePage mode) → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen (ShowProfile mode) ]
             Just SendDoppelgangerMessage → [ pure <<< Just $ MessageFromExperiment (SU.fromJust value) SOD.message ]
 
 toggleChangelog ∷ ImModel → NoMessages

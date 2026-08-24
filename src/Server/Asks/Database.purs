@@ -20,6 +20,7 @@ import Server.Database.Users (_asksVisibility, _temporary, users)
 import Server.Effect (ServerEffect)
 import Shared.Ask (Ask)
 import Shared.Changelog (ChangelogAction(..))
+import Shared.Profile.Mode (ProfileMode(..))
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
@@ -53,4 +54,4 @@ saveAsk ∷ Connection → Int → Int → String → _ Unit
 saveAsk connection loggedUserId useId question = SD.executeWith connection $ insert # into asks (_asker /\ _answerer /\ _question) # values (loggedUserId /\ useId /\ question)
 
 notifyAsk ∷ Connection → Int → _
-notifyAsk connection userId = SD.executeWith connection $ insert # into changelogs (_changed /\ _description /\ _action) # values (Just userId /\ "You have a new ask! Answer here" /\ Just OpenProfilePage)
+notifyAsk connection userId = SD.executeWith connection $ insert # into changelogs (_changed /\ _description /\ _action) # values (Just userId /\ "You have a new ask! Answer here" /\ Just (OpenProfilePage Asked))

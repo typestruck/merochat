@@ -16,8 +16,10 @@ import Shared.Html (Html)
 import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion, SuggestionsFrom)
 import Shared.Post (PostPayload, Post)
 import Shared.Praise (Praise, PraisedFor, PraiseDisplay)
+import Shared.Profile.Mode (ProfileMode)
 import Shared.Profile.Types (GeneratedInput, SavedFields)
 import Shared.Settings.Types (PrivacySettings)
+import Shared.User (ProfileTab)
 
 -- types other than Html and Empty are serialized as json
 spec ∷
@@ -218,8 +220,9 @@ spec ∷
                             Routes "/profile"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
                                   , get ∷
-                                          GET "/"
-                                                { response ∷ Html
+                                          GET "/?mode=<mode>"
+                                                { query ∷ { mode ∷ ProfileMode }
+                                                , response ∷ Html
                                                 }
                                   , ignore ∷
                                           POST "/ignore"

@@ -8,6 +8,7 @@ import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
 import Shared.Experiment (Experiment)
+import Shared.Profile.Mode (ProfileMode)
 
 --| A modal is anything that pops up only after user interaction
 data Modal
@@ -21,7 +22,7 @@ data Modal
 data ScreenModal
       = ShowMenu
       | ShowExperiments (Maybe Experiment)
-      | ShowProfile
+      | ShowProfile ProfileMode
       | ShowSettings
       | ShowKarmaPrivileges
       | ShowHelp
@@ -82,7 +83,7 @@ instance EncodeJson ChatModal where
 --| Tab names for modals that have an app mount point
 instance Show ScreenModal where
       show = case _ of
-            ShowProfile → "Profile"
+            ShowProfile _ → "Profile"
             ShowSettings → "Settings"
             ShowKarmaPrivileges → "Karma"
             ShowHelp → "Help"

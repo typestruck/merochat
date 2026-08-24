@@ -10,12 +10,12 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Shared.Ask (Ask, A)
 import Shared.DateTime (DateWrapper)
-import Shared.Im.Svg (contextMenu)
 import Shared.Modal (ScreenModal)
 import Shared.Network (RequestStatus)
 import Shared.Post (Post)
 import Shared.Praise (Praise)
 import Shared.Privilege (Privilege)
+import Shared.Profile.Mode (ProfileMode)
 import Shared.User (BasicUser, Gender)
 import Web.Event.Internal.Types (Event)
 
@@ -77,8 +77,6 @@ type SavedFields =
 
 type GeneratedInput = { field ∷ What }
 
-data ProfileMode = Edit | Preview | Praise | OwnPosts | Asked
-
 type ProfileAsk = Record (A (typedAnswer ∷ Maybe String))
 
 --used to generically set records
@@ -112,24 +110,14 @@ type PM =
 
 derive instance Generic What _
 
-derive instance Generic ProfileMode _
-
 derive instance Eq What
-
-derive instance Eq ProfileMode
 
 derive instance Ord What
 
 instance EncodeJson What where
       encodeJson = DAEGR.genericEncodeJson
 
-instance EncodeJson ProfileMode where
-      encodeJson = DAEGR.genericEncodeJson
-
 instance DecodeJson What where
-      decodeJson = DADGR.genericDecodeJson
-
-instance DecodeJson ProfileMode where
       decodeJson = DADGR.genericDecodeJson
 
 instance Bounded What where

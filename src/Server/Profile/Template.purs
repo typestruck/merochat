@@ -2,22 +2,20 @@ module Server.Profile.Template where
 
 import Prelude
 
-import Data.Array as DA
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Debug (spy)
 import Effect (Effect)
 import Flame as F
 import Record as R
-import Shared.Ask (Ask, A)
+import Shared.Ask (Ask)
 import Shared.Element (ElementId(..))
 import Shared.Element as SE
 import Shared.Html (Html(..))
-import Shared.Profile.Types (ProfileMode(..), ProfileAsk)
+import Shared.Profile.Mode (ProfileMode)
+import Shared.Profile.Types (ProfileAsk)
 import Shared.Profile.View as SPV
 
-template ∷ _ → Effect Html
-template payload = do
+template ∷ _ → ProfileMode → Effect Html
+template payload mode = do
       Html <$> F.preMount (SE.toQuerySelector ProfileEditionForm)
             { view: SPV.view
             , model:
@@ -25,7 +23,7 @@ template payload = do
                     , headlineInputed: Just payload.user.headline
                     , ageInputed: payload.user.age
                     , genderInputed: payload.user.gender
-                    , mode: if DA.any (DM.isNothing <<< _.answer) payload.asks then Asked else Edit
+                    , mode
                     , fromTemporary: false
                     , countryInputed: payload.user.country
                     , posts: payload.posts

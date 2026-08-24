@@ -27,6 +27,7 @@ import Shared.Resource as SP
 import Shared.Setter as SS
 import Shared.Svg as SSI
 import Shared.Unsafe as SU
+import Shared.Profile.Mode (ProfileMode(..))
 import Shared.User as SUR
 import Type.Proxy (Proxy(..))
 
@@ -166,7 +167,7 @@ modalMenu model =
                               ]
                       ]
               , HE.div [ HA.class' { "modal-menu": true, hidden: model.smallScreen && model.modal /= Screen ShowMenu } ]
-                      [ HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] [ HE.text $ show ShowProfile ]
+                      [ HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit), HA.class' { entry: true, selected: model.modal == Screen (ShowProfile Edit) } ] [ HE.text $ show (ShowProfile Edit) ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings, HA.class' { entry: true, selected: model.modal == Screen ShowSettings } ] [ HE.text $ show ShowSettings ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.class' { entry: true, selected: model.modal == Screen ShowKarmaPrivileges } ] [ HE.text $ show ShowKarmaPrivileges ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal <<< Screen $ ShowExperiments Nothing, HA.class' { entry: true, selected: isExperimentTab } ] [ HE.text <<< show $ ShowExperiments Nothing ]

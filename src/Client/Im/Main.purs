@@ -70,6 +70,7 @@ import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Profile.Types as SPT
+import Shared.Profile.Mode (ProfileMode(..))
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.ResizeInput as SIR
 import Shared.Routes (routesSpec)
@@ -276,14 +277,6 @@ update st model =
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
 
-highlightMessage ∷ IntWrapper → ImModel → NoMessages
-highlightMessage w model = model { highlighted = Just w.id } /\ [ scroll ]
-      where
-      scroll = do
-            EC.liftEffect $ CISL.scrollIntoView { id: w.id }
-            EA.delay $ Milliseconds 500.0
-            pure $ Just ClearHighlightedMessage
-
 toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
 toggleShowing userId toggle for model =
       case for of
@@ -336,7 +329,7 @@ toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle
 
 setRegistered ∷ ImModel → NoMessages
 setRegistered model = model { user { temporary = false } } /\
-      [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile
+      [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit)
       , do
               EA.delay $ Milliseconds 1000.0
               EC.liftEffect $ FS.send profileAppId SPT.AfterRegistration
@@ -396,7 +389,7 @@ terminateAccount model = model /\
 
 checkUserExpiration ∷ ImModel → MoreMessages
 checkUserExpiration model@{ user: { temporary, joined } }
-      | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile ]
+      | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit) ]
       | otherwise = F.noMessages model
 
 setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
@@ -629,3 +622,11 @@ hideBuildProfile model = model { showBuildProfile = false } /\ []
 
 setCompletedFields ∷ Array ProfileColumn → ImModel → NoMessages
 setCompletedFields fields model = model { user = model.user { completedFields = fields } } /\ []
+
+highlightMessage ∷ IntWrapper → ImModel → NoMessages
+highlightMessage w model = model { highlighted = Just w.id } /\ [ scroll ]
+      where
+      scroll = do
+            EC.liftEffect $ CISL.scrollIntoView { id: w.id }
+            EA.delay $ Milliseconds 500.0
+            pure $ Just ClearHighlightedMessage

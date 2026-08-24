@@ -39,7 +39,8 @@ import Shared.Markdown as SM
 import Shared.Network (RequestStatus(..))
 import Shared.Options.Ask (maxAskCharacters)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
-import Shared.Profile.Types (ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
+import Shared.Profile.Mode (ProfileMode(..))
+import Shared.Profile.Types (ProfileMessage(..), ProfileModel, What(..))
 import Shared.Unsafe as SU
 import Shared.User (Gender(..))
 

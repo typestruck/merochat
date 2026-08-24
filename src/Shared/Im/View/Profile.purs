@@ -43,6 +43,7 @@ import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.ProfileColumn (ProfileColumn(..))
 import Shared.ProfileColumn as SPC
+import Shared.Profile.Mode (ProfileMode(..))
 import Shared.Resource (ResourceType(..))
 import Shared.Resource as SR
 import Shared.Svg as SS
@@ -372,7 +373,7 @@ suggestionCards model =
                         , HE.div [ HA.class' "build-list" ] (map check (DS.toUnfoldable completed) <> map uncheck (DS.toUnfoldable missing))
                         , HE.div [ HA.class' "see-profile-chat" ]
                                 [ HE.input [ HA.type' "button", HA.onClick HideBuildProfile, HA.class' "cancel", HA.value "Dismiss" ]
-                                , HE.input [ HA.type' "button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' "green-button bigger build", HA.value "Go to profile" ]
+                                , HE.input [ HA.type' "button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit), HA.class' "green-button bigger build", HA.value "Go to profile" ]
                                 ]
                         ]
       check p = HE.div [ HA.class' "build-checked" ] [ SS.checked "", HE.text $ SPC.displayColumn p ]
@@ -515,7 +516,7 @@ welcomeTemporary model = HE.div [ HA.class' "card-top-welcome-filter" ]
 signUpCall ∷ DateTimeWrapper → Html ImMessage
 signUpCall joined = HE.div [ HA.class' "sign-up-call" ]
       [ HE.text "Enjoying MeroChat?"
-      , HE.a [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile ] [ HE.text $ " Create an account  " <> remaining ]
+        , HE.a [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit) ] [ HE.text $ " Create an account  " <> remaining ]
       , HE.text " to keep your chats"
       ]
       where

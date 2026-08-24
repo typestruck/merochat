@@ -18,6 +18,7 @@ import Server.Database.Praise (_accepted, _praised, _praised_for, _praiser, prai
 import Server.Database.Users (users)
 import Server.Effect (ServerEffect)
 import Shared.Changelog (ChangelogAction(..))
+import Shared.Profile.Mode (ProfileMode(..))
 import Shared.Praise (PraisedFor, Praise)
 
 presentPraise ∷ Int → ServerEffect (Array Praise)
@@ -38,4 +39,4 @@ savePraise connection loggedUserId userId for = SD.executeWith connection $ inse
       row p = loggedUserId /\ userId /\ p /\ true
 
 notifyPraise ∷ Connection → Int → _ Unit
-notifyPraise connection userId = SD.executeWith connection $ insert # into changelogs (_changed /\ _description /\ _action) # values (Just userId /\ "You have a new praise! See here" /\ Just OpenProfilePage)
+notifyPraise connection userId = SD.executeWith connection $ insert # into changelogs (_changed /\ _description /\ _action) # values (Just userId /\ "You have a new praise! See here" /\ Just (OpenProfilePage Praise))

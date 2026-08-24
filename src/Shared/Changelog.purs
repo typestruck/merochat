@@ -14,6 +14,7 @@ import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
 import Shared.Experiment (Experiment(..))
+import Shared.Profile.Mode (ProfileMode(..))
 import Shared.Unsafe as SU
 
 type Changelog =
@@ -29,7 +30,7 @@ data ChangelogAction
       = OpenBackerPage
       | SendDoppelgangerMessage
       | OpenExperimentsPage (Maybe Experiment)
-      | OpenProfilePage
+      | OpenProfilePage ProfileMode
 
 derive instance Generic ChangelogAction _
 
@@ -47,7 +48,7 @@ instance ToValue ChangelogAction where
 
 instance Bounded ChangelogAction where
       bottom = OpenBackerPage
-      top = OpenProfilePage
+      top = OpenProfilePage Asked
 
 instance BoundedEnum ChangelogAction where
       cardinality = Cardinality 1
@@ -57,28 +58,36 @@ instance BoundedEnum ChangelogAction where
             SendDoppelgangerMessage → 1
             OpenExperimentsPage (Just PaperPlanes) → 2
             OpenExperimentsPage _ → 4
-            OpenProfilePage → 3
+            OpenProfilePage Edit → 3
+            OpenProfilePage OwnPosts → 5
+            OpenProfilePage Praise → 6
+            OpenProfilePage Asked → 7
+            OpenProfilePage Preview → 8
 
       toEnum = case _ of
             0 → Just OpenBackerPage
             1 → Just SendDoppelgangerMessage
             2 → Just <<< OpenExperimentsPage $ Just PaperPlanes
-            3 → Just OpenProfilePage
+            3 → Just $ OpenProfilePage Edit
             4 → Just $ OpenExperimentsPage Nothing
+            5 → Just $ OpenProfilePage OwnPosts
+            6 → Just $ OpenProfilePage Praise
+            7 → Just $ OpenProfilePage Asked
+            8 → Just $ OpenProfilePage Preview
             _ → Nothing
 
 instance Enum ChangelogAction where
       succ = case _ of
             OpenBackerPage → Just SendDoppelgangerMessage
             SendDoppelgangerMessage → Just $ OpenExperimentsPage Nothing
-            OpenExperimentsPage _ → Just OpenProfilePage
-            OpenProfilePage → Nothing
+            OpenExperimentsPage _ → Just $ OpenProfilePage Edit
+            OpenProfilePage _ → Nothing
 
       pred = case _ of
             OpenBackerPage → Nothing
             SendDoppelgangerMessage → Just OpenBackerPage
             OpenExperimentsPage _ → Just SendDoppelgangerMessage
-            OpenProfilePage → Just $ OpenExperimentsPage Nothing
+            OpenProfilePage _ → Just $ OpenExperimentsPage Nothing
 
 derive instance Eq ChangelogAction
 

@@ -17,6 +17,7 @@ import Shared.Intl as SI
 import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
+import Shared.Profile.Mode (ProfileMode(..))
 
 userMenu ∷ ImModel → Html ImMessage
 userMenu model =
@@ -26,7 +27,7 @@ userMenu model =
                     [ envelope [ HA.viewBox "0 0 122.88 78.607", HA.class' "svg-inbox", HA.onClick ToggleChangelog, HA.title "MeroChat updates" ]
                     , changelogCount model
                     , changelogInbox model
-                    , SIS.gear [ HA.onClick <<< SpecialRequest $ ToggleModal (Screen $ if model.smallScreen then ShowMenu else ShowProfile) ]
+                    , SIS.gear [ HA.onClick <<< SpecialRequest $ ToggleModal (Screen $ if model.smallScreen then ShowMenu else ShowProfile Edit) ]
                     ]
             ]
 
@@ -74,4 +75,4 @@ header model = HE.fragment
       where
       avatarAction
             | SP.hasPrivilege PublishPosts model.user = SpecialRequest <<< ToggleModal $ Special ShowPostForm
-            | otherwise = SpecialRequest <<< ToggleModal $ Screen ShowProfile
+            | otherwise = SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit)

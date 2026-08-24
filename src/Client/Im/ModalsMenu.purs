@@ -17,10 +17,13 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
+import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame as F
 import Flame.Subscription.Unsafe.CustomEvent as FS
+import Payload.Client (ClientResponse)
+import Prim.Coerce (class Coercible)
 import Shared.Html (Html(..))
 import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
@@ -68,13 +71,13 @@ logout after model = model /\ [ out ]
 modal ∷ Modal → ImModel → NextMessage
 modal toggled model =
       case toggled of
-            Screen ShowProfile → showModal routes.profile.get ShowProfile Profile ProfileEditionRoot
-            Screen ShowSettings → showModal routes.settings.get ShowSettings Settings SettingsEditionRoot
-            Screen ShowKarmaPrivileges → showModal routes.leaderboard ShowKarmaPrivileges KarmaPrivileges KarmaPrivilegesRoot
-            Screen ShowHelp → showModal routes.internalHelp ShowHelp InternalHelp HelpRoot
-            Screen (ShowExperiments e) → showModal routes.experiments.get (ShowExperiments e) Experiments ExperimentsRoot
-            Screen ShowBacker → showModal routes.internalBacker ShowBacker InternalBacker BackerRoot
-            Screen ShowFeedback → showModal routes.feedback.get ShowFeedback Feedback FeedbackRoot
+            Screen (ShowProfile mode) → showModal routes.profile.get { query: { mode } } (ShowProfile mode) Profile ProfileEditionRoot
+            Screen ShowSettings → showModal routes.settings.get {} ShowSettings Settings SettingsEditionRoot
+            Screen ShowKarmaPrivileges → showModal routes.leaderboard {} ShowKarmaPrivileges KarmaPrivileges KarmaPrivilegesRoot
+            Screen ShowHelp → showModal routes.internalHelp {} ShowHelp InternalHelp HelpRoot
+            Screen (ShowExperiments e) → showModal routes.experiments.get {} (ShowExperiments e) Experiments ExperimentsRoot
+            Screen ShowBacker → showModal routes.internalBacker {} ShowBacker InternalBacker BackerRoot
+            Screen ShowFeedback → showModal routes.feedback.get {} ShowFeedback Feedback FeedbackRoot
             Special ShowPostForm → model { modal = toggled, showSuggestionsPostForm = false } /\ []
             Special (ShowSuggestionCard id) → F.noMessages model
                   { modal = toggled
@@ -95,7 +98,8 @@ modal toggled model =
             EC.liftEffect $ FS.broadcast modalVisible toggle
             pure Nothing
 
-      showModal req toggle resource root
+      showModal ∷ ∀ query response. Coercible response String ⇒ (query → Aff (ClientResponse response)) → query → ScreenModal → Bundle → ElementId → NextMessage
+      showModal req query toggle resource root
             | model.user.temporary =
                     model
                           { modal = Screen toggle
@@ -113,7 +117,7 @@ modal toggled model =
                                 [ visible toggle ]
                           else
                                 [ visible toggle
-                                , CCN.retryableRequest (ToggleModal $ Screen toggle) (SetModalContents resource root <<< SC.coerce) (req {})
+                                , CCN.retryableRequest (ToggleModal $ Screen toggle) (SetModalContents resource root <<< SC.coerce) (req query)
                                 ]
 
 setModalContents ∷ Bundle → ElementId → String → ImModel → NextMessage
