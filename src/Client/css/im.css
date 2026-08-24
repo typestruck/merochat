@@ -1577,7 +1577,7 @@ input:not(type=button):focus {
     background: var(--im-second-background-color);
     padding: 10px 15px;
     border-radius: 10px;
-    right: -300px;
+    right: -323px;
 }
 
 .inbox-updates {

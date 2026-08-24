@@ -56,8 +56,8 @@
     width: 47em;
 }
 
-.profile-edition .posts {
-    width: 850px;
+.profile-edition .posts, .profile-edition .ask-list {
+    width: 48em;
 }
 
 .profile-edition .request-error-message {

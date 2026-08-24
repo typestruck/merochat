@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 50em;
+    max-width: 48em;
 }
 
 .experiment {
@@ -95,7 +95,7 @@
 }
 
 #chat-experiments .modal-section {
-    width: 850px;
+    width: 48em;
 }
 
 .extra {
