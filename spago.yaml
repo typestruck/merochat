@@ -64,6 +64,12 @@ package:
     - web-uievents
   name: merochat
 workspace:
+  # backend:
+  #   cmd: "purs-backend-es"
+  #   args:
+  #     - build
+  #     - --directives
+  #     - build-directives
   extraPackages:
     browser-cookies:
       dependencies:

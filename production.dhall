@@ -1,1 +1,0 @@
-./spago.dhall // { backend = "purs-backend-es build --directives build-directives", sources = [ "src/**/*.purs" ] }
