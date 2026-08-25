@@ -15,11 +15,14 @@ import Data.Array.NonEmpty as DAN
 import Data.BigInt as DB
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
+import Data.Array as DA
 import Data.Maybe as DM
 import Data.Time.Duration (Days(..), Hours(..), Minutes(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
+import Effect.Class as EC
+import Effect.Now as EN
 import Server.Database as SD
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
@@ -45,7 +48,8 @@ import Server.Im.Database.Flat (FlatUser)
 import Server.Im.Database.Present (completeness, userFields, usersSource)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
-import Shared.Im.Types (SuggestionsFrom(..), Favorited(..))
+import Shared.Im.Types (Favorited(..))
+import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.User (ProfileVisibility(..))
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
@@ -53,7 +57,11 @@ import Type.Proxy (Proxy(..))
 suggest ∷ ∀ r. Int → Int → Array Int → SuggestionsFrom → BaseEffect { pool ∷ Pool | r } (Array FlatUser)
 suggest loggedUserId skip ids =
       case _ of
-            OnlineOnly → SD.query $ suggestOnlineQuery loggedUserId $ onlineFilter ids --list of id users from open socket connections
+            --if the online only filter comes from a page load we check the table, otherwise the websockets keep track of online users ids
+            OnlineOnly | DA.null ids → do
+                  now ← ST.zeroFromMinutes <$> EC.liftEffect EN.nowDateTime
+                  SD.query $ suggestOnlineQuery loggedUserId $ onlineFilterFromLastSeen now
+            OnlineOnly -> SD.query $ suggestOnlineQuery loggedUserId $ onlineFilter ids
             ThisWeek → SD.query $ suggestMainQuery loggedUserId skip thisWeekFilter
             LastTwoWeeks → SD.query $ suggestMainQuery loggedUserId skip lastTwoWeeksFilter
             LastMonth → SD.query $ suggestMainQuery loggedUserId skip lastMonthFilter
@@ -63,6 +71,7 @@ suggest loggedUserId skip ids =
 
       where
       onlineFilter userIds = baseFilter .&&. ((u ... _id) `in_` (SU.fromJust $ DAN.fromArray userIds))
+      onlineFilterFromLastSeen now = baseFilter .&&. ((l ... _date) .=. now)
       thisWeekFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-7.0))
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
       lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))

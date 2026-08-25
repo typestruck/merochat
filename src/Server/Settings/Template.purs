@@ -2,6 +2,7 @@ module Server.Settings.Template where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame as F
 import Record as R
@@ -24,7 +25,7 @@ template settings =
                           , visible: true
                           , tab: Privacy
                           , erroredFields: []
-                          , hideSuccessMessage: true
+                          , requestStatus: Nothing
                           }
                           settings
             }

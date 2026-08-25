@@ -4,6 +4,7 @@ import Prelude
 import Shared.Availability
 import Shared.DateTime
 import Shared.Im.Types
+import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.User
 
 import Data.HashMap (HashMap)
@@ -35,7 +36,6 @@ model =
       , showChangelogs: false
       , loadingContact: Nothing
       , initialScreen: true
-      , suggestionsFrom: ThisWeek
       , showLargeAvatar: false
       , praise:
               { freeToSave: true
@@ -112,6 +112,7 @@ imUser =
       , favorite: false
       , id: imUserId
       , showing: ShowInfo
+      , suggestionsFrom: ThisWeek
       , praise : []
       , praiseStatus: HasNotPraised
       , totalAsks: 0

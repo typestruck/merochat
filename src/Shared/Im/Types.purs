@@ -25,8 +25,6 @@ import Effect.Timer (TimeoutId)
 import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
-import Payload.Client.QueryParams (class EncodeQueryParam)
-import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.Ask (Ask)
 import Shared.Changelog (Changelog, ChangelogAction)
 import Shared.Content (Content(..))
@@ -39,6 +37,8 @@ import Shared.ProfileColumn (ProfileColumn)
 import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
+import Shared.SuggestionsFrom (SuggestionsFrom)
+import Payload.Server.QueryParams (DecodeError(..))
 import Shared.Unsafe as SU
 import Shared.User (User, ProfileTab(..))
 import Unsafe.Coerce as UC
@@ -124,7 +124,6 @@ type Im =
       , freeToFetchSuggestions ∷ Boolean
       , temporaryEmail ∷ Maybe String
       , temporaryPassword ∷ Maybe String
-      , suggestionsFrom ∷ SuggestionsFrom
       , webSocketMessages ∷ Array WebSocketPayloadServer
       , selectedImage ∷ SelectedImage
       , imageCaption ∷ Maybe String
@@ -185,7 +184,7 @@ type Im =
               { freeToSave ∷ Boolean
               , selected ∷ Maybe (Int /\ Array PraisedFor)
               , other ∷ Maybe String
-              , freeToFetch :: Boolean
+              , freeToFetch ∷ Boolean
               }
       )
 
@@ -477,26 +476,6 @@ data MessageError = UserUnavailable | InvalidMessage
 
 data FocusEvent = VisibilityChange | FocusBlur
 
-data SuggestionsFrom
-      = ThisWeek
-      | LastTwoWeeks
-      | LastMonth
-      | All
-      | OnlineOnly
-      | ContactsOnly
-      | FavoritesOnly
-
-instance EncodeQueryParam SuggestionsFrom where
-      encodeQueryParam = Just <<< show <<< DE.fromEnum
-
-instance DecodeQueryParam SuggestionsFrom where
-      decodeQueryParam query key =
-            case FO.lookup key query of
-                  Nothing → Left $ QueryParamNotFound { key, queryObj: query }
-                  Just [ value ] → DM.maybe (errorDecoding query key) Right (DI.fromString value >>= DE.toEnum)
-                  _ → errorDecoding query key
-
-derive instance Eq SuggestionsFrom
 derive instance Eq FocusEvent
 derive instance Eq ReactWith
 derive instance Eq Favorited
@@ -508,11 +487,6 @@ derive instance Ord ReportReason
 derive instance Ord Favorited
 derive instance Ord PostMode
 derive instance Ord MessageStatus
-derive instance Ord SuggestionsFrom
-
-instance Bounded SuggestionsFrom where
-      bottom = ThisWeek
-      top = FavoritesOnly
 
 instance Bounded Favorited where
       bottom = NotFavorited
@@ -538,26 +512,6 @@ instance BoundedEnum Favorited where
             1 → Just FavoritedBySender
             2 → Just FavoritedByRecipient
             3 → Just FavoritedByBoth
-            _ → Nothing
-
-instance BoundedEnum SuggestionsFrom where
-      cardinality = Cardinality 1
-      fromEnum = case _ of
-            OnlineOnly → 0
-            ThisWeek → 1
-            LastTwoWeeks → 2
-            LastMonth → 3
-            All → 4
-            ContactsOnly → 5
-            FavoritesOnly → 6
-      toEnum = case _ of
-            0 → Just OnlineOnly
-            1 → Just ThisWeek
-            2 → Just LastTwoWeeks
-            3 → Just LastMonth
-            4 → Just All
-            5 → Just ContactsOnly
-            6 → Just FavoritesOnly
             _ → Nothing
 
 instance BoundedEnum MessageStatus where
@@ -606,24 +560,6 @@ instance Enum Favorited where
             FavoritedByRecipient → Just FavoritedBySender
             FavoritedByBoth → Just FavoritedByBoth
 
-instance Enum SuggestionsFrom where
-      succ = case _ of
-            OnlineOnly → Just ThisWeek
-            ThisWeek → Just LastTwoWeeks
-            LastTwoWeeks → Just LastMonth
-            LastMonth → Just All
-            All → Just ContactsOnly
-            ContactsOnly → Just FavoritesOnly
-            FavoritesOnly → Nothing
-      pred = case _ of
-            OnlineOnly → Nothing
-            ThisWeek → Just OnlineOnly
-            LastTwoWeeks → Just ThisWeek
-            LastMonth → Just LastTwoWeeks
-            All → Just LastMonth
-            ContactsOnly → Just All
-            FavoritesOnly → Just ContactsOnly
-
 instance Enum ReportReason where
       succ = case _ of
             DatingContent → Just Harassment
@@ -658,9 +594,6 @@ instance DecodeJson TimeoutIdWrapper where
       decodeJson = Right <<< UC.unsafeCoerce
 
 instance DecodeJson Favorited where
-      decodeJson = DADGR.genericDecodeJson
-
-instance DecodeJson SuggestionsFrom where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson WebSocketPayloadServer where
@@ -701,9 +634,6 @@ instance EncodeJson ReactWith where
 
 instance EncodeJson TimeoutIdWrapper where
       encodeJson = UC.unsafeCoerce
-
-instance EncodeJson SuggestionsFrom where
-      encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson AfterLogout where
       encodeJson = DAEGR.genericEncodeJson
@@ -766,7 +696,6 @@ derive instance Generic Favorited _
 derive instance Generic MessageStatus _
 derive instance Generic WebSocketConnectionStatus _
 derive instance Generic PostMode _
-derive instance Generic SuggestionsFrom _
 derive instance Generic AfterLogout _
 derive instance Generic ReportReason _
 derive instance Generic MessageError _
@@ -777,7 +706,6 @@ derive instance Generic WebSocketPayloadServer _
 derive instance Generic ShowContextMenu _
 derive instance Generic RetryableRequest _
 -- IntWrapper is now a type alias; Generic instance not needed
-
 
 instance ToValue MessageStatus where
       toValue v = F.unsafeToForeign $ DE.fromEnum v

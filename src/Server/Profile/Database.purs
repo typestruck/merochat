@@ -96,7 +96,7 @@ fieldForApproval = case _ of
       CP.ChatBackground → "chat_backgrounded"
       _ → ""
 
-saveForApproval connection loggedUserId field value = SD.unsafeExecuteWith connection ("UPDATE moderated_profile_fields SET " <> (spy "bad flield for user" fieldForApproval field) <> " = @value WHERE moderated = @loggedUserId") { value, loggedUserId : spy "id" loggedUserId }
+saveForApproval connection loggedUserId field value = SD.unsafeExecuteWith connection ("UPDATE moderated_profile_fields SET " <> (spy "bad flield for user" fieldForApproval field) <> " = @value WHERE moderated = @loggedUserId") { value, loggedUserId: spy "id" loggedUserId }
 
 saveField ∷ ∀ t. ToValue t ⇒ Connection → Int → CP.ProfileColumn → Maybe t → _
 saveField connection loggedUserId field value = do

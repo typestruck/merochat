@@ -56,7 +56,6 @@ template payload = do
             , react: WithEmoji
             , suggestionsPage: 1
             , errorMessage: ""
-            , suggestionsFrom: ThisWeek
             , showSuggestionChatInput: Nothing
             , lastTyping: DateTimeWrapper lt
             , showBuildProfile: DA.length payload.user.completedFields < 3

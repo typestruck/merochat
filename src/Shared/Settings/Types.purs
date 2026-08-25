@@ -8,6 +8,8 @@ import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
 import Shared.Modal (ScreenModal)
+import Shared.Network (RequestStatus)
+import Shared.SuggestionsFrom (SuggestionsFrom)
 import Shared.User (ProfileVisibility)
 import Web.Event.Internal.Types (Event)
 
@@ -19,7 +21,7 @@ type SM =
       , passwordConfirmation ∷ String
       , tab ∷ Tab
       , visible ∷ Boolean
-      , hideSuccessMessage ∷ Boolean
+      , requestStatus ∷ Maybe SettingsRequestStatus
       , confirmTermination ∷ Boolean
       | US
       )
@@ -37,17 +39,28 @@ type PS =
       , onlineStatus ∷ Boolean
       , messageTimestamps ∷ Boolean
       , lastMessageOnContactList ∷ Boolean
+      , suggestionsFrom ∷ SuggestionsFrom
       )
 
 type PrivacySettings = Record PS
 
 type SettingsModel = Record SM
 
+type SettingsRequestStatus =
+      { request ∷ SettingRequest
+      , status ∷ RequestStatus
+      }
+
+data SettingRequest
+      = RequestSavePrivacy
+      | RequestSaveSuggestions
+      | RequestSaveChatBackground
+
 data SettingsMessage
       = SetSField (SettingsModel → SettingsModel)
       | ChangeEmail
-      | ChangePrivacySettings
-      | ShowSuccess
+      | ChangePrivacySettings SettingRequest
+      | ShowSuccess SettingRequest
       | ChangePassword
       | BeforeSetChatBackground Event
       | SetChatBackground (Maybe String)
@@ -71,4 +84,14 @@ instance DecodeJson Tab where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson Tab where
+      encodeJson = DAEGR.genericEncodeJson
+
+derive instance Eq SettingRequest
+
+derive instance Generic SettingRequest _
+
+instance DecodeJson SettingRequest where
+      decodeJson = DADGR.genericDecodeJson
+
+instance EncodeJson SettingRequest where
       encodeJson = DAEGR.genericEncodeJson

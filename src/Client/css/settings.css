@@ -47,6 +47,10 @@
     margin-bottom: 20px;
 }
 
+.section-buttons.privacy input {
+    margin-right: 10px;
+}
+
 @media (max-width:1279px) {
     #settings-edition {
         width: calc(100% - 40px);

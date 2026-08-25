@@ -5,6 +5,7 @@ import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
 import Shared.Settings.Types (UserSettings)
 import Shared.User (ProfileVisibility)
+import Shared.SuggestionsFrom (SuggestionsFrom)
 
 toUserSettings ∷
       { readReceipts ∷ Checked
@@ -17,6 +18,7 @@ toUserSettings ∷
       , messageTimestamps ∷ Checked
       , lastMessageOnContactList ∷ Checked
       , postsVisibility ∷ ProfileVisibility
+      , suggestionsFrom ∷ SuggestionsFrom
       } →
       UserSettings
 toUserSettings p = SC.coerce p

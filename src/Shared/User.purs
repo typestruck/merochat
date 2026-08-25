@@ -37,6 +37,7 @@ import Shared.Post (Post)
 import Shared.Praise (Praise, PraisedFor)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
+import Shared.SuggestionsFrom (SuggestionsFrom)
 import Shared.Unsafe as SU
 
 type BasicUser fields =
@@ -71,6 +72,7 @@ type User = Record
               , profileVisibility ∷ ProfileVisibility
               , postsVisibility ∷ ProfileVisibility
               , asksVisibility ∷ ProfileVisibility
+              , suggestionsFrom ∷ SuggestionsFrom
               , onlineStatus ∷ Boolean
               , isContact ∷ Boolean
               , lastMessageOnContactList ∷ Boolean

@@ -13,6 +13,7 @@ import Server.Database.Fields (_id)
 import Server.Database.Types (Checked)
 import Server.Effect (ServerEffect)
 import Shared.User (Gender, ProfileVisibility(..), ReceiveEmail)
+import Shared.SuggestionsFrom (SuggestionsFrom)
 import Type.Proxy (Proxy(..))
 
 type Users =
@@ -41,6 +42,7 @@ type Users =
       , own_background ∷ Column Checked Default
       , visibility ∷ Column ProfileVisibility Default
       , posts_visibility ∷ Column ProfileVisibility Default
+      , suggestions_from ∷ Column SuggestionsFrom Default
       , visibility_last_updated ∷ Column DateTime Default
       )
 
@@ -102,6 +104,9 @@ _visibility = Proxy
 
 _postsVisibility ∷ Proxy "posts_visibility"
 _postsVisibility = Proxy
+
+_suggestionsFrom ∷ Proxy "suggestions_from"
+_suggestionsFrom = Proxy
 
 _asksVisibility ∷ Proxy "asks_visibility"
 _asksVisibility = Proxy

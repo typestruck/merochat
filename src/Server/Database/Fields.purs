@@ -74,6 +74,9 @@ asksVisibility = Proxy
 postsVisibility ∷ Proxy "postsVisibility"
 postsVisibility = Proxy
 
+suggestionsFrom ∷ Proxy "suggestionsFrom"
+suggestionsFrom = Proxy
+
 readReceipts ∷ Proxy "readReceipts"
 readReceipts = Proxy
 

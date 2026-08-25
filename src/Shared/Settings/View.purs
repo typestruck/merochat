@@ -13,6 +13,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodePoints as DSC
 import Data.Symbol (class IsSymbol)
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute (ToSpecialEvent)
 import Flame.Html.Attribute as HA
@@ -23,9 +24,11 @@ import Record as R
 import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
 import Shared.File as SF
+import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (maxImageSizeKB)
-import Shared.Settings.Types (SM, SettingsMessage(..), SettingsModel, Tab(..))
+import Shared.Settings.Types (SM, SettingsMessage(..), SettingsModel, SettingRequest(..), SettingsRequestStatus, Tab(..))
+import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Data.Symbol as TDS
@@ -121,22 +124,19 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               [ HE.input [ HA.id "typing-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.typingStatus, HA.onChange (SetSField (_ { typingStatus = not model.typingStatus })) ]
               , HE.label [ HA.for "typing-toggle", HA.class' "inline" ] [ HE.text "Typing status" ]
               ]
-        , HE.div_
-                  [ HE.input [ HA.id "last-message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.lastMessageOnContactList, HA.onChange (SetSField (_ { lastMessageOnContactList = not model.lastMessageOnContactList })) ]
-                  , HE.label [ HA.for "last-message-toggle", HA.class' "inline" ] [ HE.text "Last messages on contact list" ]
-                  ]
+      , HE.div_
+              [ HE.input [ HA.id "last-message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.lastMessageOnContactList, HA.onChange (SetSField (_ { lastMessageOnContactList = not model.lastMessageOnContactList })) ]
+              , HE.label [ HA.for "last-message-toggle", HA.class' "inline" ] [ HE.text "Last messages on contact list" ]
+              ]
       , HE.br
       , HE.div [ HA.class' "section-buttons privacy" ]
               [ HE.input
                       [ HA.type' "button"
                       , HA.class' "green-button"
                       , HA.value "Change privacy settings"
-                      , HA.onClick ChangePrivacySettings
+                      , HA.onClick $ ChangePrivacySettings RequestSavePrivacy
                       ]
-              , HE.span' [ HA.class' "request-error-message" ]
-              , HE.span [ HA.class' { "success-message": true, hidden: model.hideSuccessMessage } ]
-                      [ HE.text "Privacy settings changed!"
-                      ]
+              , requestStatus RequestSavePrivacy "Privacy settings changed!" model.requestStatus
               ]
       ]
 
@@ -171,7 +171,31 @@ accountSection model = HE.div_
 
 chatsSection ∷ SettingsModel → Html SettingsMessage
 chatsSection model = HE.div [ HA.id $ show ChatSettings ]
-      [ HE.div [ HA.class' "duller" ] [ HE.text "Chat background" ]
+      [ HE.label_ [ HE.text "Initial suggestions screen" ]
+      , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { suggestionsFrom = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
+              [ HE.option [ HA.selected $ model.suggestionsFrom == ThisWeek, HA.value <<< show $ DE.fromEnum ThisWeek ] [ HE.text "New suggestions" ]
+              , HE.option [ HA.selected $ model.suggestionsFrom == OnlineOnly, HA.value <<< show $ DE.fromEnum OnlineOnly ] [ HE.text "Online users" ]
+              , HE.option [ HA.selected $ model.suggestionsFrom == ContactsOnly, HA.value <<< show $ DE.fromEnum ContactsOnly ] [ HE.text "Contacts" ]
+              , HE.option [ HA.selected $ model.suggestionsFrom == FavoritesOnly, HA.value <<< show $ DE.fromEnum FavoritesOnly ] [ HE.text "Favorites" ]
+              ]
+      , HE.div [ HA.class' "duller" ]
+              [ HE.text $ case model.suggestionsFrom of
+                      OnlineOnly → "Show only users who are online now"
+                      ContactsOnly → "Show only users you have talked to before"
+                      FavoritesOnly → "Show only users you have favorited"
+                      _ → "Show all new user suggestions (default)"
+              ]
+      , HE.div [ HA.class' "section-buttons privacy" ]
+              [ HE.input
+                      [ HA.type' "button"
+                      , HA.class' "green-button"
+                      , HA.value "Save"
+                      , HA.onClick $ ChangePrivacySettings RequestSaveSuggestions
+                      ]
+              , requestStatus RequestSaveSuggestions "Saved!" model.requestStatus
+              ]
+      , HE.br
+      , HE.div [] [ HE.text "Chat background" ]
       , HE.div_
               [ HE.input [ HA.id "background-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.ownBackground, HA.onChange (SetSField (_ { ownBackground = not model.ownBackground })) ]
               , HE.label [ HA.for "background-toggle", HA.class' "inline" ] [ HE.text $ if DM.isJust model.chatBackground then "Use this background instead of contacts'" else "No chat backgrounds" ]
@@ -207,12 +231,7 @@ chatsSection model = HE.div [ HA.id $ show ChatSettings ]
                             , HA.value "Set chat background"
                             , HA.onClick SaveChatBackground
                             ]
-              , HE.span' [ HA.class' "request-error-message" ]
-              , HE.div [ HA.class' "success" ]
-                      [ HE.span [ HA.class' { "success-message": true, hidden: model.hideSuccessMessage } ]
-                              [ HE.text "Chat background set!"
-                              ]
-                      ]
+              , requestStatus RequestSaveChatBackground "Chat background set!" model.requestStatus
               ]
       ]
 
@@ -290,3 +309,10 @@ capitalize str = case DS.uncons str of
 
 formId ∷ ∀ field. IsSymbol field ⇒ Proxy field → String
 formId field = TDS.reflectSymbol field <> "-form"
+
+requestStatus ∷ SettingRequest → String → Maybe SettingsRequestStatus → Html SettingsMessage
+requestStatus request successText = case _ of
+      Just r | r.request == request → case r.status of
+            Success → HE.div [] [ HE.text successText ]
+            Failure _ → HE.div [ HA.class' "request-error-message" ] [ HE.text "Could not save. Please try again" ]
+      _ → HE.div [] [ HE.text "" ]

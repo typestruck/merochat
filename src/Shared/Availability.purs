@@ -47,7 +47,10 @@ availabilityToWire = case _ of
 
 availabilityFromWire ∷ Number → Availability
 availabilityFromWire = case _ of
-      0.0 → Online
-      2.0 → Unavailable
-      3.0 → None
-      ms → LastSeen <<< DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant $ DTD.Milliseconds ms
+       0.0 → Online
+       2.0 → Unavailable
+       3.0 → None
+       ms → LastSeen <<< DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant $ DTD.Milliseconds ms
+
+ensureStatus ∷ ∀ r. { availability ∷ Availability | r } → { availability ∷ Availability | r }
+ensureStatus user = user { availability = Online }

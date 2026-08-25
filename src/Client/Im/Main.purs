@@ -393,7 +393,7 @@ checkUserExpiration model@{ user: { temporary, joined } }
       | otherwise = F.noMessages model
 
 setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
-setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps, lastMessageOnContactList } model =
+setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps, lastMessageOnContactList, suggestionsFrom } model =
       model
             { user
                     { profileVisibility = profileVisibility
@@ -401,8 +401,10 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
                     , typingStatus = typingStatus
                     , onlineStatus = onlineStatus
                     , messageTimestamps = messageTimestamps
+                    , suggestionsFrom = suggestionsFrom
                     , lastMessageOnContactList = lastMessageOnContactList
                     }
+
             } /\ [ pure $ Just FetchMoreSuggestions ]
 
 acknowledgeRules ∷ String → ImModel → NextMessage

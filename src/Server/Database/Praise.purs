@@ -10,7 +10,7 @@ type Praise =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
       , praiser ∷ Int
       , praised ∷ Int
-      , accepted :: Boolean
+      , accepted ∷ Boolean
       , praised_for ∷ PraisedFor
       , date ∷ Column DateTimeWrapper Default
       )
@@ -29,5 +29,5 @@ _praised = Proxy
 _praised_for ∷ Proxy "praised_for"
 _praised_for = Proxy
 
-_accepted :: Proxy "accepted"
+_accepted ∷ Proxy "accepted"
 _accepted = Proxy

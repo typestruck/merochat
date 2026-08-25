@@ -46,6 +46,7 @@ userFields =
             /\ _temporary
             /\ (_postsVisibility # as postsVisibility)
             /\ _asksVisibility
+            /\ _suggestionsFrom
             /\ _backer
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
@@ -104,6 +105,7 @@ presentUserContactFields =
       , online_status "onlineStatus"
       , message_timestamps "messageTimestamps"
       , last_message_on_contact_list "lastMessageOnContactList"
+      , suggestions_from
       , headline
       , description
       , (SELECT name from countries WHERE id = u.country) country

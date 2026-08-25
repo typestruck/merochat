@@ -23,13 +23,11 @@ import Flame (Update)
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
 import Payload.ResponseTypes (Response(..))
-import Shared.Element (ElementId(..))
 import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Resource (maxImageSize)
 import Shared.Routes (routesSpec)
-import Shared.Routes as SR
-import Shared.Settings.Types (SettingsMessage(..), SettingsModel)
+import Shared.Settings.Types (SettingRequest(..), SettingsMessage(..), SettingsModel, PrivacySettings)
 import Shared.Settings.View as SSV
 import Type.Proxy (Proxy(..))
 import Web.Event.Internal.Types (Event)
@@ -41,23 +39,39 @@ update model message =
             ChangeEmail → changeEmail model
             ChangePassword → changePassword model
             ToggleTerminateAccount → toggleTerminateAccount model
-            ShowSuccess → showSuccess model
+            ShowSuccess operation → showSuccess operation model
             BeforeSetChatBackground event → beforeSetChatBackground event model
             SetChatBackground image → setChatBackground image model
             AfterSaveChatBackground url → afterSaveChatBackground url model
             TerminateAccount → terminateAccount model
             RemoveChatBackground → removeChatBackground model
             SaveChatBackground → saveChatBackground model
-            ChangePrivacySettings → changePrivacySettings model
+            ChangePrivacySettings request → changePrivacySettings request model
             ToggleVisibility modal → setIt (_ { visible = modal == ShowSettings }) model
 
 setIt ∷ (SettingsModel → SettingsModel) → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 setIt s model = s model /\ []
 
-changePrivacySettings ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-changePrivacySettings model = model /\ [ change ]
+changePrivacySettings ∷ SettingRequest → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+changePrivacySettings request model = model { requestStatus = Nothing } /\ [ change ]
       where
-      payload =
+      change = do
+            result ← CNN.request $ routes.settings.account.privacy { body: privacySettings model }
+            case result of
+                  Right _ → pure <<< Just $ ShowSuccess request
+                  Left _ → pure <<< Just <<< SetSField $ _ { requestStatus = Just $ { request, status: Failure "" } }
+
+showSuccess ∷ SettingRequest → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+showSuccess request model = model { requestStatus = Just { request, status: Success } } /\ [ sendHide ]
+      where
+      sendHide = do
+            --let im know that the settings has changed
+            EC.liftEffect <<< FS.send imAppId <<< SetPrivacySettings $ privacySettings model
+            EA.delay $ Milliseconds 3000.0
+            pure <<< Just <<< SetSField $ _ { requestStatus = Nothing }
+
+privacySettings :: SettingsModel -> PrivacySettings
+privacySettings model =
             { asksVisibility: model.asksVisibility
             , postsVisibility: model.postsVisibility
             , profileVisibility: model.profileVisibility
@@ -66,22 +80,8 @@ changePrivacySettings model = model /\ [ change ]
             , onlineStatus: model.onlineStatus
             , messageTimestamps: model.messageTimestamps
             , lastMessageOnContactList: model.lastMessageOnContactList
+            , suggestionsFrom: model.suggestionsFrom
             }
-      change = do
-            status ← CNN.formRequest (show PrivacySettings) $ routes.settings.account.privacy { body: payload }
-            case status of
-                  Success → do
-                        --let im know that the settings has changed
-                        EC.liftEffect <<< FS.send imAppId $ SetPrivacySettings payload
-                        pure $ Just ShowSuccess
-                  _ → pure Nothing
-
-showSuccess ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-showSuccess model = model { hideSuccessMessage = false } /\ [ hide ]
-      where
-      hide = do
-            EA.delay $ Milliseconds 3000.0
-            pure <<< Just <<< SetSField $ _ { hideSuccessMessage = true }
 
 toggleTerminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 toggleTerminateAccount model = model { confirmTermination = not model.confirmTermination } /\ []
@@ -129,18 +129,17 @@ removeChatBackground model = model { chatBackground = Nothing } /\ [ save ]
       save = pure $ Just SaveChatBackground
 
 saveChatBackground ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-saveChatBackground model = model /\ [ save ]
+saveChatBackground model = model { requestStatus = Nothing } /\ [ save ]
       where
       save = do
             response ← routes.settings.chat.background { body: { ownBackground: model.ownBackground, image: model.chatBackground } }
             case response of
                   Right (Response { body: url }) → pure <<< Just <<< AfterSaveChatBackground $ if DS.null url then Nothing else Just url
-                  _ → pure Nothing
+                  Left _ → pure <<< Just <<< SetSField $ _ { requestStatus = Just $ { request: RequestSaveChatBackground, status: Failure "" } }
 
 afterSaveChatBackground ∷ Maybe String → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-afterSaveChatBackground url model = model { chatBackground = url } /\ [ success, notify ]
+afterSaveChatBackground url model = model { chatBackground = url } /\ [ success ]
       where
-      success = pure $ Just ShowSuccess
-      notify = EC.liftEffect do
-            FS.send imAppId $ SetChatBackgroundFromProfile model.ownBackground url
-            pure Nothing
+      success = do
+            EC.liftEffect $ FS.send imAppId $ SetChatBackgroundFromProfile model.ownBackground url
+            pure $ Just $ ShowSuccess $ RequestSaveChatBackground

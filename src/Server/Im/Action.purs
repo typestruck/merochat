@@ -43,7 +43,10 @@ import Server.Im.Database.Permission as SIDPP
 import Server.Im.Database.Present as SIDP
 import Server.Im.Database.Suggest as SIDS
 import Server.Sanitize as SS
+import Server.Settings.Database as SSD
 import Server.Wheel as SW
+import Shared.Availability (Availability(..))
+import Shared.Availability as SA
 import Shared.Backer.Contact (backerUser)
 import Shared.Backer.Contact as SBC
 import Shared.Changelog (Changelog)
@@ -54,16 +57,16 @@ import Shared.Options.Reaction (maxReactionCharacters)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
+import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.Unsafe as SU
 
 im ∷ Int → ServerEffect _
 im loggedUserId = do
       maybeUser ← SIDP.presentUser loggedUserId
       case maybeUser of
-            --happens if the user has an invalid cookie/was suspended
             Nothing → RE.throw ExpiredSession
             Just user → do
-                  suggestions ← suggest loggedUserId 0 ThisWeek
+                  suggestions ← normalizeSuggestions user.suggestions_from <$> suggest loggedUserId 0 user.suggestions_from
                   contacts ← listContacts loggedUserId 0
                   let shouldDonate = not (SC.coerce user.backer) && (SD.daysDiff user.joined) > 3
                   pure
@@ -71,6 +74,9 @@ im loggedUserId = do
                         , suggestions: if shouldDonate then DA.snoc suggestions backerUser else suggestions
                         , user: SIF.fromFlatUser user
                         }
+      where normalizeSuggestions from suggestions = case from of
+                        OnlineOnly → map SA.ensureStatus suggestions
+                        _ -> suggestions
 
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array Suggestion)
 suggest loggedUserId skip sg = map SIF.fromFlatUser <$> SIDS.suggest loggedUserId skip [] sg

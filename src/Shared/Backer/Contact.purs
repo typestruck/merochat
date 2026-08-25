@@ -12,6 +12,7 @@ import Shared.Im.Contact as SC
 import Shared.Im.Types (Contact, MessageStatus(..))
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
+import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.User (PraiseStatus(..), ProfileTab(..), ProfileVisibility(..), User)
 
 backerId ∷ Int
@@ -41,9 +42,10 @@ backerUser =
       , joined: DateTimeWrapper epoch
       , praiseStatus: HasNotPraised
       , readReceipts: true
+      , suggestionsFrom: ThisWeek
       , posts: []
       , favorite: false
-      , praise : []
+      , praise: []
       , asks: []
       , asksVisibility: Everyone
       , totalAsks: 0

@@ -35,6 +35,7 @@ create table users
     online_status boolean not null default true,
     posts_visibility smallint not null default 0,
     asks_visibility smallint not null default 1,
+    suggestions_from smallint not null default 1,
     chat_background text,
     own_background boolean default false,
     message_timestamps boolean not null default true,

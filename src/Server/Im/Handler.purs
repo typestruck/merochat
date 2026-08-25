@@ -6,7 +6,6 @@ import Shared.Im.Types
 
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe)
-
 import Data.Tuple (Tuple(..))
 import Effect.Class as EC
 import Payload.ContentType (html)
@@ -18,6 +17,7 @@ import Server.Im.Template as SIT
 import Shared.Account (EmailPassword)
 import Shared.Changelog (Changelog)
 import Shared.Html (Html)
+import Shared.SuggestionsFrom (SuggestionsFrom)
 
 im ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Response Html)
 im { guards: { loggedUserId } } = do

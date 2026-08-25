@@ -17,6 +17,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Types (Contact, HM, HistoryMessage)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
+import Shared.SuggestionsFrom (SuggestionsFrom)
 
 type FlatFields rest =
       { age ∷ Maybe Number
@@ -42,6 +43,7 @@ type FlatFields rest =
       , languages ∷ Maybe (Array String)
       , profileVisibility ∷ ProfileVisibility
       , asks_visibility ∷ ProfileVisibility
+      , suggestions_from ∷ SuggestionsFrom
       , joined ∷ DateTime
       , readReceipts ∷ Checked
       , messageTimestamps ∷ Checked
@@ -93,7 +95,7 @@ fromFlatUser fc =
       , headline: fc.headline
       , posts: []
       , asks: []
-      , praise : []
+      , praise: []
       , praiseStatus: HasNotPraised
       , unseenPosts: DM.fromMaybe 0 (fc.unseenPosts >>= BI.toInt)
       , postsVisibility: fc.postsVisibility
@@ -114,6 +116,7 @@ fromFlatUser fc =
       , typingStatus: SC.coerce fc.typingStatus
       , onlineStatus: SC.coerce fc.onlineStatus
       , completedTutorial: SC.coerce fc.completedTutorial
+      , suggestionsFrom: fc.suggestions_from
       , description: fc.description
       , privileges: DM.fromMaybe [] fc.privileges
       , badges: DM.fromMaybe [] fc.badges

@@ -65,12 +65,14 @@ import Server.Token as ST
 import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
 import Shared.Availability (Availability(..))
+import Shared.Availability as SA
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
-import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), SuggestionsFrom(..), MessageStatus(..), OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
+import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus(..), OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
 import Shared.Json as SJ
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
+import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Unsafe.Coerce as UC
@@ -204,7 +206,7 @@ sharePost loggedUserId allUsersAvailabilityRef id = do
 
 updateAvailability ∷ String → Int → Ref (HashMap Int UserAvailability) → { online ∷ Boolean } → WebSocketEffect
 updateAvailability token loggedUserId allUsersAvailabilityRef flags = do
-      now ← zeroFromMinutes <$> EC.liftEffect EN.nowDateTime
+      now ← SDT.zeroFromMinutes <$> EC.liftEffect EN.nowDateTime
       allUsersAvailability ← EC.liftEffect $ ER.read allUsersAvailabilityRef
       let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
       let
@@ -224,9 +226,6 @@ updateAvailability token loggedUserId allUsersAvailabilityRef flags = do
             Just found → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: loggedUserId, availability }) found.connections
             Nothing → pure unit
 
---ignore last seen if only difference is in seconds / milliseconds
-zeroFromMinutes dt = DDT.modifyTime (DDT.setSecond (SU.fromJust $ DEN.toEnum 0) <<< DDT.setMillisecond (SU.fromJust $ DEN.toEnum 0)) dt
-
 trackAvailability ∷ Int → Ref (HashMap Int UserAvailability) → { ids ∷ Array Int } → WebSocketEffect
 trackAvailability loggedUserId allUsersAvailabilityRef for = R.liftEffect $ DF.traverse_ (\id → ER.modify_ (DH.update track id) allUsersAvailabilityRef) for.ids
       where
@@ -241,6 +240,7 @@ sendBan allUsersAvailability userId = do
             , onlineStatus: true
             , readReceipts: true
             , typingStatus: true
+            , suggestionsFrom: ThisWeek
             , asksVisibility: TemporarilyBanned
             , postsVisibility: TemporarilyBanned
             , profileVisibility: TemporarilyBanned
@@ -321,9 +321,9 @@ sendStatusChange token loggedUserId allUsersAvailability changes = do
 
 sendOnlineSuggestions ∷ String → Int → HashMap Int UserAvailability → WebSocketEffect
 sendOnlineSuggestions token loggedUserId allUsersAvailability = do
-      now ← zeroFromMinutes <$> EC.liftEffect EN.nowDateTime
+      now ← SDT.zeroFromMinutes <$> EC.liftEffect EN.nowDateTime
       let ids = DA.catMaybes $ DH.toArrayBy (onlines <<< LastSeen $ DateTimeWrapper now) allUsersAvailability
-      suggestions ← if DA.null ids then pure [] else map (ensureStatus <<< SIF.fromFlatUser) <$> SIDS.suggest loggedUserId 0 ids OnlineOnly
+      suggestions ← if DA.null ids then pure [] else map (SA.ensureStatus <<< SIF.fromFlatUser) <$> SIDS.suggest loggedUserId 0 ids OnlineOnly
 
       let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
       sendWebSocketMessage (SU.fromJust $ DH.lookup token userAvailability.connections) <<< Content $ CurrentOnlineSuggestions { suggestions }
@@ -332,9 +332,6 @@ sendOnlineSuggestions token loggedUserId allUsersAvailability = do
       onlines now id userAvailability
             | userAvailability.availability == Online || userAvailability.availability == now = Just id
             | otherwise = Nothing
-
-      --we want to show online in case last seen is within same minute
-      ensureStatus user = user { availability = Online }
 
 -- | Send a message or another user or sync a message sent from another connection
 sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → OutgoingRecord → WebSocketEffect

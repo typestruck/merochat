@@ -77,6 +77,9 @@ epoch = DateTime (DD.canonicalDate (SU.toEnum 3000) (SU.toEnum 1) (SU.toEnum 1))
 zeroTime ∷ Time
 zeroTime = Time (SU.toEnum 0) (SU.toEnum 0) (SU.toEnum 0) (SU.toEnum 0)
 
+zeroFromMinutes ∷ DateTime → DateTime
+zeroFromMinutes dt = DT.modifyTime (DT.setSecond (SU.fromJust $ DE.toEnum 0) <<< DT.setMillisecond (SU.fromJust $ DE.toEnum 0)) dt
+
 dateToNumber ∷ DateWrapper → Number
 dateToNumber = SC.coerce <<< DDI.unInstant <<< DDI.fromDate <<< SC.coerce
 

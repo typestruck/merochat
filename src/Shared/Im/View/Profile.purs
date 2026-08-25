@@ -5,6 +5,7 @@ import Prelude
 import Shared.Availability
 import Shared.Experiments.Types
 import Shared.Im.Types
+import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.User
 
 import Client.Privilege as CCP
@@ -69,12 +70,9 @@ suggestionProfile model =
       where
       notChatting = DM.isNothing model.chatting
 
+      emptySuggestionsMessage = if model.user.suggestionsFrom == OnlineOnly then "No users currently online :(" else "Could not find suggestions"
       emptySuggestions = HE.div [ HA.class' "suggestion empty retry" ]
-            $
-                  if model.suggestionsFrom == OnlineOnly then
-                        suggestionsFilter model : (SIVR.retryForm "No users currently online :(" $ SpecialRequest NextSuggestion)
-                  else
-                        SIVR.retryForm "Could not find suggestions" $ SpecialRequest NextSuggestion
+            $ suggestionsFilter model : (SIVR.retryForm emptySuggestionsMessage $ SpecialRequest NextSuggestion)
 
       suggestionWarning = HE.div [ HA.class' "suggestion" ] [ welcome model ]
 
@@ -188,16 +186,16 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                           )
                   , HE.div [ HA.class' { "card-description": true, hidden: user.showing /= ShowInfo }, HA.title "See full profile" ]
                           [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                          , HE.div' [ HA.innerHtml $ SM.parse user.description {id : _} ]
+                          , HE.div' [ HA.innerHtml $ SM.parse user.description { id: _ } ]
                           ]
 
                   , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
                           [ SIVR.retry "Failed to load praise" (FetchPraise user.id) model.failedRequests
                           , SIVPR.praiseForm model user
                           , if model.praise.freeToFetch then
-                              HE.div [ HA.class' "ask-list" ] $ SIVPR.praised user.praise
-                          else
-                             HE.div' [ HA.class' "loading" ]
+                                  HE.div [ HA.class' "ask-list" ] $ SIVPR.praised user.praise
+                            else
+                                  HE.div' [ HA.class' "loading" ]
                           ]
 
                   , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts } ]
@@ -285,16 +283,16 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                     )
             , HE.div [ HA.class' { "card-description": true, hidden: suggestion.showing /= ShowInfo } ]
                     [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                    , HE.div' [ HA.innerHtml $ SM.parse suggestion.description {id : _} ]
+                    , HE.div' [ HA.innerHtml $ SM.parse suggestion.description { id: _ } ]
                     ]
 
             , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
                     [ SIVR.retry "Failed to load asks" (FetchPraise suggestion.id) model.failedRequests
                     , SIVPR.praiseForm model suggestion
                     , if model.praise.freeToFetch then
-                              HE.div [ HA.class' "ask-list" ] $ SIVPR.praised suggestion.praise
-                          else
-                             HE.div' [ HA.class' "loading" ]
+                            HE.div [ HA.class' "ask-list" ] $ SIVPR.praised suggestion.praise
+                      else
+                            HE.div' [ HA.class' "loading" ]
                     ]
 
             , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts } ]
@@ -380,7 +378,7 @@ suggestionCards model =
       uncheck p = HE.div_ [ HE.text $ "➡ " <> show p ]
 
       moreCards
-            | model.suggestionsFrom == OnlineOnly = []
+            | model.user.suggestionsFrom == OnlineOnly = []
             | model.freeToFetchSuggestions =
                     [ HE.div [ HA.class' "card card-load-more", HA.onClick FetchMoreSuggestions ]
                             [ HE.i_ [ HE.text "Load more suggestions" ]
@@ -417,7 +415,7 @@ suggestionCards model =
                           , HE.div_ $ map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
                           , HE.div (HA.class' "card-description" : showProfile suggestion.id)
                                   [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                                  , HE.div' [ HA.innerHtml $ SM.parse suggestion.description {id : _} ]
+                                  , HE.div' [ HA.innerHtml $ SM.parse suggestion.description { id: _ } ]
                                   ]
                           ]
                   , case model.showSuggestionChatInput of
@@ -516,7 +514,7 @@ welcomeTemporary model = HE.div [ HA.class' "card-top-welcome-filter" ]
 signUpCall ∷ DateTimeWrapper → Html ImMessage
 signUpCall joined = HE.div [ HA.class' "sign-up-call" ]
       [ HE.text "Enjoying MeroChat?"
-        , HE.a [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit) ] [ HE.text $ " Create an account  " <> remaining ]
+      , HE.a [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit) ] [ HE.text $ " Create an account  " <> remaining ]
       , HE.text " to keep your chats"
       ]
       where
@@ -560,17 +558,17 @@ suggestionsFilter model =
             [ HE.text $ "Showing: " <> filterName
             , SIS.gear [ HA.id $ show SuggestionsFilterMenu, HA.class' "suggestions-filter-gear" ]
             , HE.div [ HA.class' { "user-menu mini": true, visible: model.toggleContextMenu == ShowSuggestionsFilterMenu } ]
-                    [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom /= OnlineOnly && model.suggestionsFrom /= ContactsOnly && model.suggestionsFrom /= FavoritesOnly }, HA.onClick $ ToggleSuggestionsFrom ThisWeek ] [ HE.text "New suggestions" ]
-                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom == OnlineOnly }, HA.onClick $ ToggleSuggestionsFrom OnlineOnly ] [ HE.text "Online users" ]
-                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom == ContactsOnly }, HA.onClick $ ToggleSuggestionsFrom ContactsOnly ] [ HE.text "Contacts" ]
-                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom == FavoritesOnly }, HA.onClick $ ToggleSuggestionsFrom FavoritesOnly ] [ HE.text "Favorites" ]
+                    [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom /= OnlineOnly && model.user.suggestionsFrom /= ContactsOnly && model.user.suggestionsFrom /= FavoritesOnly }, HA.onClick $ ToggleSuggestionsFrom ThisWeek ] [ HE.text "New suggestions" ]
+                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom == OnlineOnly }, HA.onClick $ ToggleSuggestionsFrom OnlineOnly ] [ HE.text "Online users" ]
+                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom == ContactsOnly }, HA.onClick $ ToggleSuggestionsFrom ContactsOnly ] [ HE.text "Contacts" ]
+                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom == FavoritesOnly }, HA.onClick $ ToggleSuggestionsFrom FavoritesOnly ] [ HE.text "Favorites" ]
                     ]
             ]
       where
       filterName
-            | model.suggestionsFrom == OnlineOnly = "online users"
-            | model.suggestionsFrom == ContactsOnly = "contacts"
-            | model.suggestionsFrom == FavoritesOnly = "favorites"
+            | model.user.suggestionsFrom == OnlineOnly = "online users"
+            | model.user.suggestionsFrom == ContactsOnly = "contacts"
+            | model.user.suggestionsFrom == FavoritesOnly = "favorites"
             | otherwise = "new suggestions"
 
 miniSuggestions ∷ ImModel → Html ImMessage

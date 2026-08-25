@@ -1103,6 +1103,7 @@ svg.toolbar-action {
     align-items: center;
     display: flex;
     margin: 8px 0px;
+    color: var(--text-color);
 }
 
 .suggestions-filter svg {

@@ -27,6 +27,7 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Modal (Modal(..))
 import Shared.Options.Page (suggestionsPerPage)
+import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Socket.WebSocket (WebSocket)
@@ -71,7 +72,7 @@ moveSuggestion model by = do
 
 refreshOnlineSuggestions ∷ WebSocket → ImModel → MoreMessages
 refreshOnlineSuggestions webSocket model
-      | model.suggestionsFrom == OnlineOnly = fetchMoreSuggestions webSocket model
+      | model.user.suggestionsFrom == OnlineOnly = fetchMoreSuggestions webSocket model
       | otherwise = model /\ []
 
 -- | Fetch next page of suggestions
@@ -87,7 +88,7 @@ fetchMoreSuggestions webSocket model =
             ]
       where
       more
-            | model.suggestionsFrom == OnlineOnly = EC.liftEffect do
+            | model.user.suggestionsFrom == OnlineOnly = EC.liftEffect do
                     focused ← CCD.documentHasFocus
                     when focused $ CIW.sendPayload webSocket OnlineSuggestions
                     void <<< ET.setTimeout 1500 $ FS.send imAppId RefreshOnlineSuggestions
@@ -95,7 +96,7 @@ fetchMoreSuggestions webSocket model =
             | otherwise = CCN.retryableRequest NextSuggestion DisplayMoreSuggestions $ routes.im.suggestions
                     { query:
                             { skip: suggestionsPerPage * model.suggestionsPage
-                            , sg: model.suggestionsFrom
+                            , sg: model.user.suggestionsFrom
                             }
                     }
 
@@ -107,15 +108,15 @@ displayMoreSuggestions webSocket suggestions model =
       if suggestionsSize == 0 && model.suggestionsPage > 0 then
             fetchMoreSuggestions webSocket model
                   { suggestionsPage = 0
-                  , suggestionsFrom = suggestionsFrom
+                  , user = model.user { suggestionsFrom = suggestionsFrom }
                   }
       else
             model
                   { freeToFetchSuggestions = true
                   , suggesting = _.id <$> DA.head suggestions
                   , suggestions = fixSuggestions suggestions model.suggestions
-                  , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
-                  , suggestionsFrom = suggestionsFrom
+                  , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.user.suggestionsFrom then 0 else model.suggestionsPage + 1
+                  , user = model.user { suggestionsFrom = suggestionsFrom }
                   } /\ effects
       where
       suggestionsSize = DA.length suggestions
@@ -123,19 +124,23 @@ displayMoreSuggestions webSocket suggestions model =
       lowQualityUsersBin = 5
       lowQualityUsersIn = DA.length <<< DA.filter ((_ >= lowQualityUsersBin) <<< _.bin)
       suggestionsFrom
-            | model.suggestionsFrom /= OnlineOnly && model.suggestionsFrom /= ContactsOnly && model.suggestionsFrom /= FavoritesOnly && (suggestionsSize == 0 || lowQualityUsersIn suggestions / suggestionsSize * 100 >= 60) = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
-            | otherwise = model.suggestionsFrom
+            | model.user.suggestionsFrom /= OnlineOnly && model.user.suggestionsFrom /= ContactsOnly && model.user.suggestionsFrom /= FavoritesOnly && (suggestionsSize == 0 || lowQualityUsersIn suggestions / suggestionsSize * 100 >= 60) = DM.fromMaybe ThisWeek $ DE.succ model.user.suggestionsFrom
+            | otherwise = model.user.suggestionsFrom
 
       effects
-            | model.suggestionsFrom == OnlineOnly = [ track ]
+            | model.user.suggestionsFrom == OnlineOnly = [ track ]
             | otherwise = [ scrollToTop, track ]
       scrollToTop = do
-            EC.liftEffect (CCD.unsafeGetElementById Cards >>= WDE.setScrollTop 0.0)
+            EC.liftEffect do
+                  element ← CCD.getElementById Cards
+                  case element of
+                        Nothing → pure unit
+                        Just cards → WDE.setScrollTop 0.0 cards
             pure Nothing
       track = pure $ Just TrackAvailability
 
       fixSuggestions new old
-            | model.suggestionsFrom == OnlineOnly = DA.nubBy (\u v → compare u.id v.id) $ new <> old -- append and remove dups on refreshing online only
+            | model.user.suggestionsFrom == OnlineOnly = DA.nubBy (\u v → compare u.id v.id) $ new <> old -- append and remove dups on refreshing online only
             | otherwise = new <> DA.filter ((backerId == _) <<< _.id) old
 
 -- | Show or hide full user profile
@@ -192,7 +197,7 @@ byAvailability suggestions = DA.snoc (DA.filter ((backerId /= _) <<< _.id) $ DA.
 
 toggleSuggestionsFrom ∷ WebSocket → SuggestionsFrom → ImModel → MoreMessages
 toggleSuggestionsFrom webSocket from model = fetchMoreSuggestions webSocket model
-      { suggestionsFrom = from
+      { user = model.user { suggestionsFrom = from }
       , suggestionsPage = 0
       , suggestions = DA.filter ((backerId == _) <<< _.id) model.suggestions
       , toggleContextMenu = HideContextMenu
