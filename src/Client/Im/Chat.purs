@@ -457,6 +457,7 @@ editMessage message id model =
       setIt = EC.liftEffect do
             input ← CCD.unsafeGetElementById ChatInput
             CCD.setValue input message
+            WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
 
 deleteMessage ∷ Int → WebSocket → ImModel → NoMessages
 deleteMessage id webSocket model =

@@ -12,6 +12,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.App.Banner as SAB
+import Shared.Keydown as SK
 import Shared.Im.Contact as SC
 import Shared.Im.View.ChatHistory as SIVH
 import Shared.Im.View.ChatInput as SIVC

@@ -373,6 +373,7 @@ data ImMessage
       | SetSmallScreen
       | ReceiveMessage WebSocketPayloadClient Boolean
       | TrackAvailability
+      | Escape
       | PreventStop Event
       | AskNotification
       | ToggleAskNotification

@@ -80,7 +80,6 @@ import Shared.User as SUR
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
-import Web.Event.Event (EventType(..))
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
@@ -95,7 +94,7 @@ main = do
       webSocketRef ← CIWE.startWebSocket
       lastActiveRef ← ER.new true
       --im is server side rendered
-      model ← F.resumeMount (SE.toQuerySelector Im) imAppId
+      void $ F.resumeMount (SE.toQuerySelector Im) imAppId
             { view: SIV.view true
             , subscribe:
                     [ FSD.onClick' ToggleUserContextMenu
@@ -107,6 +106,7 @@ main = do
                     , onVisibilityChange (Refocus VisibilityChange)
                     , FSW.onOffline $ CloseWebSocket Always
                     , FS.onCustomEvent toQuote HighlightMessage
+                    -- SK.keyDownOn "Escape" (const Escape) -- to have keydown filtered by key as raw event on document we need to patch up flame -- it is broken as of now
                     ]
             , update: update { webSocketRef, lastActiveRef }
             }
@@ -251,6 +251,7 @@ update st model =
             SetAvatarFromProfile base64 → setAvatar base64 model
             AskNotification → askNotification model
             SetCompletedFields fields → setCompletedFields fields model
+            Escape → escapeFrom model
             ToggleAskNotification → toggleAskNotification model
             CreateUserFromTemporary → registerUser model
             AcknowledgeRules inputted → acknowledgeRules inputted model
@@ -277,11 +278,18 @@ update st model =
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
 
+escapeFrom ∷ ImModel → MoreMessages
+escapeFrom model = case model.modal of
+      HideModal | model.showLargeAvatar -> CIS.toggleLargeAvatar model
+      HideModal | model.fullContactProfileVisible -> CIS.toggleContactProfile model
+      HideModal | DM.isJust model.chatting -> CIS.resumeSuggesting model
+      _ -> model { modal = HideModal } /\ []
+
 toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
-toggleShowing userId toggle for model =
+toggleShowing userId tab for model =
       case for of
-            ForSuggestions → toggleShowingSuggestions userId toggle model
-            ForContacts → toggleShowingContacts userId toggle model
+            ForSuggestions → toggleShowingSuggestions userId tab model
+            ForContacts → toggleShowingContacts userId tab model
 
 toggleShowingSuggestions ∷ Int → ProfileTab → ImModel → MoreMessages
 toggleShowingSuggestions userId toggle model =
