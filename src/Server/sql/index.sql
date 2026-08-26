@@ -1099,7 +1099,8 @@ insert into privileges (feature, name, description, quantity) values
     (300, 'More tags', 'Increased number of max profile tags', 250),
     (400, 'Send links', 'Use markdown links in chats or posts', 1000),
     (401, 'Send audio', 'Send voice messages', 500),
-    (500, 'Send images', 'Use pictures in chats or posts', 2000);
+    (500, 'Send images', 'Use pictures in chats or posts', 2000),
+    (600, 'Throw paper planes', 'Paper plane experiment', 60);
 
 insert into badges (kind, description) values
     (0, 'Admin' ),

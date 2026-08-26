@@ -28,6 +28,7 @@ data Privilege
       | SendLinks
       | SendAudios
       | SendImages
+      | SendPaperPlanes
 
 hasPrivilege ∷ ∀ r. Privilege → { privileges ∷ Array Privilege | r } → Boolean
 hasPrivilege p { privileges } = DA.elem p privileges
@@ -46,7 +47,7 @@ instance EncodeJson Privilege where
 
 instance Bounded Privilege where
       bottom = ReceiveChats
-      top = SendImages
+      top = SendPaperPlanes
 
 instance BoundedEnum Privilege where
       cardinality = Cardinality 1
@@ -62,6 +63,7 @@ instance BoundedEnum Privilege where
             SendLinks → 400
             SendAudios → 401
             SendImages → 500
+            SendPaperPlanes → 600
 
       toEnum = case _ of
             0 → Just ReceiveChats
@@ -74,6 +76,7 @@ instance BoundedEnum Privilege where
             400 → Just SendLinks
             401 → Just SendAudios
             500 → Just SendImages
+            600 → Just SendPaperPlanes
             _ → Nothing
 
 instance Enum Privilege where
@@ -87,7 +90,8 @@ instance Enum Privilege where
             MoreTags → Just SendLinks
             SendLinks → Just SendImages
             SendAudios → Just SendImages
-            SendImages → Nothing
+            SendImages → Just SendPaperPlanes
+            SendPaperPlanes → Nothing
 
       pred = case _ of
             ReceiveChats → Nothing
@@ -100,6 +104,7 @@ instance Enum Privilege where
             SendLinks → Just MoreTags
             SendAudios → Just SendLinks
             SendImages → Just SendAudios
+            SendPaperPlanes → Just SendImages
 
 instance Show Privilege where
       show = DSG.genericShow

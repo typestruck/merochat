@@ -2,6 +2,7 @@ module Shared.Experiments.PaperPlane where
 
 import Prelude
 
+import Client.Privilege as CCP
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe as DM
@@ -10,6 +11,8 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Experiments.Types (ExperimentsMessage(..), ExperimentsModel, PaperPlaneSection(..), PaperPlaneStatus(..))
 import Shared.Options.PaperPlane (maxMessageCharacters, maxPaperPlanes)
+import Shared.Privilege (Privilege(..))
+import Shared.Privilege as SP
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.class' "paper-plane duller" ]
@@ -73,7 +76,9 @@ new model =
                       , HA.onInput SetPlaneMessage
                       , HA.placeholder "What does the world need to know?"
                       ]
-              , if DA.length model.paperPlane.thrown == maxPaperPlanes then
+              , if  not $ SP.hasPrivilege SendPaperPlanes model.user then
+                      CCP.notEnoughKarma "throw paper planes" RedirectKarma
+               else if DA.length model.paperPlane.thrown == maxPaperPlanes then
                       HE.div [ HA.class' "paper-waiting" ] [ HE.text "Waiting for planes to be caught..." ]
                 else if model.paperPlane.loading then
                       HE.div' [ HA.class' "loading" ]

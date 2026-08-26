@@ -32,11 +32,7 @@ update ∷ Update ExperimentsModel ExperimentsMessage
 update model =
       case _ of
             ToggleVisibility modal → toggleVisibility modal model
-            RedirectKarma → model /\
-                  [ do
-                          liftEffect <<< FS.send imAppId <<< SIT.SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
-                          pure Nothing
-                  ]
+            RedirectKarma → redirectKarma model
             UpdatePrivileges { privileges } → F.noMessages model { user { privileges = privileges } }
             SetCurrentExperiment experiment → setCurrentExperiment experiment model
 
@@ -70,6 +66,12 @@ update model =
             StartDebate → startDebate model
             AfterStartDebate id → afterStartDebate id model
             ToggleFormat → toggleFormat model
+
+redirectKarma ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+redirectKarma model = model /\ [redirect]
+      where redirect  =  do
+              liftEffect <<< FS.send imAppId <<< SIT.SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
+              pure Nothing
 
 toggleVisibility ∷ ScreenModal → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 toggleVisibility modal model = model { debate = model.debate { showFormat = false }, current = current, visible = isExperimentTab } /\ []
@@ -278,4 +280,3 @@ toggleFormat model =
       model
             { debate = model.debate { showFormat = not model.debate.showFormat }
             } /\ []
-
