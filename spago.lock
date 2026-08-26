@@ -4660,7 +4660,7 @@
       },
       "flame": {
         "git": "https://github.com/easafe/purescript-flame.git",
-        "ref": "v1.6.0",
+        "ref": "b7d7c47a78e7677234ca74b2640c6292d87a7e02",
         "dependencies": [
           "aff",
           "argonaut-codecs",
@@ -5230,7 +5230,7 @@
     "flame": {
       "type": "git",
       "url": "https://github.com/easafe/purescript-flame.git",
-      "rev": "40567665bb2af90a3746a5f6e884bf7d33a371dc",
+      "rev": "b7d7c47a78e7677234ca74b2640c6292d87a7e02",
       "dependencies": [
         "aff",
         "argonaut-codecs",

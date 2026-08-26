@@ -3,6 +3,7 @@ module Client.KarmaPrivileges.Main where
 import Prelude
 
 import Client.KarmaPrivileges.Update as CLU
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
@@ -15,6 +16,6 @@ import Client.AppId (karmaPrivilegesAppId)
 main ∷ Effect Unit
 main = void $ F.resumeMount (QuerySelector "#karma-leaderboard") karmaPrivilegesAppId
       { view: SLV.view
-      , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+      , subscribe: [ FS.onCustomEvent' modalVisible (pure <<< Just <<< ToggleVisibility) ]
       , update: CLU.update
       }

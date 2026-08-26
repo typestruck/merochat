@@ -3,6 +3,7 @@ module Client.InternalBacker.Main where
 import Prelude
 
 import Client.InternalBacker.Update as CIHU
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
@@ -15,6 +16,6 @@ main ∷ Effect Unit
 main =
       void $ F.resumeMount_ (QuerySelector "#backer")
             { view: SIHV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+            , subscribe: [ FS.onCustomEvent' modalVisible (pure <<< Just <<< ToggleVisibility) ]
             , update: CIHU.update
             }

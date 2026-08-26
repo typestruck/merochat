@@ -6,6 +6,7 @@ import Prelude
 
 import Client.AppId (feedbackAppId)
 import Client.Feedback.Update as CFU
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame as F
 import Flame.Subscription as FS
@@ -20,5 +21,5 @@ main = do
       void $ F.resumeMount (SE.toQuerySelector FeedbackForm) feedbackAppId
             { view: SFV.view
             , update: CFU.update
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+            , subscribe: [ FS.onCustomEvent' modalVisible (pure <<< Just <<< ToggleVisibility) ]
             }

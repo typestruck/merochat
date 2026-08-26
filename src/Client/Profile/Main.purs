@@ -19,6 +19,6 @@ main ∷ Effect Unit
 main = do
       void $ F.resumeMount (SE.toQuerySelector ProfileEditionForm) profileAppId
             { view: SPV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+            , subscribe: [ FS.onCustomEvent' modalVisible (pure <<< Just <<< ToggleVisibility) ]
             , update: CPU.update
             }

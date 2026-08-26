@@ -6,24 +6,30 @@ import Client.Dom as CCD
 import Data.Maybe (Maybe(..))
 import Flame (Key)
 import Flame.Html.Event as HA
-import Flame.Types (NodeData)
+import Flame.Subscription.Internal.Create as FS
+import Flame.Types (NodeData, Source, Subscription)
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 import Web.UIEvent.KeyboardEvent as WUK
 
-keyDownOn ∷ ∀ m. Key → (Event → m) → NodeData m
-keyDownOn keyName message = HA.createRawEvent "keydown" handler
-      where
-      handler event = do
-            let
-                  keyboardEvent = SU.fromJust $ WUK.fromEvent event
-                  key = WUK.key keyboardEvent
+keyHandler ∷ ∀ m. Key → (Event → m) → Event → Maybe m
+keyHandler keyName message event =
+      let
+            keyboardEvent = SU.fromJust $ WUK.fromEvent event
+            key = WUK.key keyboardEvent
+      in
             if key == keyName && not WUK.shiftKey keyboardEvent then
-                  pure <<< Just $ message event
+                  Just $ message event
             else
-                  pure Nothing
+                  Nothing
+
+keyDownOn ∷ ∀ m. Key → (Event → m) → NodeData m
+keyDownOn keyName message = HA.createRawEvent "keydown" (pure <<< keyHandler keyName message)
+
+keyDownOnSubscription ∷ ∀ m. Source → Key → (Event → m) → Subscription m
+keyDownOnSubscription source keyName message = FS.createRawSubscription source "keydown" (pure <<< keyHandler keyName message)
 
 onEnter ∷ ∀ m. (String → m) → NodeData m
 onEnter message = HA.createRawEvent "keydown" handler

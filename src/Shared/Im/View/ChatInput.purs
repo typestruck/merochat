@@ -124,6 +124,7 @@ chatBarInput eid elementId model = HE.fragment
             _ → map (_.name <<< _.user) chatting
 
       filterEnterKeydown
+            | model.messageEnter && not model.smallScreen = [ SK.keyDownOn "Enter" (EnterSendMessage elementId), SK.keyDownOn "Escape" (const ResumeSuggesting) ]
             | model.messageEnter = [ SK.keyDownOn "Enter" (EnterSendMessage elementId) ]
             | otherwise = []
 

@@ -3,6 +3,7 @@ module Client.Experiments.Main where
 import Prelude
 
 import Client.Experiments.Update as CEU
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
@@ -16,6 +17,6 @@ main ∷ Effect Unit
 main =
       void $ F.resumeMount (QuerySelector "#chat-experiments") experimentsAppId
             { view: SEV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+            , subscribe: [ FS.onCustomEvent' modalVisible (pure <<< Just <<< ToggleVisibility) ]
             , update: CEU.update
             }

@@ -66,11 +66,12 @@ import Shared.Element (ElementId(..))
 import Shared.Element as SE
 import Shared.Im.Contact as SCN
 import Shared.Im.View as SIV
+import Shared.Keydown as SK
 import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (passwordMinCharacters)
-import Shared.Profile.Types as SPT
 import Shared.Profile.Mode (ProfileMode(..))
+import Shared.Profile.Types as SPT
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.ResizeInput as SIR
 import Shared.Routes (routesSpec)
@@ -93,6 +94,7 @@ main ∷ Effect Unit
 main = do
       webSocketRef ← CIWE.startWebSocket
       lastActiveRef ← ER.new true
+      smallScreen ← CISS.checkSmallScreen
       --im is server side rendered
       void $ F.resumeMount (SE.toQuerySelector Im) imAppId
             { view: SIV.view true
@@ -105,13 +107,11 @@ main = do
                     , onBlur (Refocus FocusBlur)
                     , onVisibilityChange (Refocus VisibilityChange)
                     , FSW.onOffline $ CloseWebSocket Always
-                    , FS.onCustomEvent toQuote HighlightMessage
-                    -- SK.keyDownOn "Escape" (const Escape) -- to have keydown filtered by key as raw event on document we need to patch up flame -- it is broken as of now
-                    ]
+                    , FS.onCustomEvent' toQuote (pure <<< Just <<< HighlightMessage)
+                    ] <> (if smallScreen then [] else [ SK.keyDownOnSubscription Document "Escape" (const Escape) ])
             , update: update { webSocketRef, lastActiveRef }
             }
 
-      smallScreen ← CISS.checkSmallScreen
       pwa ← CIP.checkPwa
 
       when smallScreen CISS.sendSmallScreen
@@ -280,10 +280,10 @@ update st model =
 
 escapeFrom ∷ ImModel → MoreMessages
 escapeFrom model = case model.modal of
-      HideModal | model.showLargeAvatar -> CIS.toggleLargeAvatar model
-      HideModal | model.fullContactProfileVisible -> CIS.toggleContactProfile model
-      HideModal | DM.isJust model.chatting -> CIS.resumeSuggesting model
-      _ -> model { modal = HideModal } /\ []
+      HideModal | model.showLargeAvatar → CIS.toggleLargeAvatar model
+      HideModal | model.fullContactProfileVisible → CIS.toggleContactProfile model
+      HideModal | DM.isJust model.chatting → CIS.resumeSuggesting model
+      _ → CIU.modal HideModal model
 
 toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
 toggleShowing userId tab for model =

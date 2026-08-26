@@ -170,8 +170,8 @@ workspace:
         - web-html
         - web-uievents
       git: https://github.com/easafe/purescript-flame.git
-      ref: v1.6.0
-    payload:
+      ref: b7d7c47a78e7677234ca74b2640c6292d87a7e02
+    payload: 
       dependencies:
         - aff
         - affjax

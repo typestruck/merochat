@@ -5,6 +5,7 @@ import Prelude
 import Client.AppId (settingsAppId)
 import Client.EventTypes (modalVisible)
 import Client.Settings.Update as CSU
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame as F
 import Flame.Subscription as FS
@@ -16,6 +17,6 @@ main ∷ Effect Unit
 main =
       void $ F.resumeMount (QuerySelector "#settings-edition") settingsAppId
             { view: SSV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+            , subscribe: [ FS.onCustomEvent' modalVisible (pure <<< Just <<< ToggleVisibility) ]
             , update: CSU.update
             }

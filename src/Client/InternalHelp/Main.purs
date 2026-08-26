@@ -3,6 +3,7 @@ module Client.InternalHelp.Main where
 import Prelude
 
 import Client.InternalHelp.Update as CIHU
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
@@ -15,6 +16,6 @@ main ∷ Effect Unit
 main =
       void $ F.resumeMount_ (QuerySelector "#internal-help")
             { view: SIHV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
+            , subscribe: [ FS.onCustomEvent' modalVisible (pure <<< Just <<< ToggleVisibility) ]
             , update: CIHU.update
             }

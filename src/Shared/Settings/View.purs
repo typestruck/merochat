@@ -194,7 +194,7 @@ chatsSection model = HE.div [ HA.id $ show ChatSettings ]
                       ]
               , requestStatus RequestSaveSuggestions "Saved!" model.requestStatus
               ]
-      , HE.br
+
       , HE.div [] [ HE.text "Chat background" ]
       , HE.div_
               [ HE.input [ HA.id "background-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.ownBackground, HA.onChange (SetSField (_ { ownBackground = not model.ownBackground })) ]
