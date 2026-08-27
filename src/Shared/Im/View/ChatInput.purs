@@ -10,14 +10,15 @@ import Shared.Availability
 import Shared.Im.Types
 
 import Client.Dom as CCD
-import Client.Privilege as CCP
 import Client.Im.Swipe as CIT
+import Client.Privilege as CCP
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
+import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -97,16 +98,16 @@ chatBarInput eid elementId model = HE.fragment
                       ]
               , HE.div [ HA.class' "chat-input-area" ]
                       [ emojiButton model
-                      , HE.textarea' {- $
-                        ( if elementId == ChatInput then [ HA.onKeydown (SetTyping <<< DT.snd) ] else [])
-                              <> -}
-                              ( filterEnterKeydown <>
-                                      [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
-                                      , HA.id $ show elementId
-                                      , HA.placeholder ("Type here to message " <> recipientName)
-                                      , HA.onInput' ResizeChatInput
-                                      , HA.autocomplete "off"
-                                      ]
+                      , HE.textarea'
+                              ( typingStatus
+                                      <> filterEnterKeydown
+                                      <>
+                                            [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
+                                            , HA.id $ show elementId
+                                            , HA.placeholder ("Type here to message " <> recipientName)
+                                            , HA.onInput' ResizeChatInput
+                                            , HA.autocomplete "off"
+                                            ]
                               )
                       , HE.div [ HA.class' "chat-right-buttons" ]
                               ( [ imageButton
@@ -122,6 +123,10 @@ chatBarInput eid elementId model = HE.fragment
       recipientName = DM.fromMaybe "" $ case eid of
             Left suggestionId → map _.name $ DA.find ((suggestionId == _) <<< _.id) model.suggestions
             _ → map (_.name <<< _.user) chatting
+
+      typingStatus
+            | elementId == ChatInput = [ HA.onKeydown (SetTyping <<< DT.snd) ]
+            | otherwise = []
 
       filterEnterKeydown
             | model.messageEnter && not model.smallScreen = [ SK.keyDownOn "Enter" (EnterSendMessage elementId), SK.keyDownOn "Escape" (const ResumeSuggesting) ]

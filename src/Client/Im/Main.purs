@@ -150,8 +150,7 @@ update st model =
             ToggleSuggestionChatInput id → CIS.toggleSuggestionChatInput id model
             DeleteMessage id → CIC.deleteMessage id webSocket model
             SetTyping text → CIC.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
-            NoTyping id → F.noMessages $ CIC.toggleTyping id false model
-            TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
+            ToggleTyping userId tId → F.noMessages $ CIC.toggleTyping userId tId model
             MessageFromExperiment userId message → CIC.messageFromExperiment userId message webSocket model
 
             --contacts

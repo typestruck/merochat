@@ -8,7 +8,7 @@ import Data.BigInt (BigInt)
 import Data.BigInt as BI
 import Data.DateTime (DateTime)
 import Data.Int as DI
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
@@ -86,6 +86,7 @@ fromFlatContact fc =
       , scrollChatDown: true
       , user: fromFlatUser fc
       , typing: false
+      , typingId: Nothing
       }
 
 fromFlatUser ∷ ∀ r. FlatFields r → User

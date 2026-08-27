@@ -96,10 +96,9 @@ compactProfile contact model =
             [ HE.div [ HA.class' "profile-contact-top" ]
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
                     , HE.img $ [ SA.async, SA.decoding "lazy", HA.src $ SA.fromAvatar contact.user ] <> showProfileAction
-                    , HE.div (HA.class' "profile-contact-header" : [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ])
+                    , HE.div (HA.class' "profile-contact-header" : [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]) $
                             [ HE.div [ HA.class' "contact-name-badge" ] $ HE.h1 [ HA.class' "contact-name" ] ([ HE.text contact.user.name ]) : badges contact.user.badges
-                            , availableStatus
-                            ]
+                            ] <> typingAvailability
                     , HE.div [ HA.class' "profile-contact-deets" ]
                             [ HE.div [ HA.class' "outer-user-menu" ] [ SIA.contextMenu $ show CompactProfileContextMenu ]
                             ]
@@ -119,10 +118,10 @@ compactProfile contact model =
             | contact.user.unseenPosts > 0 = [ HA.class' "avatar-profile newly-posted", HA.title "Click to see recent posts", HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts ]
             | otherwise = [ HA.class' "avatar-profile", HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
-      availableStatus =
-            HE.div
-                  [ HA.class' { hidden: contact.typing && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus } ]
-                  [ HE.text $ show contact.user.availability ]
+      typingAvailability
+            | contact.typing && model.user.typingStatus && contact.user.typingStatus = [ HE.text "Typing..." ]
+            | model.user.onlineStatus && contact.user.onlineStatus = [ HE.text $ show contact.user.availability ]
+            | otherwise = []
 
 -- | Full screen profile view
 fullProfile ∷ User → ImModel → Html ImMessage

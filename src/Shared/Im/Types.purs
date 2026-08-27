@@ -86,6 +86,7 @@ type BaseContact fields =
 type Contact = BaseContact
       ( user ∷ User
       , typing ∷ Boolean
+      , typingId ∷ Maybe TimeoutIdWrapper
       , draft ∷ String
       , scrollChatDown ∷ Boolean
       , history ∷ Array HistoryMessage
@@ -138,7 +139,6 @@ type Im =
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
       , lastTyping ∷ DateTimeWrapper
-      , typingIds ∷ Array TimeoutIdWrapper -- TimeoutId constructor is private
       --the current logged in user
       , user ∷ User
       , suggesting ∷ Maybe Int
@@ -191,6 +191,11 @@ type Im =
 type ImModel = Record Im
 
 newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
+
+derive newtype instance Eq TimeoutIdWrapper
+
+instance Show TimeoutIdWrapper where
+      show _ = "TimeoutId"
 
 data WebSocketConnectionStatus = Connected | Reconnect | Closed
 
@@ -323,8 +328,7 @@ data ImMessage
       | AudioMessage Touch
       | SendAudioMessage String
       | SetTyping String
-      | NoTyping Int
-      | TypingId TimeoutId
+      | ToggleTyping Int (Maybe TimeoutIdWrapper)
       | MessageFromExperiment Int String
 
       --changelog

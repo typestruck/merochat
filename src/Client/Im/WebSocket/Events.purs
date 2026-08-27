@@ -291,12 +291,13 @@ receiveEditedMessage webSocket isFocused payload model =
 
 -- | Set typing status and a timeout to clear it
 receiveTyping ∷ { id ∷ Int } → ImModel → MoreMessages
-receiveTyping received model = CIC.toggleTyping received.id true model /\
-      [ liftEffect do
-              DT.traverse_ (ET.clearTimeout <<< SC.coerce) model.typingIds
-              newId ← ET.setTimeout 1000 <<< FS.send imAppId $ NoTyping received.id
-              pure <<< Just $ TypingId newId
-      ]
+receiveTyping received model = model /\ [ clear ]
+      where
+      currentTypingId = SIC.findContact received.id model.contacts >>= _.typingId
+      clear = liftEffect do
+            DT.traverse_ (ET.clearTimeout <<< SC.coerce) currentTypingId
+            newId ← ET.setTimeout 1000 <<< FS.send imAppId $ ToggleTyping received.id Nothing
+            pure <<< Just <<< ToggleTyping received.id <<< Just $ SC.coerce newId
 
 -- | User privileges are requested on socket (re)connection
 receivePrivileges ∷ { karma ∷ Int, privileges ∷ Array Privilege } → ImModel → NoMessages

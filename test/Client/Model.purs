@@ -30,7 +30,6 @@ run m f = do
 model ∷ ImModel
 model =
       { freeToFetchSuggestions: true
-      , typingIds: []
       , showBuildProfile: true
       , highlighted: Nothing
       , showChangelogs: false

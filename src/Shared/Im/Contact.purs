@@ -21,6 +21,7 @@ defaultContact id chatted =
       , scrollChatDown: true
       , chatAge: 0.0
       , typing: false
+      , typingId: Nothing
       }
 
 findContact ∷ Int → Array Contact → Maybe Contact

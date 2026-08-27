@@ -44,7 +44,7 @@ import Shared.DateTime as ST
 import Shared.Element as SE
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), SelectedImage, ShowContextMenu(..), Touch, Turn, WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), SelectedImage, ShowContextMenu(..), TimeoutIdWrapper, Touch, Turn, WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Modal (ChatModal(..), Modal(..))
@@ -342,11 +342,11 @@ sendTyping text now webSocket model =
             pure Nothing
 
 -- | Show or hide typing status
-toggleTyping ∷ Int → Boolean → ImModel → ImModel
-toggleTyping userId status model = model { contacts = upd <$> model.contacts }
+toggleTyping ∷ Int → Maybe TimeoutIdWrapper → ImModel → ImModel
+toggleTyping userId tId model = model { contacts = upd <$> model.contacts }
       where
       upd contact
-            | contact.user.id == userId = contact { typing = status }
+            | contact.user.id == userId = contact { typing = DM.isJust tId, typingId = tId }
             | otherwise = contact
 
 toggleMessageEnter ∷ ImModel → NoMessages
