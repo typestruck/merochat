@@ -146,6 +146,7 @@ type Im =
       , smallScreen ∷ Boolean
       , showMiniChatInput ∷ Boolean
       , showCollapsedMiniSuggestions ∷ Boolean
+      , collapsedSidebar ∷ Boolean
       , editing ∷ Maybe Int
       , highlighted ∷ Maybe Int
       --used to signal that the page should be reloaded
@@ -340,8 +341,10 @@ data ImMessage
       --posts
       | DisplayPosts Int (Array Post)
       | ToggleSuggestionPostForm
-      | SetPostText (Maybe String)
       | SetPostLink (Maybe String)
+      | SetPostText (Maybe String)
+      | ToggleCollapsedMiniSuggestions
+      | ToggleSidebar
       | SetPostCaption (Maybe String)
       | SendPost
       | SetPostImage SelectedImage
@@ -395,7 +398,6 @@ data ImMessage
       | SetField (ImModel → ImModel)
       | TerminateTemporaryUser
       | ToggleFortune Boolean
-      | ToggleCollapsedMiniSuggestions
       | DisplayFortune String
       | RequestFailed RequestFailure
       | SetPrivacySettings PrivacySettings

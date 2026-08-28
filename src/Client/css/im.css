@@ -210,6 +210,106 @@ textarea {
     flex-direction: column;
 }
 
+#im.collapsed {
+    grid-template-columns: 80px 1fr;
+}
+
+#im.collapsed .contact-box {
+    min-width: 80px;
+    width: 80px;
+    padding: 0;
+}
+
+#im.collapsed .contact-box .settings {
+    justify-content: center;
+    padding: 5px;
+}
+
+#im.collapsed .contact-box .settings-name,
+#im.collapsed .contact-box .outer-user-menu {
+    display: none;
+}
+
+.collapsed-user-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 10px 0;
+}
+
+#im.collapsed .contact-box .collapsed-avatar-wrapper {
+    position: relative;
+    display: inline-block;
+    padding: 10px 0;
+}
+
+.collapsed-user-menu svg {
+    padding-top: 5px;
+}
+
+.collapsed-user-menu .changelog-count {
+    margin-top: -10px;
+    margin-left: 10px;
+}
+
+#im.collapsed .contact-box .contact-wrapper {
+    align-items: center;
+}
+
+#im.collapsed .contact-box .contact {
+    justify-content: center;
+    padding: 5px 0;
+    width: 100%;
+}
+
+#im.collapsed .contact-box .contact-profile,
+#im.collapsed .contact-box .contact-options {
+    display: none;
+}
+
+#im.collapsed .contact-box .avatar-contact-list-div {
+    width: auto;
+    min-width: unset;
+    min-height: unset;
+}
+
+#im.collapsed .contact-box .avatar-contact-list {
+    width: 48px;
+    height: 48px;
+}
+
+.collapsed-avatar-wrapper .online-indicator {
+    position: absolute;
+    top: 9px;
+    right: 2px;
+}
+
+.collapsed-avatar-wrapper .unread-messages {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 0;
+    font-size: 0.92em;
+}
+
+#im.collapsed .contact-box .contact-list {
+    overflow-y: auto;
+}
+
+#im.collapsed .contact-box .fortune,
+#im.collapsed .contact-box .suggestions-call,
+#im.collapsed .contact-box .loading-contacts,
+#im.collapsed .contact-box .contact-list .suggestions-call,
+#im.collapsed .contact-box .retry,
+#im.collapsed .contact-box .suggestion-box-error {
+    display: none;
+}
+
+#im.collapsed .contact-box .settings .avatar-settings {
+    cursor: pointer;
+}
+
 #temporary-user-sign-up-form {
     order: 0;
     margin: 0 auto;
@@ -1576,6 +1676,7 @@ input:not(type=button):focus {
     position: absolute;
     width: 600px;
     background: var(--im-second-background-color);
+    z-index: 34;
     padding: 10px 15px;
     border-radius: 10px;
     right: -323px;
@@ -2717,6 +2818,10 @@ label {
     stroke: none;
 }
 
+.inverted-merochat-svg.collapsed {
+    width: 30px;
+}
+
 .inbox-inverted-merochat-svg {
     width: 110px;
     height: 20px;
@@ -3225,6 +3330,13 @@ label {
     max-width: 500px;
 }
 
+.collapse-svg {
+    position: absolute;
+    top: 42px;
+    right: -25px;
+    width: 32px !important;
+    height: 32px !important;
+}
 
 @media (max-width:1279px) {
     #im {
@@ -3263,6 +3375,7 @@ label {
 
     .card-top-header,
     .svg-close-profile,
+    .collapse-svg,
     .suggestions-home {
         display: none;
     }

@@ -59,55 +59,81 @@ contactList isClientRender model =
                                 [ HA.class' { contact: true, "chatting-contact": chattingId == Just contact.user.id }
                                 , HA.onClick $ if backingCall then SpecialRequest (ToggleModal $ Screen ShowBacker) else ResumeChat contact.user.id
                                 ]
-                                [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && model.user.onlineStatus then show contact.user.availability else "" ]
-                                        [ HE.img
-                                                ( if contact.user.unseenPosts > 0 then
-                                                        [ SA.async
-                                                        , SA.decoding "lazy"
-                                                        , HA.class' "avatar-contact-list newly-posted"
-                                                        , HA.onClick $ ResumeChat contact.user.id
-                                                        , HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts
-                                                        , HA.src $ SA.fromAvatar contact.user
+                                ( if model.collapsedSidebar then
+                                        [ HE.div [ HA.class' "collapsed-avatar-wrapper" ]
+                                                [ HE.div [ HA.class' "avatar-contact-list-div", HA.title contact.user.name ]
+                                                        [ HE.img
+                                                                ( if contact.user.unseenPosts > 0 then
+                                                                        [ SA.async
+                                                                        , SA.decoding "lazy"
+                                                                        , HA.class' "avatar-contact-list newly-posted"
+                                                                        , HA.onClick $ ResumeChat contact.user.id
+                                                                        , HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts
+                                                                        , HA.src $ SA.fromAvatar contact.user
+                                                                        ]
+                                                                  else
+                                                                        [ SA.async
+                                                                        , SA.decoding "lazy"
+                                                                        , HA.class' "avatar-contact-list"
+                                                                        , HA.src $ SA.fromAvatar contact.user
+                                                                        ]
+                                                                )
                                                         ]
-                                                  else
-                                                        [ SA.async
-                                                        , SA.decoding "lazy"
-                                                        , HA.class' "avatar-contact-list"
-                                                        , HA.src $ SA.fromAvatar contact.user
-                                                        ]
-                                                )
-                                        ]
-                                , HE.div [ HA.class' "contact-profile" ]
-                                        [ HE.div [ HA.class' "contact-online-wrapper" ]
-                                                [ HE.span [ HA.class' "contact-name" ] [ HE.text contact.user.name ]
                                                 , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.user.availability /= Online || not contact.user.onlineStatus || not model.user.onlineStatus } ]
+                                                , HE.div [ HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 } ] [ HE.span [ HA.class' "unread-number" ] [ HE.text $ show numberUnreadMessages ] ]
                                                 ]
-                                        , if contact.typing && model.user.typingStatus && contact.user.typingStatus then
-                                                HE.div [ HA.class' "contact-list-last-message duller typing" ] [ HE.p_ [ HE.text "Typing..." ] ]
-                                          else if model.user.lastMessageOnContactList then
-                                                if not $ DS.null contact.draft then
-                                                      HE.div' [ HA.class' "contact-list-last-message duller message-draft", HA.innerHtml $ SM.parseRestricted ("Draft: " <> contact.draft) ]
-                                                else
-                                                      case lastHistoryEntry of
-                                                            Just entry → case entry.reaction of
-                                                                  Just reaction → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ "Reacted with " <> reaction ] ]
-                                                                  Nothing → HE.div' [ HA.class' "contact-list-last-message duller", HA.innerHtml $ SM.parseRestricted entry.content ]
-                                                            _ → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text "No messages yet" ] ]
-                                          else if model.user.onlineStatus && contact.user.onlineStatus then
-                                                HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ show contact.user.availability ] ]
-                                          else
-                                                HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.text "" ]
-
                                         ]
-                                , HE.div [ HA.class' "contact-options" ]
-                                        case lastHistoryEntry of
-                                              Just entry →
-                                                    [ HE.span [ HA.class' { duller: true, hidden: not isClientRender || not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.ago $ SC.coerce entry.date ]
-                                                    , HE.div [ HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 } ] [ HE.span [ HA.class' "unread-number" ] [ HE.text $ show numberUnreadMessages ] ]
-                                                    , HE.div [ HA.class' { "duller": true, hidden: numberUnreadMessages > 0 || entry.sender == contact.user.id || not contact.user.readReceipts || not model.user.readReceipts } ] [ HE.text $ show entry.status ]
-                                                    ]
-                                              Nothing → []
-                                ]
+                                  else
+                                        [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && model.user.onlineStatus then show contact.user.availability else "" ]
+                                                [ HE.img
+                                                        ( if contact.user.unseenPosts > 0 then
+                                                                [ SA.async
+                                                                , SA.decoding "lazy"
+                                                                , HA.class' "avatar-contact-list newly-posted"
+                                                                , HA.onClick $ ResumeChat contact.user.id
+                                                                , HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts
+                                                                , HA.src $ SA.fromAvatar contact.user
+                                                                ]
+                                                          else
+                                                                [ SA.async
+                                                                , SA.decoding "lazy"
+                                                                , HA.class' "avatar-contact-list"
+                                                                , HA.src $ SA.fromAvatar contact.user
+                                                                ]
+                                                        )
+                                                ]
+                                        , HE.div [ HA.class' "contact-profile" ]
+                                                [ HE.div [ HA.class' "contact-online-wrapper" ]
+                                                        [ HE.span [ HA.class' "contact-name" ] [ HE.text contact.user.name ]
+                                                        , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.user.availability /= Online || not contact.user.onlineStatus || not model.user.onlineStatus } ]
+                                                        ]
+                                                , if contact.typing && model.user.typingStatus && contact.user.typingStatus then
+                                                        HE.div [ HA.class' "contact-list-last-message duller typing" ] [ HE.p_ [ HE.text "Typing..." ] ]
+                                                  else if model.user.lastMessageOnContactList then
+                                                        if not $ DS.null contact.draft then
+                                                              HE.div' [ HA.class' "contact-list-last-message duller message-draft", HA.innerHtml $ SM.parseRestricted ("Draft: " <> contact.draft) ]
+                                                        else
+                                                              case lastHistoryEntry of
+                                                                    Just entry → case entry.reaction of
+                                                                          Just reaction → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ "Reacted with " <> reaction ] ]
+                                                                          Nothing → HE.div' [ HA.class' "contact-list-last-message duller", HA.innerHtml $ SM.parseRestricted entry.content ]
+                                                                    _ → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text "No messages yet" ] ]
+                                                  else if model.user.onlineStatus && contact.user.onlineStatus then
+                                                        HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ show contact.user.availability ] ]
+                                                  else
+                                                        HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.text "" ]
+
+                                                ]
+                                        , HE.div [ HA.class' "contact-options" ]
+                                                case lastHistoryEntry of
+                                                      Just entry →
+                                                            [ HE.span [ HA.class' { duller: true, hidden: not isClientRender || not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.ago $ SC.coerce entry.date ]
+                                                            , HE.div [ HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 } ] [ HE.span [ HA.class' "unread-number" ] [ HE.text $ show numberUnreadMessages ] ]
+                                                            , HE.div [ HA.class' { "duller": true, hidden: numberUnreadMessages > 0 || entry.sender == contact.user.id || not contact.user.readReceipts || not model.user.readReceipts } ] [ HE.text $ show entry.status ]
+                                                            ]
+                                                      Nothing → []
+                                        ]
+                                )
                         , HE.hr' [ HA.class' "contact-ruler" ]
                         ]
 

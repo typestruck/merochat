@@ -65,6 +65,7 @@ template payload = do
             , changelogs: []
             , showChangelogs: false
             , showCollapsedMiniSuggestions: false
+            , collapsedSidebar: false
             , showSuggestionsPostForm: payload.user.totalPosts == 0
             , temporaryPassword: Nothing
             , enableNotificationsVisible: false

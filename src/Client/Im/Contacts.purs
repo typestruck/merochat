@@ -225,6 +225,9 @@ notifyTrack model userIds = track $ CIU.notifyUnreadChats model userIds
       where
       track (m /\ a) = m /\ ((pure $ Just TrackAvailability) : a)
 
+toggleSidebar ∷ ImModel → NoMessages
+toggleSidebar model = model { collapsedSidebar = not model.collapsedSidebar } /\ []
+
 deleteChat ∷ Int → ImModel → MoreMessages
 deleteChat userId model =
       case lastMessageId of

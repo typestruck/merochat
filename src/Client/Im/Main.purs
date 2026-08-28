@@ -12,6 +12,7 @@ import Client.EventTypes (toQuote)
 import Client.File as CCF
 import Client.Im.Asks as CIA
 import Client.Im.Changelog as CICL
+import Client.Im.Contacts as CICNT
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
@@ -237,6 +238,7 @@ update st model =
             FetchChangelog → CICL.fetchChangelog model
             DisplayChangelog changelogs → CICL.displayChangelog changelogs model
             ToggleChangelog → CICL.toggleChangelog model
+            ToggleSidebar → CICNT.toggleSidebar model
             PerformChangelogAction action value → CICL.performChangelogAction action value model
 
             --main

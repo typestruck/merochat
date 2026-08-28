@@ -1,12 +1,10 @@
 module Shared.Im.View.UserMenu where
 
 import Prelude
-import Shared.Experiments.Types
 import Shared.Im.Types
 
 import Data.Array as DA
 import Data.Maybe as DM
-import Droplet.Language (count)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -21,14 +19,33 @@ import Shared.Profile.Mode (ProfileMode(..))
 
 userMenu ∷ ImModel → Html ImMessage
 userMenu model =
-      HE.div [ HA.class' "settings" ]
-            [ header model
-            , HE.div [ HA.class' "outer-user-menu" ]
+      HE.div [ HA.class' { "settings": true, collapsed: model.collapsedSidebar } ] $
+            if model.collapsedSidebar then
+                  [ HE.div [ HA.class' "collapsed-user-menu", HA.onClick ToggleSidebar ]
+                          ( [ HE.img [ HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user, HA.title "Expand side bar" ]
+                            ] <> changelogs
+                          )
+                  ]
+            else
+                  [ header model
+                  , HE.div [ HA.class' "outer-user-menu" ]
+                          [ envelope [ HA.viewBox "0 0 122.88 78.607", HA.class' "svg-inbox", HA.onClick ToggleChangelog, HA.title "MeroChat updates" ]
+                          , changelogCount model
+                          , changelogInbox model
+                          , SIS.gear [ HA.onClick <<< SpecialRequest $ ToggleModal (Screen $ if model.smallScreen then ShowMenu else ShowProfile Edit) ]
+                          , collapseSvg
+                          ]
+                  ]
+      where
+      changelogs
+            | DA.length (DA.filter (not <<< _.read) model.changelogs) > 0 =
                     [ envelope [ HA.viewBox "0 0 122.88 78.607", HA.class' "svg-inbox", HA.onClick ToggleChangelog, HA.title "MeroChat updates" ]
                     , changelogCount model
-                    , changelogInbox model
-                    , SIS.gear [ HA.onClick <<< SpecialRequest $ ToggleModal (Screen $ if model.smallScreen then ShowMenu else ShowProfile Edit) ]
                     ]
+            | otherwise = []
+      collapseSvg = HE.svg [ HA.class' "svg-32 collapse-svg", HA.viewBox "0 0 200 200", HA.onClick ToggleSidebar ]
+            [ HE.path' [ HA.d "M80 60 L40 100 L80 140", HA.fill "none", HA.strokeWidth "17", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
+            , HE.path' [ HA.d "M120 60 L160 100 L120 140", HA.fill "none", HA.strokeWidth "17", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
             ]
 
 changelogCount ∷ ImModel → Html ImMessage

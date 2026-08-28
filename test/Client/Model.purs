@@ -53,6 +53,7 @@ model =
       , changelogs: []
       , showSuggestionsPostForm: false
       , showCollapsedMiniSuggestions: false
+      , collapsedSidebar: false
       , react: WithEmoji
       , modalsLoaded: []
       , showMiniChatInput: false
