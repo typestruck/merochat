@@ -61,7 +61,6 @@ ul li a {
 
 #internal-help ul li a {
     font-family: verdana, 'sans-serif';
-    color: var(--light-color);
 }
 
 
@@ -70,11 +69,12 @@ ul li a {
 .internalHelp p a:hover,
 .internalHelp ul li a {
     font-weight: bold;
+    color: var(--text-color);
 }
 
 .help ul li a:hover,
 .internalHelp ul li a:hover {
-    color: var(--merochat-red);
+    color: var(--merochat-green);
 }
 
 ul li {

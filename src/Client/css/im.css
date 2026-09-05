@@ -2993,6 +2993,7 @@ label {
     width: 16px;
     padding-right: 5px;
     height: 16px;
+    fill: var(--text-color);
 }
 
 .post-button {
@@ -3101,7 +3102,8 @@ label {
     display: flex;
     flex-direction: column;
     position: sticky;
-    top: 20px
+    top: 20px;
+    color: var(--text-color);
 }
 
 .see-profile-chat.posted {
