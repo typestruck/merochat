@@ -32,10 +32,10 @@ import Shared.Ask (Ask)
 import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (ReportReason(..), RetryableRequest(..))
+import Shared.Im.Types (ReportReason(..), RetryableRequest(..), UpdatedProfile)
 import Shared.Im.Types as SIT
 import Shared.Modal (ScreenModal(..))
-import Shared.User (ProfileTab(..))
+import Shared.User (ProfileTab(..), User)
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
@@ -204,6 +204,8 @@ save model = model { loading = true, fromTemporary = false } /\ [ saveIt ]
                                             <>
                                                   (if DM.isNothing model.avatarInputed then [] else [ SP.Avatar ])
                                     )
+
+                              FS.send imAppId SIT.SendUpdatedProfile
                         pure <<< Just <<< SetPField $ _ { loading = false }
                   Left err → do
                         pure <<< Just <<< SetPField $ _ { updateRequestStatus = Just <<< Failure $ SN.errorMessage err }

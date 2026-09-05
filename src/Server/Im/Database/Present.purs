@@ -18,7 +18,9 @@ import Server.Database.Users
 import Server.Im.Database.Flat
 
 import Data.DateTime (DateTime(..))
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Time.Duration (Days(..), Hours(..))
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
@@ -26,13 +28,14 @@ import Server.Database.Asks (_answerer, _totalAsks, asks)
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
 import Server.Database.Functions (date_part_age)
 import Server.Database.Histories (_favorite)
-import Server.Database.ModeratedProfileFields (_avatared, _chatBackgrounded, _moderated, _named, moderated_profile_fields)
+import Server.Database.ModeratedProfileFields (_avatared, _chatBackgrounded, _descriptioned, _headlined, _moderated, _named, moderated_profile_fields)
 import Server.Database.Posts (_poster, _totalPosts, _unseenPosts, posts)
-import Server.Effect (ServerEffect)
+import Droplet.Driver (Pool)
+import Server.Effect (BaseEffect, ServerEffect)
 import Shared.DateTime as ST
 import Shared.Im.Types (Favorited(..), HistoryMessage, MessageStatus(..))
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
-import Shared.User (ProfileVisibility(..))
+import Shared.User (Gender, ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
 userFields =
@@ -249,7 +252,7 @@ completeness = (select (array_agg (_completed # orderBy _completed) # as _comple
       where
       _completedFields = Proxy ∷ Proxy "completedFields"
 
-presentUser ∷ Int → ServerEffect (Maybe FlatUser)
+presentUser ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Maybe FlatUser)
 presentUser loggedUserId = SD.single $ select userPresentationFields # from (join usersSource (moderated_profile_fields # as p) # on ((u ... _id) .=. (p ... _moderated))) # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
       where
       userPresentationFields =
@@ -264,3 +267,18 @@ presentUser loggedUserId = SD.single $ select userPresentationFields # from (joi
                   /\ (select (count _id # as _totalAsks) # from asks # wher (_answerer .=. u ... _id) # orderBy _totalAsks # limit (Proxy ∷ _ 1))
                   /\ (select (count _id # as _unseenPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _unseenPosts # limit (Proxy ∷ _ 1))
                   /\ completeness
+
+presentProfileUser ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Maybe _)
+presentProfileUser loggedUserId = SD.single $ select profileUserFields # from (users # as u) # wher (u ... _id .=. loggedUserId)
+      where
+      profileUserFields =
+            (u ... _id # as _id)
+                  /\ _name
+                  /\ _avatar
+                  /\ _description
+                  /\ _headline
+                  /\ (date_part_age ("year" /\ _birthday) # as _age)
+                  /\ _gender
+                  /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy ∷ _ 1) # as _country)
+                  /\ (select (array_agg (l ... _name # orderBy (l ... _name)) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
+                  /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))

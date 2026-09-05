@@ -40,13 +40,14 @@ import Safe.Coerce as SC
 import Shared.Availability (Availability(..))
 import Shared.Experiments.Types as SET
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), When(..), Suggestion)
+import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), Suggestion, TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), When(..), UpdatedProfile)
 import Shared.Json as SJ
 import Shared.Post (Post)
 import Shared.Privilege (Privilege)
 import Shared.Profile.Types as SPT
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Unsafe as SU
+import Shared.User (User)
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
 import Web.Socket.Event.EventTypes (onClose, onError, onMessage, onOpen)
@@ -168,6 +169,7 @@ receiveMessage webSocket isFocused payload model = case payload of
       NewDeletedMessage nd → receiveDeletedMessage nd model
       ContactTyping tp → receiveTyping tp model
       NewPost p → receivePost p model
+      NewUpdatedProfile p → receiveUpdatedProfile p model
       CurrentPrivileges kp → receivePrivileges kp model
       TrackedAvailability ta → receiveAvailability ta model
       CurrentHash newHash → receiveHash newHash model
@@ -188,6 +190,29 @@ receivePost p model = model { suggestions = map updateSuggestion model.suggestio
             | otherwise = suggestion
       updateContact contact
             | contact.user.id == p.userId && not (alreadyReceived contact.user.posts) = contact { user = contact.user { unseenPosts = contact.user.unseenPosts + 1 } }
+            | otherwise = contact
+
+receiveUpdatedProfile ∷ UpdatedProfile → ImModel → NoMessages
+receiveUpdatedProfile user model = model {
+      suggestions = map updateSuggestion model.suggestions,
+      contacts = map updateContact model.contacts } /\ []
+      where
+      updateFields existing = existing
+            { name = user.name
+            , avatar = user.avatar
+            , headline = user.headline
+            , description = user.description
+            , age = user.age
+            , tags = user.tags
+            , country = user.country
+            , languages = user.languages
+            , gender = user.gender
+            }
+      updateSuggestion suggestion
+            | suggestion.id == user.id = updateFields suggestion
+            | otherwise = suggestion
+      updateContact contact
+            | contact.user.id == user.id = contact { user = updateFields contact.user }
             | otherwise = contact
 
 receiveAvailability ∷ { id ∷ Int, availability ∷ Availability } → ImModel → NoMessages

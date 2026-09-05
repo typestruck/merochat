@@ -240,6 +240,19 @@ type RequestFailure =
       , errorMessage ∷ Maybe String
       }
 
+type UpdatedProfile =
+      { id :: Int
+      , name ∷ String
+      , avatar ∷ Maybe String
+      , description ∷ String
+      , headline ∷ String
+      , tags ∷ Array String
+      , country ∷ Maybe String
+      , languages ∷ Array String
+      , gender ∷ Maybe String
+      , age ∷ Maybe Int
+      }
+
 data RetryableRequest
       = FetchHistory Int Boolean
       | FetchContacts Boolean
@@ -388,6 +401,7 @@ data ImMessage
       | HighlightMessage IntWrapper
       | ClearHighlightedMessage
       | SetNameFromProfile String
+      | SendUpdatedProfile
       | SetChatBackgroundFromProfile Boolean (Maybe String)
       | SetAvatarFromProfile (Maybe String)
       | SetCompletedFields (Array ProfileColumn)
@@ -424,6 +438,7 @@ type StatusUpdate =
 
 data WebSocketPayloadServer
       = UpdateHash
+      | UpdatedProfile
       | UpdatePrivileges
       | UpdateAvailability { online ∷ Boolean }
       | Posted { id ∷ Int }
@@ -461,6 +476,7 @@ data WebSocketPayloadClient
       | NewIncomingMessage ClientMessagePayload
       | NewEditedMessage EditedMessagePayload
       | NewPost { userId ∷ Int, post ∷ Post }
+      | NewUpdatedProfile UpdatedProfile
       | NewDeletedMessage DeletedMessagePayload
       | TrackedAvailability { id ∷ Int, availability ∷ Availability }
       | CurrentOnlineSuggestions { suggestions ∷ Array Suggestion }

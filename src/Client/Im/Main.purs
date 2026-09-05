@@ -249,6 +249,7 @@ update st model =
             PushedMessages payload → CIP.receiveMessageFromPush payload model
             HideBuildProfile → hideBuildProfile model
             SetNameFromProfile name → setName name model
+            SendUpdatedProfile → sendUpdatedProfile webSocket model
             SetAvatarFromProfile base64 → setAvatar base64 model
             AskNotification → askNotification model
             SetCompletedFields fields → setCompletedFields fields model
@@ -598,6 +599,13 @@ setName name model =
                     { name = name
                     }
             }
+
+sendUpdatedProfile ∷ WebSocket → ImModel → MoreMessages
+sendUpdatedProfile webSocket model = model /\ [ send ]
+      where
+      send = do
+            EC.liftEffect $ CIW.sendPayload webSocket UpdatedProfile
+            pure Nothing
 
 setAvatar ∷ Maybe String → ImModel → NoMessages
 setAvatar base64 model = F.noMessages model

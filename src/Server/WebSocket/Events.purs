@@ -57,6 +57,7 @@ import Server.Environment (tokenSecret)
 import Server.Im.Action as SIA
 import Server.Im.Database.Execute as SIDE
 import Server.Im.Database.Flat as SIF
+import Server.Im.Database.Present as SIPR
 import Server.Im.Database.Suggest as SIDS
 import Server.Push (PushMessage(..))
 import Server.Push as SP
@@ -68,7 +69,7 @@ import Shared.Availability (Availability(..))
 import Shared.Availability as SA
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
-import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus(..), OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
+import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus(..), OutgoingRecord, UpdatedProfile, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
 import Shared.Json as SJ
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
@@ -189,6 +190,35 @@ handleMessage payload = do
             UpdateHash → sendUpdatedHash context.loggedUserId allUsersAvailability
             UnavailableFor { id } → sendUnavailability context.loggedUserId allUsersAvailability id
             Ban { id } → sendBan allUsersAvailability id
+            UpdatedProfile → sendUpdatedProfile context.loggedUserId allUsersAvailability
+
+sendUpdatedProfile ∷ Int → HashMap Int UserAvailability → WebSocketEffect
+sendUpdatedProfile loggedUserId allUsersAvailability = do
+      maybeUser ← SIPR.presentProfileUser loggedUserId
+      case maybeUser of
+            Just profile → do
+                  let user =
+                        { id: profile.id
+                        , name: profile.name
+                        , avatar: profile.avatar
+                        , description: profile.description
+                        , headline: profile.headline
+                        , tags: DM.fromMaybe [] profile.tags
+                        , country: profile.country
+                        , languages: DM.fromMaybe [] profile.languages
+                        , gender: show <$> profile.gender
+                        , age: DI.ceil <$> profile.age
+                        }
+                  case DH.lookup loggedUserId allUsersAvailability of
+                        Just userAvailability → DF.traverse_ (sendToTracker user) userAvailability.trackedBy
+                        Nothing → pure unit
+            Nothing → pure unit
+      where
+      sendToTracker user id = case DH.lookup id allUsersAvailability of
+            Just availability → withConnections (Just availability) $ send user
+            Nothing → pure unit
+
+      send user connection = sendWebSocketMessage connection <<< Content $ NewUpdatedProfile user
 
 sharePost ∷ Int → Ref (HashMap Int UserAvailability) → Int → WebSocketEffect
 sharePost loggedUserId allUsersAvailabilityRef id = do
