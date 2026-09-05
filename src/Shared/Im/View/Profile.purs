@@ -37,6 +37,7 @@ import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Posts as SIVP
 import Shared.Im.View.Praise as SIVPR
 import Shared.Im.View.Retry as SIVR
+import Shared.Im.Scroll as SIS
 import Shared.Intl as SI
 import Shared.Markdown as SM
 import Shared.Modal (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
@@ -45,10 +46,18 @@ import Shared.Privilege as SP
 import Shared.ProfileColumn (ProfileColumn(..))
 import Shared.ProfileColumn as SPC
 import Shared.Profile.Mode (ProfileMode(..))
+import Shared.Post (Post)
 import Shared.Resource (ResourceType(..))
 import Shared.Resource as SR
 import Shared.Svg as SS
+import Shared.Unsafe as SU
 import Shared.User as SUR
+import Effect (Effect)
+import Flame.Types (NodeData)
+import Web.DOM.Element as WDE
+import Web.Event.Event as WEE
+import Web.Event.Internal.Types (Event)
+import Web.HTML.HTMLElement as WHH
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
@@ -197,14 +206,18 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                                   HE.div' [ HA.class' "loading" ]
                           ]
 
-                  , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts } ]
-                          [ SIVR.retry "Failed to load posts" (FetchPosts user.id) model.failedRequests
-                          , if model.posts.freeToFetch && DA.null user.posts then
-                                  HE.div_ [ HE.text $ user.name <> " has not posted yet" ]
-                            else if model.posts.freeToFetch then
-                                  HE.div [ HA.class' "post-list" ] $ map (SIVP.posted user.name) user.posts
+                  , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts }, onPostsScroll user.id user.posts model ]
+                          [ SIVR.retry "Failed to load posts" (FetchPosts user.id { before: Nothing, after: _.id <$> DA.head user.posts }) model.failedRequests
+                          , if DA.null user.posts then
+                                  if model.posts.freeToFetch then
+                                        HE.div_ [ HE.text $ user.name <> " has not posted yet" ]
+                                  else
+                                        HE.div' [ HA.class' "loading" ]
                             else
-                                  HE.div' [ HA.class' "loading" ]
+                                  HE.div_
+                                        ( [ HE.div [ HA.class' "post-list" ] $ map (SIVP.posted user.name) user.posts
+                                          ] <> (if model.posts.freeToFetch then [] else [ HE.div' [ HA.class' "loading" ] ])
+                                        )
                           ]
 
                   , HE.div [ HA.class' { asks: true, hidden: user.showing /= ShowAsks } ]
@@ -294,14 +307,18 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                             HE.div' [ HA.class' "loading" ]
                     ]
 
-            , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts } ]
-                    [ SIVR.retry "Failed to load posts" (FetchPosts suggestion.id) model.failedRequests
-                    , if model.posts.freeToFetch && DA.null suggestion.posts then
-                            HE.div_ [ HE.text $ suggestion.name <> " has not posted yet" ]
-                      else if model.posts.freeToFetch then
-                            HE.div [ HA.class' "post-list" ] $ map (SIVP.posted suggestion.name) suggestion.posts
+            , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts }, onPostsScroll suggestion.id suggestion.posts model ]
+                    [ SIVR.retry "Failed to load posts" (FetchPosts suggestion.id { before: Nothing, after: _.id <$> DA.head suggestion.posts }) model.failedRequests
+                    , if DA.null suggestion.posts then
+                            if model.posts.freeToFetch then
+                                  HE.div_ [ HE.text $ suggestion.name <> " has not posted yet" ]
+                            else
+                                  HE.div' [ HA.class' "loading" ]
                       else
-                            HE.div' [ HA.class' "loading" ]
+                            HE.div_
+                                  [ HE.div [ HA.class' "post-list" ] $ map (SIVP.posted suggestion.name) suggestion.posts
+                                  , if model.posts.freeToFetch then HE.text "" else HE.div' [ HA.class' "loading" ]
+                                  ]
                     ]
 
             , HE.div [ HA.class' { asks: true, hidden: suggestion.showing /= ShowAsks } ]
@@ -328,6 +345,24 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
 
 postsAsksCount ∷ Suggestion → Array (Html ImMessage)
 postsAsksCount user = [ HE.div_ [ HE.span_ [ HE.text $ show user.totalPosts <> " posts • " ], HE.span_ [ HE.text $ show user.totalAsks <> " asks" ] ] ]
+
+onPostsScroll ∷ Int → Array Post → ImModel → NodeData ImMessage
+onPostsScroll userId posts model = HA.createRawEvent SIS.scrollEventName handler
+      where
+      handler ∷ Event → Effect (Maybe ImMessage)
+      handler event = do
+            let target = WEE.target event >>= WDE.fromEventTarget
+            case target of
+                  Nothing → pure Nothing
+                  Just element → do
+                        top ← WDE.scrollTop element
+                        height ← WDE.scrollHeight element
+                        offset ← WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element
+                        pure
+                              if model.posts.freeToFetch && top + 42.0 >= height - offset then
+                                    Just <<< SpecialRequest $ FetchPosts userId { before: _.id <$> DA.last posts, after: Nothing }
+                              else
+                                    Nothing
 
 countrySeparator ∷ Suggestion → Array (Html ImMessage)
 countrySeparator user

@@ -193,7 +193,7 @@ update st model =
 
             --posts
             DisplayPosts userId posts → CIPS.displayPosts userId posts model
-            SpecialRequest (FetchPosts userId) → CIPS.fetchPosts userId model
+            SpecialRequest (FetchPosts userId pagination) → CIPS.fetchPosts userId pagination model
             ToggleSuggestionPostForm → CIPS.togglePostForm model
             SetPostMode mode → CIPS.setPostMode mode model
             SetPostText content → CIPS.setPostText content model

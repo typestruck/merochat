@@ -21,8 +21,8 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Html (Html(..))
 import Shared.Post (Post, PostPayload)
 
-posts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { poster ∷ Int } } → ServerEffect (Array Post)
-posts routes = SPA.posts routes.guards.loggedUserId routes.query.poster
+posts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { poster ∷ Int, before ∷ Maybe Int, after ∷ Maybe Int } } → ServerEffect (Array Post)
+posts routes = SPA.posts routes.guards.loggedUserId routes.query.poster routes.query.before routes.query.after
 
 post ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ PostPayload } → ServerEffect { id ∷ Int }
 post routes = SPA.post routes.guards.loggedUserId routes.body

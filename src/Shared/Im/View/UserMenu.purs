@@ -44,9 +44,8 @@ userMenu model =
                     ]
             | otherwise = []
       collapseSvg = HE.svg [ HA.class' "svg-32 collapse-svg", HA.viewBox "0 0 200 200", HA.onClick ToggleSidebar ]
-            [ HE.path' [ HA.d "M80 60 L40 100 L80 140", HA.fill "none", HA.strokeWidth "17", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
-            , HE.path' [ HA.d "M120 60 L160 100 L120 140", HA.fill "none", HA.strokeWidth "17", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
-            ]
+                            [ HE.polygon' [ HA.points "100 44 172 100 100 156 28 100" ]
+                        ]
 
 changelogCount ∷ ImModel → Html ImMessage
 changelogCount model = HE.span [ HA.class' { "changelog-count": true, hidden: count == 0 } ] [ HE.text <<< show $ count ]

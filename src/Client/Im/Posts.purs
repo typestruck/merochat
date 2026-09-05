@@ -8,15 +8,11 @@ import Client.Network (routes)
 import Client.Network as CCN
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.Im.WebSocket as CIW
-import Control.Alt ((<|>))
 import Data.Array as DA
-import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.String as DS
 import Data.Symbol as TDS
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect.Class as EC
 import Shared.Content (Content(..))
 import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), SelectedImage, WebSocketPayloadServer(..))
@@ -26,10 +22,7 @@ import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
 import Shared.User (ProfileTab(..))
 import Type.Proxy (Proxy(..))
-import Web.Event.Event as WEE
 import Web.Event.Internal.Types (Event)
-import Web.HTML.HTMLInputElement as WDE
-import Web.HTML.HTMLInputElement as WHI
 import Web.Socket.WebSocket (WebSocket)
 
 displayPosts ∷ Int → Array Post → ImModel → NextMessage
@@ -55,10 +48,10 @@ displayPosts userId posts model =
                             pure Nothing
                     ]
 
-fetchPosts ∷ Int → ImModel → MoreMessages
-fetchPosts userId model = model { posts = model.posts { freeToFetch = false } } /\ [ fetch ]
+fetchPosts ∷ Int → { before ∷ Maybe Int, after ∷ Maybe Int } → ImModel → MoreMessages
+fetchPosts userId pagination model = model { posts = model.posts { freeToFetch = false } } /\ [ fetch ]
       where
-      fetch = CCN.retryableRequest (FetchPosts userId) (DisplayPosts userId) $ routes.posts.get { query: { poster: userId } }
+      fetch = CCN.retryableRequest (FetchPosts userId pagination) (DisplayPosts userId) $ routes.posts.get { query: { poster: userId, before: pagination.before, after: pagination.after } }
 
 togglePostForm ∷ ImModel → NoMessages
 togglePostForm model = model { showSuggestionsPostForm = not model.showSuggestionsPostForm } /\ []
@@ -134,6 +127,7 @@ toggleShowingSuggestions userId toggle model =
             } /\ effects
       where
       found = DA.find ((_ == userId) <<< _.id) model.suggestions
+      lastPostId = postIdFrom <<< DM.fromMaybe [] $ map _.posts found
       shouldFetch = toggle == ShowPosts && Just ShowPosts /= (_.showing <$> found)
 
       update suggestion
@@ -141,7 +135,7 @@ toggleShowingSuggestions userId toggle model =
             | otherwise = suggestion
 
       effects
-            | shouldFetch = [ pure <<< Just <<< SpecialRequest $ FetchPosts userId ]
+            | shouldFetch = [ pure <<< Just <<< SpecialRequest $ FetchPosts userId { before: Nothing, after: lastPostId } ]
             | otherwise = []
 
 toggleShowingContacts ∷ Int → ProfileTab → ImModel → MoreMessages
@@ -153,6 +147,7 @@ toggleShowingContacts userId toggle model =
             } /\ effects
       where
       found = _.user <$> DA.find ((_ == userId) <<< _.id <<< _.user) model.contacts
+      lastPostId = postIdFrom <<< DM.fromMaybe [] $ map _.posts found
       shouldFetch = toggle == ShowPosts && Just ShowPosts /= (_.showing <$> found)
 
       update contact
@@ -160,8 +155,11 @@ toggleShowingContacts userId toggle model =
             | otherwise = contact
 
       effects
-            | shouldFetch = [ pure <<< Just <<< SpecialRequest $ FetchPosts userId ]
+            | shouldFetch = [ pure <<< Just <<< SpecialRequest $ FetchPosts userId { before: Nothing, after: lastPostId } ]
             | otherwise = []
+
+postIdFrom ∷ Array Post → Maybe Int
+postIdFrom posts = _.id <$> DA.head posts
 
 setPostMode ∷ PostMode → ImModel → NoMessages
 setPostMode mode model = model { posts = model.posts { mode = mode } } /\ []

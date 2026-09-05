@@ -244,7 +244,7 @@ data RetryableRequest
       = FetchHistory Int Boolean
       | FetchContacts Boolean
       | FetchMissedContacts
-      | FetchPosts Int
+      | FetchPosts Int { before ∷ Maybe Int, after ∷ Maybe Int }
       | FetchPraise Int
       | FetchAsks Int
       | ToggleModal Modal

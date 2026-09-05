@@ -4162,6 +4162,14 @@ label {
         display: none;
     }
 
+    .collapse-svg {
+        height: 32px !important;
+        position: absolute;
+        right: -25px;
+        top: 34px;
+        width: 32px !important;
+    }
+
     .online-indicator {
         margin-top: 3px;
     }

@@ -77,8 +77,8 @@ spec ∷
                             Routes "/posts"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
                                   , get ∷
-                                          GET "/?poster=<poster>"
-                                                { query ∷ { poster ∷ Int }
+                                          GET "/?poster=<poster>&before=<before>&after=<after>"
+                                                { query ∷ { poster ∷ Int, before ∷ Maybe Int, after ∷ Maybe Int }
                                                 , response ∷ (Array Post)
                                                 }
                                   , post ∷

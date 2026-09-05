@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Data.Nullable as DN
 import Data.String (Pattern(..))
@@ -24,8 +25,8 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
 
-posts ∷ Int → Int → ServerEffect (Array Post)
-posts loggedUserId userId = SPD.presentPosts loggedUserId userId
+posts ∷ Int → Int → Maybe Int → Maybe Int → ServerEffect (Array Post)
+posts loggedUserId userId before after = SPD.presentPosts loggedUserId userId before after
 
 post ∷ Int → PostPayload → ServerEffect { id ∷ Int }
 post loggedUserId payload = do

@@ -4,41 +4,40 @@ import Droplet.Language
 import Prelude hiding (join, not)
 
 import Data.Tuple.Nested ((/\))
+import Data.Maybe (Maybe(..))
 import Server.Database as SD
-import Server.Database.Fields (_date, _id, p, _recipient, _sender, l, s, u)
-import Server.Database.Histories (histories)
+import Server.Database.Fields (_id)
 import Server.Database.Messages (_content)
-import Server.Database.Posts (_expires, _poster, posts)
-import Server.Database.Types (Checked(..))
-import Server.Database.Users (_postsVisibility, _temporary, users)
+import Server.Database.Posts (_poster, posts)
 import Server.Effect (ServerEffect)
-import Shared.Post (Post, PostPayload)
+import Shared.Post (Post)
 import Shared.Unsafe as SU
-import Shared.User (ProfileVisibility(..))
-import Type.Proxy (Proxy(..))
 
-presentPosts ∷ Int → Int → ServerEffect (Array Post)
-presentPosts loggedUserId userId = SD.query $
-      select ((p ... _id # as _id) /\ _content /\ _date /\ _expires)
-            # from postsSource
-            # wher (postsFilter loggedUserId userId)
-            # orderBy (_date # desc)
-            # limit (Proxy ∷ _ 8)
-
-postsSource = join (posts # as p) (users # as u) # on (p ... _poster .=. u ... _id)
-
-postsFilter ∷ Int → Int → _
-postsFilter loggedUserId userId =
-      ( u ... _id .=. userId .&&.
-              ( _postsVisibility .=. Everyone
-                      .||. _postsVisibility
-                      .=. NoTemporaryUsers
-                      .&&. not (exists $ select (1 # as l) # from (users # as s) # wher (s ... _id .=. loggedUserId .&&. _temporary .=. Checked true))
-                      .||. _postsVisibility
-                      .=. Contacts
-                      .&&. (exists $ select (1 # as l) # from (histories # as s) # wher (_sender .=. loggedUserId .&&. _recipient .=. userId .||. _recipient .=. loggedUserId .&&. _sender .=. userId))
+presentPosts ∷ Int → Int → Maybe Int → Maybe Int → ServerEffect (Array Post)
+presentPosts loggedUserId userId before after = SD.unsafeQuery query { loggedUserId, userId, before, after }
+      where
+      query = """
+            select p.id, p.content, p.date, p.expires
+            from posts p
+            join users u on p.poster = u.id
+            where u.id = @userId
+              and ((@before :: integer) is null or p.id < @before)
+              and ((@after :: integer) is null or p.id > @after)
+              and (
+                    u.posts_visibility = 0
+                    or u.posts_visibility = 1
+                      and not exists (select 1 from users s where s.id = @loggedUserId and s.temporary = true)
+                    or u.posts_visibility = 2
+                      and exists (
+                            select 1
+                            from histories h
+                            where (h.sender = @loggedUserId and h.recipient = @userId)
+                               or (h.recipient = @loggedUserId and h.sender = @userId)
+                      )
               )
-      )
+            order by p.date desc
+            limit 8
+            """
 
 savePost ∷ Int → String → ServerEffect { id ∷ Int }
 savePost loggedUserId content = map SU.fromJust $ SD.single $ insert # into posts (_content /\ _poster) # values (content /\ loggedUserId) # returning _id
