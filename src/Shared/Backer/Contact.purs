@@ -81,4 +81,5 @@ Donate today if you want to save the only good place to chat online
       , languages: []
       , profileVisibility: Everyone
       , age: Just 39
+      , privateNote: Nothing
       }

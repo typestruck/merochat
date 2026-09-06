@@ -83,6 +83,7 @@ handlers reading =
                       }
               , register: runJson reading SIH.register
               , report: runJson reading SIH.report
+              , note: runJson reading SIH.note
               , tutorial: runJson reading SIH.tutorial
               , greeting: runJson reading SIH.greeting
               }

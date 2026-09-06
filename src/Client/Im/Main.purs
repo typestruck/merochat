@@ -267,11 +267,14 @@ update st model =
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
             SetField setter → F.noMessages $ setter model
+            SetPrivateNote note → F.noMessages $ model { privateNote = note }
             ToggleFortune isVisible → toggleFortune isVisible model
             ToggleScrollChatDown scroll userId → toggleScrollChatDown scroll userId model
             DisplayFortune sequence → displayFortune sequence model
             RequestFailed failure → handleRequestFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
+            SpecialRequest (SavePrivateNote target note) → savePrivateNote target note model
+            AfterSavePrivateNote target note → afterSavePrivateNote target note model
             SetSmallScreen → CISS.setSmallScreen model
             UpdateSubscription → CIP.updateSubscription model
             SetRegistered → setRegistered model
@@ -485,6 +488,30 @@ report userId webSocket model = case model.reportReason of
                         EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
                         pure Nothing
       track = pure $ Just TrackAvailability
+
+savePrivateNote ∷ Int → Maybe String → ImModel → MoreMessages
+savePrivateNote target note model = model { privateNote = Nothing, modal = HideModal } /\ [ save ]
+      where
+      save = do
+            result ← CCN.request $ routes.im.note { body: { target, content: note } }
+            case result of
+                  Left _ → pure <<< Just $ RequestFailed { routes: SavePrivateNote target note, errorMessage: Nothing }
+                  _ → pure <<< Just $ AfterSavePrivateNote target note
+
+afterSavePrivateNote ∷ Int → Maybe String → ImModel → NoMessages
+afterSavePrivateNote target note model =
+      model
+            { suggestions = map updateSuggestions model.suggestions
+            , contacts = map updateContacts model.contacts
+            } /\ []
+      where
+      updateSuggestions s
+            | s.id == target = s { privateNote = note }
+            | otherwise = s
+
+      updateContacts c
+            | c.user.id == target = c { user = c.user { privateNote = note } }
+            | otherwise = c
 
 reloadPage ∷ ImModel → NextMessage
 reloadPage model = model /\ [ EC.liftEffect CCL.reload *> pure Nothing ]

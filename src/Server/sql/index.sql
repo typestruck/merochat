@@ -1,4 +1,4 @@
-﻿create or replace function utc_now()
+create or replace function utc_now()
   returns timestamptz as
 $body$
 begin
@@ -308,6 +308,18 @@ create table reports
     reported integer not null,
     constraint reporter_user foreign key (reporter) references users(id) on delete cascade,
     constraint reported_user foreign key (reported) references users(id) on delete cascade
+);
+
+create table notes
+(
+    id integer generated always as identity primary key,
+    author integer not null,
+    target integer not null,
+    content text not null,
+    date timestamptz not null default (utc_now()),
+    constraint author_user foreign key (author) references users(id) on delete cascade,
+    constraint target_user foreign key (target) references users(id) on delete cascade,
+    constraint unique_note unique (author, target)
 );
 
 create table stock_text

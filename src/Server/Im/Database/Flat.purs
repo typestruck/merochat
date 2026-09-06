@@ -57,6 +57,7 @@ type FlatFields rest =
       , name ∷ String
       , tags ∷ Maybe (Array String)
       , lastSeen ∷ DateTime
+      , privateNote ∷ Maybe String
       | rest
       }
 
@@ -133,6 +134,7 @@ fromFlatUser fc =
       , country: fc.country
       , languages: DM.fromMaybe [] fc.languages
       , age: DI.ceil <$> fc.age
+      , privateNote: fc.privateNote
       }
 
 fromFlatMessage ∷ _ → HistoryMessage

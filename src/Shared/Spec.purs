@@ -207,6 +207,11 @@ spec ∷
                                                 { body ∷ Report
                                                 , response ∷ Empty
                                                 }
+                                  , note ∷
+                                          POST "/note"
+                                                { body ∷ { target ∷ Int, content ∷ Maybe String }
+                                                , response ∷ Empty
+                                                }
 
                                   , tutorial ∷
                                           POST "/tutorial"

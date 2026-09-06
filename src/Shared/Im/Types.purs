@@ -138,6 +138,7 @@ type Im =
       , errorMessage ∷ String
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
+      , privateNote ∷ Maybe String
       , lastTyping ∷ DateTimeWrapper
       --the current logged in user
       , user ∷ User
@@ -267,6 +268,7 @@ data RetryableRequest
       | NextSuggestion
       | ReportUser Int
       | DeleteChat Int
+      | SavePrivateNote Int (Maybe String)
 
 data ReportReason
       = DatingContent
@@ -378,6 +380,8 @@ data ImMessage
       | DisplayPraise Int PraiseDisplay
       | SavePraise
       | AfterSavePraise Int Boolean
+      | SetPrivateNote (Maybe String)
+      | AfterSavePrivateNote Int (Maybe String)
 
       --main
       | ReloadPage

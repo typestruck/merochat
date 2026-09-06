@@ -3,10 +3,12 @@ module Shared.Im.View.Modal where
 import Prelude
 import Shared.Im.Types
 
+import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.Symbol as TDS
 import Data.Time.Duration (Days(..))
 import Data.Tuple.Nested ((/\))
@@ -15,19 +17,22 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
+import Shared.Change as SCN
 import Shared.Element (ElementId(..))
+import Shared.Im.Contact as SIC
 import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIS
 import Shared.Im.View.Posts as SIVP
 import Shared.Im.View.Profile as CISP
 import Shared.Modal (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Options.Post (maxPostCharacters)
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
+import Shared.Profile.Mode (ProfileMode(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Setter as SS
 import Shared.Svg as SSI
 import Shared.Unsafe as SU
-import Shared.Profile.Mode (ProfileMode(..))
 import Shared.User as SUR
 import Type.Proxy (Proxy(..))
 
@@ -62,6 +67,7 @@ modals model =
                   ConfirmDeleteChat id → [ confirmDeleteChat id ]
                   ConfirmBlockUser id → [ confirmBlockUser id ]
                   ConfirmTerminationTemporaryUser → [ confirmTermination ]
+                  ConfirmPrivateNote id → [ confirmPrivateNote id model ]
             Special sp → case sp of
                   -- _ should be synced to model.suggesting
                   ShowSuggestionCard _ → [ CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model ]
@@ -154,6 +160,32 @@ confirmBlockUser id =
                     , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ BlockUser id ] [ HE.text "Block" ]
                     ]
             ]
+
+confirmPrivateNote ∷ Int → ImModel → Html ImMessage
+confirmPrivateNote id model =
+      HE.div [ HA.class' "confirmation private-note-modal" ]
+            [ HE.span [ HA.class' "bold" ] [ HE.text "Add a private note on this profile" ]
+            , HE.span [ HA.class' "duller" ] [ HE.text "Only you can see this note" ]
+            , HE.div [ HA.class' "report-comment" ]
+                    [ HE.textarea
+                            [ HA.class' "chat-input"
+                            , HA.placeholder "What to save?"
+                            , HA.maxlength maxPostCharacters
+                            , HA.onInput' ResizeChatInput
+                            , SCN.onChange (SetPrivateNote <<< SCN.toMaybe)
+                            , HA.autocomplete "off"
+                            ]
+                            [ HE.text $ DM.fromMaybe "" privateNote ]
+                    ]
+            , HE.div [ HA.class' "buttons" ]
+                    [ HE.button [ HA.class' { "green-button danger remove-note": true, hidden: DM.isNothing privateNote }, HA.onClick <<< SpecialRequest $ SavePrivateNote id Nothing ] [ HE.text "Remove note" ]
+                    , HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Cancel" ]
+                    , HE.button [ HA.class' "green-button", HA.disabled $ DM.isNothing inputtedNote, HA.onClick <<< SpecialRequest $ SavePrivateNote id inputtedNote ] [ HE.text "Save" ]
+                    ]
+            ]
+      where
+      inputtedNote = model.privateNote
+      privateNote =  (_.user <$> SIC.findContact id model.contacts <|> DA.find (\suggestion → suggestion.id == id) model.suggestions) >>= _.privateNote
 
 modalMenu ∷ ImModel → Html ImMessage
 modalMenu model =

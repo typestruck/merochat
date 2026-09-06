@@ -88,6 +88,7 @@ type User = Record
               , praiseStatus ∷ PraiseStatus
               , asks ∷ Array Ask
               , privileges ∷ Array Privilege
+              , privateNote ∷ Maybe String
               )
       )
 

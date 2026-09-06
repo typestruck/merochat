@@ -10,12 +10,12 @@ import Server.Database.Fields
 import Server.Database.Suggestions
 import Shared.Privilege
 
+import Data.Array as DA
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as DAN
 import Data.BigInt as DB
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
-import Data.Array as DA
 import Data.Maybe as DM
 import Data.Time.Duration (Days(..), Hours(..), Minutes(..))
 import Data.Tuple (Tuple(..))
@@ -28,12 +28,13 @@ import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
 import Server.Database.Functions (date_part_age, datetime_part_age, insert_history, utc_now)
 import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories, _favorite, _last_message_date)
-import Server.Database.KarmaHistories (_amount, _target, karma_histories)
+import Server.Database.KarmaHistories (_amount, karma_histories)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
 import Server.Database.Languages (_languages, languages)
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.LastSeen (_who, last_seen)
-import Server.Database.Messages (_content, _status, messages, _edited)
+import Server.Database.Messages (_content, _edited, _status, messages)
+import Server.Database.Notes (_author, _target, notes)
 import Server.Database.Posts (_poster, _totalPosts, _unseenPosts)
 import Server.Database.Posts (posts)
 import Server.Database.PostsSeen (_reader, _until, posts_seen)
@@ -50,8 +51,8 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Im.Types (Favorited(..))
 import Shared.SuggestionsFrom (SuggestionsFrom(..))
-import Shared.User (ProfileVisibility(..))
 import Shared.Unsafe as SU
+import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
 suggest ∷ ∀ r. Int → Int → Array Int → SuggestionsFrom → BaseEffect { pool ∷ Pool | r } (Array FlatUser)
@@ -97,6 +98,7 @@ suggestBaseQuery loggedUserId filter =
                     /\ ((select (count _id # as _totalPosts) # from (posts # as p) # wher (postsFilter loggedUserId) # orderBy _totalPosts # limit (Proxy ∷ _ 1)) # as _totalPosts)
                     /\ ((select (count _id # as _totalAsks) # from (asks # as a) # wher (_answerer .=. u ... _id .&&. isNotNull _answer) # orderBy _totalAsks # limit (Proxy ∷ _ 1)) # as _totalAsks)
                     /\ ((select (count _id # as _unseenPosts) # from (posts # as p) # wher ((postsFilterUnseen loggedUserId .&&. _date .>=. DateTimeWrapper (ST.unsafeAdjustFromNow (Hours (-24.0))))) # orderBy _unseenPosts # limit (Proxy ∷ _ 1)) # as _unseenPosts)
+                       /\ ((select _content # from notes # wher (_author .=. loggedUserId .&&. _target .=. u ... _id) # orderBy _id # limit (Proxy ∷ Proxy 1) # as _privateNote))
             )
             # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) (histories # as h) # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))
             # wher filter

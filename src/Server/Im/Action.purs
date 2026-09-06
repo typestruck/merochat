@@ -74,9 +74,10 @@ im loggedUserId = do
                         , suggestions: if shouldDonate then DA.snoc suggestions backerUser else suggestions
                         , user: SIF.fromFlatUser user
                         }
-      where normalizeSuggestions from suggestions = case from of
-                        OnlineOnly → map SA.ensureStatus suggestions
-                        _ -> suggestions
+      where
+      normalizeSuggestions from suggestions = case from of
+            OnlineOnly → map SA.ensureStatus suggestions
+            _ → suggestions
 
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array Suggestion)
 suggest loggedUserId skip sg = map SIF.fromFlatUser <$> SIDS.suggest loggedUserId skip [] sg
@@ -259,3 +260,9 @@ registerUser loggedUserId rawEmail password = do
       hash ← SA.validatePassword password
       SA.validateExistingEmail email
       SIDE.registerUser loggedUserId email hash
+
+savePrivateNote ∷ Int → Int → Maybe String → ServerEffect Unit
+savePrivateNote loggedUserId target = case _ of
+      Just content | DS.null $ DS.trim content → RE.throw $ BadRequest { reason: "invalid note" }
+      content → SIDE.upsertNote loggedUserId target $ map DS.trim content
+

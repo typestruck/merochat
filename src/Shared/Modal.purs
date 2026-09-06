@@ -36,6 +36,7 @@ data ConfirmationModal
       | ConfirmDeleteChat Int
       | ConfirmBlockUser Int
       | ConfirmReport Int
+      | ConfirmPrivateNote Int
 
 data SpecialModal
       = ShowSuggestionCard Int

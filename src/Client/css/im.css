@@ -64,6 +64,21 @@ svg {
     visibility: visible;
 }
 
+.private-note-modal {
+    height: fit-content;
+    padding-bottom: 20px;
+}
+
+.card-private-note {
+    opacity: 0.9;
+    font-style: italic;
+    margin-top: 10px;
+    padding: 0px 5px;
+    background: var(--merochat-red);
+    border-radius: 5px;
+    color: var(--light-color);
+}
+
 @media (max-width:1279px) {
     .error-message {
         display: none;
@@ -1782,8 +1797,17 @@ input:not(type=button):focus {
     margin-top: 5px;
 }
 
+.report-comment .chat-input {
+    width: 90%;
+}
+
 .report-comment label {
     margin-bottom: 5px;
+}
+
+.remove-note {
+    align-self: flex-start;
+    margin-right: auto;
 }
 
 .confirmation {
@@ -1801,8 +1825,6 @@ input:not(type=button):focus {
     border-radius: 20px;
     flex-direction: column;
 }
-
-
 
 .extra-padding {
     padding: 20px 0px;
@@ -3334,10 +3356,10 @@ label {
 
 .collapse-svg {
     position: absolute;
-    top: 42px;
-    right: -25px;
-    width: 32px !important;
-    height: 32px !important;
+    top: 44px;
+    right: -23px;
+    width: 28px !important;
+    height: 28px !important;
 }
 
 @media (max-width:1279px) {
@@ -4165,11 +4187,11 @@ label {
     }
 
     .collapse-svg {
-        height: 32px !important;
+        height: 28px !important;
         position: absolute;
-        right: -25px;
-        top: 34px;
-        width: 32px !important;
+        right: -23px;
+        top: 36px;
+        width: 28px !important;
     }
 
     .online-indicator {

@@ -58,6 +58,11 @@ deleteChat { guards: { loggedUserId }, body } = do
       SIA.deleteChat loggedUserId body
       pure Empty
 
+note ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { target ∷ Int, content ∷ Maybe String } } → ServerEffect Empty
+note { guards: { loggedUserId }, body } = do
+      SIA.savePrivateNote loggedUserId body.target body.content
+      pure Empty
+
 subscribe ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { token ∷ String } } → ServerEffect Empty
 subscribe request = do
       SIA.subscribe request.guards.loggedUserId request.body.token

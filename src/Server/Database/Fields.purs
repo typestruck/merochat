@@ -106,3 +106,6 @@ _chatStarter = Proxy
 
 _lastSeen ∷ Proxy "lastSeen"
 _lastSeen = Proxy
+
+_privateNote ∷ Proxy "privateNote"
+_privateNote = Proxy

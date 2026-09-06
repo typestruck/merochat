@@ -10,6 +10,7 @@ import Server.Database.KarmaLeaderboard
 import Server.Database.Languages
 import Server.Database.LanguagesUsers
 import Server.Database.LastSeen
+import Server.Database.Notes (_author, _target, notes)
 import Server.Database.Privileges
 import Server.Database.Suggestions
 import Server.Database.Tags
@@ -117,6 +118,7 @@ presentUserContactFields =
       , (SELECT ARRAY_AGG(t.name ORDER BY t.id) from tags t JOIN tags_users tu ON t.id = tu.tag AND tu.creator = u.id) tags
       , k.current_karma karma
       , position "karmaPosition"
+      , (SELECT content FROM notes WHERE author = @loggedUserId AND target = u.id) "privateNote"
 """
 
 presentMessageFields ∷ String
@@ -267,6 +269,7 @@ presentUser loggedUserId = SD.single $ select userPresentationFields # from (joi
                   /\ (select (count _id # as _totalAsks) # from asks # wher (_answerer .=. u ... _id) # orderBy _totalAsks # limit (Proxy ∷ _ 1))
                   /\ (select (count _id # as _unseenPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _unseenPosts # limit (Proxy ∷ _ 1))
                   /\ completeness
+                  /\ ((coalesce (Nothing ∷ Maybe String) # as _privateNote))
 
 presentProfileUser ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Maybe _)
 presentProfileUser loggedUserId = SD.single $ select profileUserFields # from (users # as u) # wher (u ... _id .=. loggedUserId)

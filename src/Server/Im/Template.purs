@@ -85,6 +85,7 @@ template payload = do
             , blockedUsers: []
             , reportReason: Nothing
             , reportComment: Nothing
+            , privateNote: Nothing
             , imUpdated: false
             , praise:
                     { freeToSave: true

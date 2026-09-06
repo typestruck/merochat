@@ -5,6 +5,7 @@ import Data.DateTime (DateTime)
 import Data.DateTime as DD
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
@@ -22,6 +23,7 @@ import Server.Database.Functions (insert_history)
 import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories)
 import Server.Database.KarmaHistories (_amount, _target, karma_histories)
 import Server.Database.Messages (_content, _edited, _reaction, _status, messages)
+import Server.Database.Notes (_author, notes)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
 import Server.Database.Types (Checked(..))
 import Server.Database.Users (_completedTutorial, _email, _password, _temporary, _visibility, _visibility_last_updated, users)
@@ -42,7 +44,7 @@ isRecipientVisible loggedUserId userId =
                   # from (leftJoin (users # as u) (histories # as h) # on (_sender .=. loggedUserId .&&. _recipient .=. userId .||. _sender .=. userId .&&. _recipient .=. loggedUserId))
                   # wher
                           ( u ... _id .=. userId
-                                  .&&. not (exists $ select (1 # as c) # from blocks # wher (_blocked .=. loggedUserId .&&. _blocker .=. userId))
+                                    .&&. not (exists $ select (1 # as c) # from blocks # wher (_blocked .=. loggedUserId .&&. _blocker .=. userId))
                                   .&&.
                                         (u ... _visibility .=. Everyone .||. u ... _visibility .=. NoTemporaryUsers .&&. exists (select (3 # as c) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false)) .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date))
                           )
@@ -112,4 +114,11 @@ upsertLastSeen who date = void $ SD.unsafeExecute "INSERT INTO last_seen(who, da
 
 bulkUpsertLastSeen ∷ ∀ r. String → BaseEffect { pool ∷ Pool | r } Unit
 bulkUpsertLastSeen jsonInput = void $ SD.unsafeExecute "INSERT INTO last_seen(who, date) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (who integer, date timestamptz)) ON CONFLICT (who) DO UPDATE SET date = excluded.date" { jsonInput }
+
+upsertNote ∷ Int → Int → Maybe String → ServerEffect Unit
+upsertNote author target = case _ of
+      Just content →
+            SD.unsafeExecute "INSERT INTO notes (author, target, content, date) VALUES (@author, @target, @content, utc_now()) ON CONFLICT (author, target) DO UPDATE SET content = excluded.content, date = excluded.date" { author, target, content: DS.trim content }
+      _ →   SD.execute $ delete # from notes # wher (_author .=. author .&&. _target .=. target)
+
 

@@ -67,6 +67,7 @@ model =
       , errorMessage: ""
       , reportReason: Nothing
       , reportComment: Nothing
+      , privateNote: Nothing
       , imUpdated: false
       , smallScreen: false
       , failedRequests: []
@@ -147,6 +148,7 @@ imUser =
       , description: ""
       , gender: Nothing
       , karma: 5
+      , privateNote: Nothing
       }
 
 anotherImUserId ∷ Int
