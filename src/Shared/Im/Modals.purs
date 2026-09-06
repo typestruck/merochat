@@ -26,6 +26,7 @@ import Shared.Im.View.Posts as SIVP
 import Shared.Im.View.Profile as CISP
 import Shared.Modal (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Options.Post (maxPostCharacters)
+import Shared.Options.PrivateNote (maxNoteCharacters)
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Profile.Mode (ProfileMode(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
@@ -93,7 +94,8 @@ postForm model = HE.div [ HA.class' "post-card post-modal" ] $ SIVP.postForm mod
 confirmReport ∷ Int → Array String → Html ImMessage
 confirmReport id erroredFields =
       HE.div [ HA.class' "confirmation report" ]
-            [ HE.span [ HA.class' "report-title" ] [ HE.text "Report user" ]
+            [ SIS.closeX [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
+            , HE.span [ HA.class' "report-title" ] [ HE.text "Report user" ]
             , HE.div [ HA.class' "report-reasons" ] $ DA.mapWithIndex toRadio [ DatingContent, Harassment, HateSpeech, Spam, Minor, OtherReason ]
             , HE.span [ HA.class' { "error-message": true, "hidden": not (DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "reportReason")) erroredFields) } ] [ HE.text "Please choose a reason" ]
             , HE.div [ HA.class' "report-comment" ]
@@ -120,7 +122,8 @@ confirmReport id erroredFields =
 confirmLogout ∷ Html ImMessage
 confirmLogout =
       HE.div [ HA.class' "confirmation" ]
-            [ HE.span [ HA.class' "bold" ] [ HE.text "Do you really want to log out?" ]
+            [ SIS.closeX [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
+            , HE.span [ HA.class' "bold" ] [ HE.text "Do you really want to log out?" ]
             , HE.div [ HA.class' "buttons" ]
                     [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Cancel" ]
                     , HE.button [ HA.class' "green-button danger", HA.onClick $ Logout LoginPage ] [ HE.text "Logout" ]
@@ -154,7 +157,8 @@ confirmDeleteChat id =
 confirmBlockUser ∷ Int → Html ImMessage
 confirmBlockUser id =
       HE.div [ HA.class' "confirmation" ]
-            [ HE.span [ HA.class' "bold" ] [ HE.text "Do you really want to block this user?" ]
+            [ SIS.closeX [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
+            , HE.span [ HA.class' "bold" ] [ HE.text "Do you really want to block this user?" ]
             , HE.div [ HA.class' "buttons" ]
                     [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Cancel" ]
                     , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ BlockUser id ] [ HE.text "Block" ]
@@ -164,13 +168,14 @@ confirmBlockUser id =
 confirmPrivateNote ∷ Int → ImModel → Html ImMessage
 confirmPrivateNote id model =
       HE.div [ HA.class' "confirmation private-note-modal" ]
-            [ HE.span [ HA.class' "bold" ] [ HE.text "Add a private note on this profile" ]
+            [ SIS.closeX [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
+            , HE.span [ HA.class' "bold" ] [ HE.text "Add a private note on this profile" ]
             , HE.span [ HA.class' "duller" ] [ HE.text "Only you can see this note" ]
             , HE.div [ HA.class' "report-comment" ]
                     [ HE.textarea
                             [ HA.class' "chat-input"
                             , HA.placeholder "What to save?"
-                            , HA.maxlength maxPostCharacters
+                            , HA.maxlength maxNoteCharacters
                             , HA.onInput' ResizeChatInput
                             , SCN.onChange (SetPrivateNote <<< SCN.toMaybe)
                             , HA.autocomplete "off"

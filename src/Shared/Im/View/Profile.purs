@@ -436,6 +436,7 @@ suggestionCards model =
                                             ] <> genderAge suggestion
                                                   <> from suggestion
                                                   <> onlineStatus model.user suggestion
+                                                  <> hasNotes suggestion.privateNote
                                           )
                                   ]
                           ]
@@ -476,6 +477,10 @@ suggestionCards model =
                                               )
                                 ]
                   ]
+      hasNotes = case _ of
+            Nothing → []
+            Just note →  [ HE.div [HA.class' "card-private-note card-p"] [ HE.div [HA.class' "wrap-note"] [ HE.text note]] ]
+
       showProfile id = [ HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard id ]
 
 arrow ∷ Html ImMessage → Boolean → Array String → ImMessage → Html ImMessage
@@ -491,9 +496,9 @@ separator ∷ ∀ m. Html m
 separator = HE.span [ HA.class' "duller" ] [ HE.text " • " ]
 
 privateNotes ∷ Maybe String → Array (Html ImMessage)
-privateNotes  = case _ of
-        Just note → [HE.div [ HA.title "Your private note", HA.class' "card-private-note" ] [ HE.text note ]]
-        Nothing →  []
+privateNotes = case _ of
+      Just note → [ HE.div [ HA.title "Your private note", HA.class' "card-private-note" ] [ HE.text note ] ]
+      Nothing → []
 
 onlineStatus ∷ User → Suggestion → Array (Html ImMessage)
 onlineStatus user suggestion
@@ -533,7 +538,7 @@ badges source = map (it <<< SB.badgeFor) source
 profileContextMenu ∷ User → Boolean → Array (Html ImMessage)
 profileContextMenu user delete =
       [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmFavorite user.id user.name user.favorite ] [ HE.text $ if user.favorite then "Unfavorite" else "Favorite" ]
-, HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmPrivateNote user.id ] [ HE.text "Private note" ]
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmPrivateNote user.id ] [ HE.text "Private note" ]
       , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmDeleteChat user.id ] [ HE.text "Delete chat" ]
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmBlockUser user.id ] [ HE.text "Block" ]
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmReport user.id ] [ HE.text "Report" ]

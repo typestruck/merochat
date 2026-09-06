@@ -76,7 +76,15 @@ svg {
     padding: 0px 5px;
     background: var(--merochat-red);
     border-radius: 5px;
+    font-style: italic;
     color: var(--light-color);
+}
+
+.card-p {
+    max-width: 95%;
+    margin-top: 7px;
+    padding: 2px;
+    padding-bottom: 0;
 }
 
 @media (max-width:1279px) {
@@ -695,6 +703,7 @@ a {
 .contact-list-last-message>*,
 .chat-input::placeholder,
 .settings-name,
+.wrap-note,
 .paper-thrown-message {
     white-space: nowrap;
     display: inline-block;
@@ -1112,6 +1121,7 @@ img.emoji {
 
 .mini-suggestion-info {
     font-size: 0.9em;
+    overflow-x: hidden;
 }
 
 .mini-name-options {
@@ -1866,6 +1876,14 @@ input:not(type=button):focus {
 
 .confirmation.report {
     height: auto;
+}
+
+.confirmation .svg-55 {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    width: 30px;
+    height: 30px;
 }
 
 
@@ -3111,9 +3129,11 @@ label {
     position: absolute;
     right: 20px;
     top: 10px;
+    color: var(--text-color);
     width: 45px;
     height: 45px;
 }
+
 
 .post-modal {
     width: 500px;
