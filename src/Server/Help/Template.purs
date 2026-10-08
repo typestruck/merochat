@@ -7,10 +7,10 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Shared.Faq as SA
-import Server.Privacy as SP
+import Shared.Privacy as SP
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
-import Server.Terms as STM
+import Shared.Terms as STM
 import Shared.Html (Html(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SPT

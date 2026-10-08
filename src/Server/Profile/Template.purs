@@ -14,8 +14,9 @@ import Shared.Profile.Mode (ProfileMode)
 import Shared.Profile.Types (ProfileAsk)
 import Shared.Profile.View as SPV
 
-template ∷ _ → ProfileMode → Effect Html
-template payload mode = do
+template ∷ _ → Effect Html
+template payload =
+      pure $ Html "" {- do
       Html <$> F.preMount (SE.toQuerySelector ProfileEditionForm)
             { view: SPV.view
             , model:
@@ -46,3 +47,4 @@ template payload mode = do
             }
       where
       extend ask = (R.merge (ask ∷ Ask) { typedAnswer: Nothing ∷ Maybe String }) ∷ ProfileAsk
+      -}

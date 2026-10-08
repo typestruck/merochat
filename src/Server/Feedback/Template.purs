@@ -13,7 +13,7 @@ import Shared.Html (Html(..))
 
 template ∷ Effect Html
 template =
-      Html <$> F.preMount (SE.toQuerySelector FeedbackForm)
+      pure $ Html "" {- Html <$> F.preMount (SE.toQuerySelector FeedbackForm)
             { view: SFV.view
             , model:
                     { feedbackStatus: Nothing
@@ -23,3 +23,4 @@ template =
                     , loading: false
                     }
             }
+      -}

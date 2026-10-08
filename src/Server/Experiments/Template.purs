@@ -11,7 +11,8 @@ import Shared.Html (Html(..))
 import Web.DOM.ParentNode (QuerySelector(..))
 
 template ∷ _ → Effect Html
-template payload = Html <$> F.preMount (QuerySelector "#chat-experiments")
+template payload =
+      pure $ Html "" {- Html <$> F.preMount (QuerySelector "#chat-experiments")
       { view: SEV.view
       , model:
               { experiments: payload.experiments
@@ -46,3 +47,4 @@ template payload = Html <$> F.preMount (QuerySelector "#chat-experiments")
                       }
               }
       }
+      -}

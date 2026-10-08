@@ -12,10 +12,11 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 template ∷ Effect Html
 template =
-      Html <$> F.preMount (QuerySelector "#internal-help")
+      pure $ Html "" {- Html <$> F.preMount (QuerySelector "#internal-help")
             { view: SIHV.view
             , model:
                     { toggleHelp: FAQ
                     , visible: true
                     }
             }
+      -}

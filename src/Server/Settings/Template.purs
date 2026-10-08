@@ -13,7 +13,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 template ∷ UserSettings → Effect Html
 template settings =
-      Html <$> F.preMount (QuerySelector "#settings-edition")
+     pure $ Html "" {- <$> F.preMount (QuerySelector "#settings-edition")
             { view: SSV.view
             , model:
                     R.merge
@@ -28,4 +28,4 @@ template settings =
                           , requestStatus: Nothing
                           }
                           settings
-            }
+            } -}

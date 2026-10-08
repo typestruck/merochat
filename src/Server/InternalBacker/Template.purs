@@ -10,9 +10,11 @@ import Shared.Html (Html(..))
 import Web.DOM.ParentNode (QuerySelector(..))
 
 template ∷ Effect Html
-template = Html <$> F.preMount (QuerySelector "#backer")
+template =
+      pure $ Html "" {- Html <$> F.preMount (QuerySelector "#backer")
       { view: SIBV.view
       , model:
               { visible: true
               }
       }
+      -}

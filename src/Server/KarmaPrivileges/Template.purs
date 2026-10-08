@@ -11,7 +11,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 template ∷ _ → Effect Html
 template { top10, inBetween10, userPosition, privileges, stats } =
-      Html <$> F.preMount (QuerySelector "#karma-leaderboard")
+      pure $ Html "" {- Html <$> F.preMount (QuerySelector "#karma-leaderboard")
             { view: SLV.view
             , model:
                     { toggleBoard: InBetween10
@@ -23,3 +23,4 @@ template { top10, inBetween10, userPosition, privileges, stats } =
                     , stats
                     }
             }
+      -}

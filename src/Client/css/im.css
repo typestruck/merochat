@@ -3332,7 +3332,6 @@ label {
     position: static;
 }
 
-<<<<<<< HEAD
 .rule-header {
     font-weight: bold;
     font-size: 1.3em;
@@ -3384,9 +3383,6 @@ label {
 }
 
 @media (max-width:1279px) {
-=======
-/* @media (max-width:1279px) { */
->>>>>>> 356c2478 (Add more elements)
     #im {
         display: flex;
         overflow-x: hidden;
@@ -4190,7 +4186,7 @@ label {
         padding-left: 10px;
         width: auto;
     }
-/* } */
+}
 
 @media (min-width:1280px) and (max-width:1919px) {
     .modal-menu {

@@ -26,7 +26,8 @@ import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
 
 template ∷ _ → Effect Html
-template payload = do
+template payload =
+      pure $ Html "" {- do
       lt ← EN.nowDateTime
       Html <$> F.preMount (SE.toQuerySelector SE.Im)
             { view: \m → ST.templateWith defaultParameters
@@ -146,4 +147,4 @@ template payload = do
                     """
                     ]
             ]
-
+      -}
