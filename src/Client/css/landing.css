@@ -189,3 +189,14 @@
             margin-right: -200px;
       }
 }
+
+.login-button {
+    padding: 12px;
+    background-color: var(--light-color);
+    border-radius: 4px;
+    align-items: center;
+}
+
+.login-error {
+    color: #b00020;
+}

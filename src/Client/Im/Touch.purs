@@ -5,23 +5,23 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
-import Flame.Html.Event as HA
+import Flame.Html.Event (Event)
+import Flame.Html.Event as FHE
 import Flame.Types (NodeData)
 import Shared.Im.Types (Touch)
-import Web.Event.Internal.Types (Event)
 
 foreign import touchStart ∷ EffectFn1 Event Unit
 foreign import touchEnd ∷ EffectFn1 Event (Array Int)
 
 onTouchStart ∷ ∀ message. Maybe message → NodeData message
-onTouchStart message = HA.createRawEvent "touchstart" handler
+onTouchStart message = FHE.createRawEvent "bindtouchstart" handler
       where
       handler event = do
             EU.runEffectFn1 touchStart event
             pure message
 
 onTouchEnd ∷ ∀ message. (Touch → message) → NodeData message
-onTouchEnd message = HA.createRawEvent "touchend" handler
+onTouchEnd message = FHE.createRawEvent "bindtouchend" handler
       where
       handler event = do
             tes ← EU.runEffectFn1 touchEnd event

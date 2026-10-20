@@ -1,254 +1,701 @@
-module Shared.Profile.View where
+module Shared.Im.View.Profile (suggestionProfile, signUpCall, badges, profileContextMenu, individualSuggestion, miniSuggestions, separator) where
 
 import Prelude
 
-import Client.Dom as CCD
+import Client.Privilege as CP
+import Client.UIEvent as CU
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.HashMap as DH
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.String (Pattern(..))
-import Data.String as DS
-import Debug (spy)
+import Data.Set as DS
+import Data.Time.Duration (Days(..))
+import Effect (Effect)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Flame.Html.Event (Event)
 import Flame.Types (NodeData)
+import Safe.Coerce as SC
 import Shared.Availability (Availability(..))
-import Shared.Avatar (defaultAvatar)
+import Shared.Avatar (async)
 import Shared.Avatar as SA
-import Shared.Change as SC
-import Shared.Change as SCN
-import Shared.DateTime as DST
-import Shared.DateTime as SDT
+import Shared.Backer.Contact (backerId)
+import Shared.Badge (Badge)
+import Shared.Badge as SB
+import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
-import Shared.Im.Svg (contextMenuElements)
-import Shared.Im.Svg as SIA
-import Shared.Im.Types (IntWrapper(..))
+import Shared.Extra as SE
+import Shared.Im.Contact as SIC
+import Shared.Im.Scroll (scrollEventName)
+import Shared.Im.Svg (backArrow, home, nextArrow)
+import Shared.Im.Svg as SIS
+import Shared.Im.Types (Contact, For(..), ImMessage(..), ImModel, RetryableRequest(..), ShowContextMenu(..), Suggestion)
 import Shared.Im.View.Asks as SIVA
-import Shared.Im.View.ChatInput as SICI
-import Shared.Im.View.Posts as SIVPS
-import Shared.Im.View.Praise as SIVPR
-import Shared.Im.View.Profile (separator)
-import Shared.Im.View.Profile as SIVP
+import Shared.Im.View.ChatInput as SIVC
+import Shared.Im.View.Posts as SIVP
+import Shared.Im.View.Praise as SIVP
+import Shared.Im.View.Retry as SIVR
 import Shared.Intl as SI
-import Shared.Keydown as SK
 import Shared.Markdown as SM
-import Shared.Network (RequestStatus(..))
-import Shared.Options.Ask (maxAskCharacters)
-import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
+import Shared.Modal (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Post (Post)
+import Shared.Privilege (Privilege(..))
+import Shared.Privilege as SP
 import Shared.Profile.Mode (ProfileMode(..))
-import Shared.Profile.Types (ProfileMessage(..), ProfileModel, What(..))
+import Shared.ProfileColumn (ProfileColumn(..))
+import Shared.ProfileColumn as SP
+import Shared.Resource (ResourceType(..))
+import Shared.Resource as SR
+import Shared.SuggestionsFrom (SuggestionsFrom(..))
+import Shared.Svg as SS
 import Shared.Unsafe as SU
-import Shared.User (Gender(..))
+import Shared.User (ProfileTab(..), ProfileVisibility(..), User)
+import Shared.User as SU
+import Web.DOM.Element as WDE
+import Web.HTML.HTMLElement as WHHE
 
-view ∷ ProfileModel → Html ProfileMessage
-view model = HE.div [ HA.id $ show ProfileEditionForm ]
-      [ HE.div [ HA.onClick $ ToggleAskMenu Nothing, HA.class' { "profile-edition": true, hidden: not model.visible } ]
-              ( [ HE.div [ HA.class' "green-tab" ]
-                        [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [ HE.text "Edit" ]
-                        , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview } ] [ HE.text "Preview" ]
-                        , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Praise }, HA.onClick RefreshPraise ] [ HE.text "Praise" ]
-                        , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == OwnPosts }, HA.onClick RefreshPosts ] [ HE.text "Posts" ]
-                        , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Asked }, HA.onClick RefreshAsks ] [ HE.text $ unasweredAsks <> "Asks" ]
-                        ]
-                ] <>
-                      if model.mode == Edit then
-                            edit model
-                      else if model.mode == Preview then
-                            preview model
-                      else if model.mode == Praise then
-                            praises model
-                      else if model.mode == OwnPosts then
-                            posts model
-                      else
-                            asks model
-              )
-      ]
+-- | Displays either the current chat or a list of chat suggestions
+suggestionProfile ∷ ImModel → Html ImMessage
+suggestionProfile model =
+      if (model.user.profileVisibility > NoTemporaryUsers || not (SP.hasPrivilege StartChats model.user)) && notChatting then
+            suggestionWarning
+      else if DA.null model.suggestions && notChatting then
+            emptySuggestions
+      else
+            case SIC.maybeFindContact model.chatting model.contacts of
+                  Just chatting →
+                        if chatting.user.availability == Unavailable then
+                              unavailable chatting.user.name
+                        else if model.fullContactProfileVisible then
+                              fullProfile chatting.user model
+                        else
+                              compactProfile chatting model
+                  Nothing → suggestionCards model
       where
-      unasweredAsks =
-            let count = DA.length $ DA.filter (DM.isNothing <<< _.answer) model.asks in if count == 0 then "" else "(" <> show count <> ") "
+      notChatting = DM.isNothing model.chatting
 
-asks ∷ ProfileModel → Array (Html ProfileMessage)
-asks model = case model.asks of
-      [] → [ HE.div_ [ HE.text "You haven't received any questions yet" ] ]
-      _ →
-            [ HE.div [] <<< map unaswered $ DA.filter (DM.isNothing <<< _.answer) model.asks
-            , HE.div [ HA.class' "ask-list" ] <<< map SIVA.asked $ DA.filter (DM.isJust <<< _.answer) model.asks
+      emptySuggestionsMessage = if model.user.suggestionsFrom == OnlineOnly then "No users currently online :(" else "Could not find suggestions"
+      emptySuggestions = HE.div [ HA.class' "suggestion empty retry" ]
+            $ suggestionsFilter model : (SIVR.retryForm emptySuggestionsMessage $ SpecialRequest NextSuggestion)
+
+      suggestionWarning = HE.div [ HA.class' "suggestion" ] [ welcome model ]
+
+-- | Contact was deleted, made private or they blocked the logged user
+unavailable ∷ String → Html ImMessage
+unavailable name =
+      HE.div [ HA.class' "profile-contact" ]
+            [ HE.div [ HA.class' "profile-contact-top" ]
+                    [ HE.div [ HA.class' "profile-unavailable-header" ]
+                            [ SIS.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
+                            , HE.h1 [ HA.class' "contact-name" ] [ HE.text name ]
+                            , HE.span [ HA.class' "unavailable-message" ] [ HE.text " is no longer available" ]
+                            ]
+                    ]
+            ]
+
+-- | Compact profile view shown by default
+compactProfile ∷ Contact → ImModel → Html ImMessage
+compactProfile contact model =
+      HE.div [ HA.class' "profile-contact" ]
+            [ HE.div [ HA.class' "profile-contact-top" ]
+                    [ SIS.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
+                    , HE.img $ [ async, SA.decoding "lazy", HA.src $ SA.fromAvatar contact.user ] <> showProfileAction
+                    , HE.div (HA.class' "profile-contact-header" : [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]) $
+                            [ HE.div [ HA.class' "contact-name-badge inline-control" ] $ HE.h1 [ HA.class' "contact-name" ] ([ HE.text contact.user.name ]) : badges contact.user.badges
+                            ] <> typingAvailability
+                    , HE.div [ HA.class' "profile-contact-deets" ]
+                            [ HE.div [ HA.class' "outer-user-menu" ] [ SIS.contextMenu $ show CompactProfileContextMenu ]
+                            ]
+                    , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] contextMenu
+                    , SIS.closeX [ HA.class' "svg-close-profile", HA.onClick ResumeSuggesting ]
+                    ]
             ]
       where
-      unaswered ask = HE.div_
-            [ HE.text "MeroChat user asks: "
-            , HE.b [ HA.class' "ask-q" ] [ HE.i [] [ HE.text ask.question ] ]
-            , HE.div [ HA.class' "ask-answer-form" ]
+      contextMenu =
+            ( if not model.user.ownBackground && DM.isJust contact.user.chatBackground then
+                    [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick RemoveChatBackground ] [ HE.text "Remove chat background" ] ]
+              else
+                    []
+            ) <> profileContextMenu contact.user true
+
+      showProfileAction
+            | contact.user.unseenPosts > 0 = [ HA.class' "avatar-profile newly-posted", HA.title "Click to see recent posts", HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts ]
+            | otherwise = [ HA.class' "avatar-profile", HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
+
+      typingAvailability
+            | contact.typing && model.user.typingStatus && contact.user.typingStatus = [ HE.text "Typing..." ]
+            | model.user.onlineStatus && contact.user.onlineStatus = [ HE.text $ show contact.user.availability ]
+            | otherwise = []
+
+-- | Full screen profile view
+fullProfile ∷ User → ImModel → Html ImMessage
+fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMenu : profile
+      where
+      profileMenu = HE.div [ HA.class' "profile-top-menu" ]
+            [ SIS.arrow [ HA.class' "svg-back-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
+            , HE.div [ HA.class' { "outer-user-menu": true, hidden: model.showLargeAvatar } ]
+                    [ SIS.contextMenu $ show FullProfileContextMenu
+                    ]
+            , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu user true
+            , SIS.closeX [ HA.class' "svg-close-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
+            ]
+
+      profile =
+            if model.showLargeAvatar then
+                  [ HE.div [ HA.class' "avatar-info full" ]
+                          [ HE.div [ HA.class' "big-suggestion-info" ]
+                                  [ HE.strong [ HA.class' "big-card-name big-name-avatar" ] [ HE.text user.name ]
+                                  ]
+                          , HE.div [ HA.class' "big-avatar-info big-avatar-center" ]
+                                  [ HE.img [ HA.src $ SA.fromAvatar user, HA.title "Close avatar", HA.class' "bigger-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
+                                  ]
+                          ]
+                  ]
+            else
+                  [ HE.div [ HA.class' "avatar-info" ]
+                          [ HE.div [ HA.class' "big-avatar-info" ]
+                                  [ HE.img $ if user.unseenPosts > 0 then [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar newly-posted", HA.onClick $ ToggleShowing user.id ForContacts ShowPosts ] else [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
+                                  , HE.div [ HA.class' "big-suggestion-info" ]
+                                          ( [ HE.span [ HA.class' "lynx-inline" ] $ HE.strong [ HA.class' "big-card-name" ] [ HE.text user.name ]
+                                                    : badges user.badges
+                                            ] <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user user ] <> privateNotes user.privateNote
+                                          )
+                                  , HE.div [ HA.class' "big-suggestion-info auto-left" ]
+                                          ( [ HE.div [ HA.class' "lynx-inline" ] $
+                                                    if user.temporary then
+                                                          temporary
+                                                    else
+                                                          [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands user.karma ]
+                                                          , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show user.karmaPosition ]
+                                                          ]
+                                            ]
+                                                  <> [ HE.div [ HA.class' "lynx-inline" ] $ genderAge user <> countrySeparator user <> from user ]
+                                                  <> speaks user
+                                                  <> postsAsksCount user
+                                          )
+                                  ]
+                          ]
+
+                  , HE.div [ HA.class' { "green-tab": true, "lynx-inline": true, hidden: user.temporary } ]
+                          [ HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowInfo } ] [ HE.text "Info" ]
+                          , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPraise, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPraise } ] [ HE.text "Praise" ]
+                          , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPosts } ] [ HE.text "Posts" ]
+                          , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowAsks, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowAsks } ] [ HE.text "Asks" ]
+                          ]
+
+                  , HE.div [ HA.class' { "full-card-headline-tags": true, hidden: user.showing /= ShowInfo } ]
+                          ( [ HE.div [ HA.class' "card-headline" ] [ HE.text user.headline ]
+                            , HE.div' [ HA.class' "tag-ruler" ]
+                            ] <> [ HE.span [ HA.class' "lynx-inline" ] $ map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) user.tags ] <> [ HE.div' [ HA.class' "tag-ruler" ] ]
+                          )
+                  , HE.div [ HA.class' { "card-description": true, hidden: user.showing /= ShowInfo }, HA.title "See full profile" ]
+                          [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
+                          , HE.div' [ SE.innerHtml $ SM.parse user.description { id: _ } ]
+                          ]
+
+                  , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
+                          [ SIVR.retry "Failed to load praise" (FetchPraise user.id) model.failedRequests
+                          , SIVP.praiseForm model user
+                          , if model.praise.freeToFetch then
+                                  HE.div [ HA.class' "ask-list" ] $ SIVP.praised user.praise
+                            else
+                                  HE.div' [ HA.class' "loading" ]
+                          ]
+
+                  , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts }, onPostsScroll user.id user.posts model ]
+                          [ SIVR.retry "Failed to load posts" (FetchPosts user.id { before: Nothing, after: _.id <$> DA.head user.posts }) model.failedRequests
+                          , if DA.null user.posts then
+                                  if model.posts.freeToFetch then
+                                        HE.div_ [ HE.text $ user.name <> " has not posted yet" ]
+                                  else
+                                        HE.div' [ HA.class' "loading" ]
+                            else
+                                  HE.div_
+                                        ( [ HE.div [ HA.class' "post-list" ] $ map (SIVP.posted user.name) user.posts
+                                          ] <> (if model.posts.freeToFetch then [] else [ HE.div' [ HA.class' "loading" ] ])
+                                        )
+                          ]
+
+                  , HE.div [ HA.class' { asks: true, hidden: user.showing /= ShowAsks } ]
+                          [ SIVR.retry "Failed to load asks" (FetchAsks user.id) model.failedRequests
+                          , SIVA.askForm model user
+                          , if model.asks.freeToFetch then
+                                  HE.div [ HA.class' "asks-list" ] $ map SIVA.asked user.asks
+                            else
+                                  HE.div' [ HA.class' "loading" ]
+                          ]
+                  ]
+
+individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
+individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "backing-card": suggestion.id == backerId } ] $
+      if model.showLargeAvatar then
+            [ HE.div [ HA.class' "avatar-info full" ]
+                    [ HE.div [ HA.class' "big-suggestion-header" ]
+                            [ HE.strong [ HA.class' "big-card-name grown" ] [ HE.text suggestion.name ]
+                            , HE.div [ HA.class' "close-cards", HA.title "Close avatar", HA.onClick ToggleLargeAvatar ]
+                                    [ SIS.closeX []
+                                    ]
+                            ]
+                    , HE.div [ HA.class' "big-avatar-info big-avatar-center" ]
+                            [ HE.img [ HA.title "Close avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "bigger-suggestion-avatar" ]
+                            ]
+                    ]
+            ]
+      else
+            [ HE.div [ HA.class' "back-filter" ]
+                    [ SIS.arrow [ HA.class' "svg-back-profile hidden", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideModal ] ]
+            , HE.div [ HA.class' "suggestion-arrow-mobile" ]
+                    [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
+                    , arrow nextArrow model.freeToFetchSuggestions [ "next-arrow" ] $ SpecialRequest NextSuggestion
+                    ]
+            , HE.div [ HA.class' "avatar-info" ]
+                    [ HE.div [ HA.class' "big-avatar-info" ]
+                            [ HE.div [ HA.class' "full" ] [ HE.img (if suggestion.unseenPosts > 0 then [ HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar newly-posted" ] else [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ]) ]
+                            , HE.div [ HA.class' "big-suggestion-info full" ]
+                                    ( [ HE.span [ HA.class' "lynx-inline" ] $ HE.strong [ HA.class' "big-card-name" ] [ HE.text suggestion.name ]
+                                              : badges suggestion.badges
+                                      ] <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user suggestion ] <> privateNotes suggestion.privateNote
+                                    )
+                            , HE.div [ HA.class' "big-suggestion-info auto-left order-2" ]
+                                    ( [ HE.div [ HA.class' "lynx-inline" ] $
+                                              if suggestion.temporary then
+                                                    temporary
+                                              else
+                                                    [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands suggestion.karma ]
+                                                    , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show suggestion.karmaPosition ]
+                                                    ]
+                                      ]
+                                            <> [ HE.div [ HA.class' "lynx-inline" ] $ genderAge suggestion <> countrySeparator suggestion <> from suggestion ]
+                                            <> speaks suggestion
+                                            <> postsAsksCount suggestion
+
+                                    )
+                            , HE.div [ HA.class' "outer-user-menu order-3" ] [ SIS.contextMenu $ show FullProfileContextMenu ]
+                            , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu suggestion false
+                            , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideModal ]
+                                    [ SIS.closeX []
+                                    ]
+                            ]
+                    ]
+
+            , HE.div [ HA.class' { "green-tab": true, "lynx-inline": true, hidden: suggestion.temporary } ]
+                    [ HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowInfo } ] [ HE.text "Info" ]
+                    , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPraise, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPraise } ] [ HE.text "Praise" ]
+                    , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPosts } ] [ HE.text "Posts" ]
+                    , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowAsks, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowAsks } ] [ HE.text "Asks" ]
+                    ]
+
+            , HE.div [ HA.class' { hidden: suggestion.showing /= ShowInfo } ]
+                    ( [ HE.div [ HA.class' "card-headline" ] [ HE.text suggestion.headline ]
+                      , HE.div' [ HA.class' "tag-ruler" ]
+                      ] <> [ HE.span [ HA.class' "lynx-inline" ] $ map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags ] <> [ HE.div' [ HA.class' "tag-ruler" ] ]
+                    )
+            , HE.div [ HA.class' { "card-description": true, hidden: suggestion.showing /= ShowInfo } ]
+                    [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
+                    , HE.div' [ SE.innerHtml $ SM.parse suggestion.description { id: _ } ]
+                    ]
+
+            , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
+                    [ SIVR.retry "Failed to load asks" (FetchPraise suggestion.id) model.failedRequests
+                    , SIVP.praiseForm model suggestion
+                    , if model.praise.freeToFetch then
+                            HE.div [ HA.class' "ask-list" ] $ SIVP.praised suggestion.praise
+                      else
+                            HE.div' [ HA.class' "loading" ]
+                    ]
+
+            , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts }, onPostsScroll suggestion.id suggestion.posts model ]
+                    [ SIVR.retry "Failed to load posts" (FetchPosts suggestion.id { before: Nothing, after: _.id <$> DA.head suggestion.posts }) model.failedRequests
+                    , if DA.null suggestion.posts then
+                            if model.posts.freeToFetch then
+                                  HE.div_ [ HE.text $ suggestion.name <> " has not posted yet" ]
+                            else
+                                  HE.div' [ HA.class' "loading" ]
+                      else
+                            HE.div_
+                                  [ HE.div [ HA.class' "post-list" ] $ map (SIVP.posted suggestion.name) suggestion.posts
+                                  , if model.posts.freeToFetch then HE.text "" else HE.div' [ HA.class' "loading" ]
+                                  ]
+                    ]
+
+            , HE.div [ HA.class' { asks: true, hidden: suggestion.showing /= ShowAsks } ]
+                    [ SIVR.retry "Failed to load asks" (FetchAsks suggestion.id) model.failedRequests
+                    , SIVA.askForm model suggestion
+                    , if model.asks.freeToFetch then
+                            HE.div [ HA.class' "ask-list" ] $ map SIVA.asked suggestion.asks
+                      else
+                            HE.div' [ HA.class' "loading" ]
+                    ]
+
+            , HE.div [ HA.class' "see-profile-chat suggestion-input" ]
                     $
-                          if model.loading then
+                          if model.loadingContact == Just suggestion.id then
                                 [ HE.div' [ HA.class' "loading" ] ]
+                          else if suggestion.isContact then
+                                [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ] ]
+                          else if suggestion.id == backerId then
+                                [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "See donation options", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ] ]
                           else
-                                [ HE.div [ HA.class' "outer-user-menu" ]
-                                        [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 16 16", HA.id $ show AskContextMenu <> show ask.id, HA.onClick <<< ToggleAskMenu $ Just ask.id ] contextMenuElements
-                                        , HE.div [ HA.class' { "ask-context-menu": true, hidden: model.contextMenuFor /= Just ask.id } ]
-                                                [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick $ IgnoreAsk ask.id ] [ HE.text "Ignore" ]
-                                                , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick $ ReportAsk ask.id ask.asker ] [ HE.text "Report" ]
+                                [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model ]
+
+            ]
+
+postsAsksCount ∷ Suggestion → Array (Html ImMessage)
+postsAsksCount user = [ HE.div [ HA.class' "lynx-inline" ] [ HE.span_ [ HE.text $ show user.totalPosts <> " posts • " ], HE.span_ [ HE.text $ show user.totalAsks <> " asks" ] ] ]
+
+onPostsScroll ∷ Int → Array Post → ImModel → NodeData ImMessage
+onPostsScroll userId posts model = HA.createRawEvent scrollEventName handler
+      where
+      handler ∷ Event → Effect (Maybe ImMessage)
+      handler event = do
+            let target = CU.target event >>= WDE.fromEventTarget
+            case target of
+                  Nothing → pure Nothing
+                  Just element → do
+                        top ← WDE.scrollTop element
+                        height ← WDE.scrollHeight element
+                        offset ← WHHE.offsetHeight <<< SU.fromJust $ WHHE.fromElement element
+                        pure
+                              if model.posts.freeToFetch && top + 42.0 >= height - offset then
+                                    Just <<< SpecialRequest $ FetchPosts userId { before: _.id <$> DA.last posts, after: Nothing }
+                              else
+                                    Nothing
+
+countrySeparator ∷ Suggestion → Array (Html ImMessage)
+countrySeparator user
+      | DM.isJust user.country && (DM.isJust user.gender || DM.isJust user.age) = [ separator ]
+      | otherwise = []
+
+-- | Suggestions are shown as a card list
+suggestionCards ∷ ImModel → Html ImMessage
+suggestionCards model =
+      HE.div [ HA.class' "suggestion-cards" ]
+            [ if model.user.temporary then welcomeTemporary model else welcome model
+            , HE.div [ HA.class' "cards", HA.id $ show Cards ] allCards
+            ]
+      where
+      allCards
+            | not model.user.temporary && model.showBuildProfile = buildProfile : map card model.suggestions <> moreCards
+            | not model.user.temporary && not model.showBuildProfile && SP.hasPrivilege PublishPosts model.user && model.showSuggestionsPostForm = postCard : map card model.suggestions <> moreCards
+            | otherwise = map card model.suggestions <> moreCards
+
+      postCard = HE.div [ HA.class' "card build-profile post-card" ] $ SIVP.postForm model
+
+      buildProfile =
+            let
+                  completed = DS.fromFoldable model.user.completedFields
+                  missing = DS.difference (DS.fromFoldable [ Name, Headline, Description, Avatar, Birthday, Gender, Country, Languages, Tags ]) completed
+                  percentage = DI.floor $ (DI.toNumber $ DS.size completed) / 9.0 * 100.0
+            in
+                  HE.div [ HA.class' "card build-profile" ]
+                        [ HE.div [ HA.class' "avatar-info" ]
+                                [ HE.div [ HA.class' "mini-avatar-info" ]
+                                        [ HE.img [ HA.src $ SA.fromAvatar model.user, HA.class' "suggestion-avatar" ]
+                                        , HE.div [ HA.class' "mini-suggestion-info" ]
+                                                [ HE.div [ HA.class' "build-call" ] [ HE.text "Complete your profile" ]
+                                                , HE.div_
+                                                        [ HE.span [ HA.class' "duller" ] [ HE.text $ (show percentage) <> "% done" ]
+                                                        ]
                                                 ]
                                         ]
-                                , HE.textarea'
-                                        [ HA.class' "modal-input"
-                                        , HA.placeholder "Type your answer"
-                                        , HA.onInput' ResizeChatInput
-                                        , SCN.onChange (SetAnswer ask.id <<< SCN.toMaybe)
-                                        , HA.autocomplete "off"
-                                        , HA.maxlength (maxAskCharacters * 2)
-                                        ]
-                                , HE.svg [ HA.class' "send-button svg-50", HA.viewBox "0 0 16 16", HA.onClick $ SendAnswer ask.id ] $ SICI.sendButtonElements "Answer"
                                 ]
-            ]
+                        , HE.div [ HA.class' "build-list" ] $ map check (DS.toUnfoldable completed) <> map uncheck (DS.toUnfoldable missing)
+                        , HE.div [ HA.class' "see-profile-chat" ]
+                                [ HE.input [ HA.type' "button", HA.onClick HideBuildProfile, HA.class' "cancel", HA.value "Dismiss" ]
+                                , HE.input [ HA.type' "button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit), HA.class' "green-button bigger build", HA.value "Go to profile" ]
+                                ]
+                        ]
+      check p = HE.div [ HA.class' "build-checked" ] [ SS.checked "", HE.text $ SP.displayColumn p ]
+      uncheck p = HE.div_ [ HE.text $ "➡ " <> show p ]
 
-posts ∷ ProfileModel → Array (Html ProfileMessage)
-posts model = case model.posts of
-      [] → [ HE.div [ HA.class' "posts" ] [ HE.text "You haven't posted yet" ] ]
-      pts →
-            [ HE.div [ HA.class' "posts" ] [ HE.div [ HA.class' "post-list" ] $ map (SIVPS.posted model.user.name) pts ]
-            ]
+      moreCards
+            | model.user.suggestionsFrom == OnlineOnly = []
+            | model.freeToFetchSuggestions =
+                    [ HE.div [ HA.class' "card card-load-more", HA.onClick FetchMoreSuggestions ]
+                            [ HE.i_ [ HE.text "Load more suggestions" ]
+                            , nextArrow
+                            ]
+                    ]
+            | otherwise =
+                    [ HE.div [ HA.class' "card card-load-more" ]
+                            [ HE.div' [ HA.class' "loading" ] ]
+                    ]
+      card suggestion =
+            HE.div [ HA.class' { "card": true, "backing-card": suggestion.id == backerId } ]
+                  [ HE.div [ HA.class' "avatar-info" ]
+                          [ HE.div (HA.class' "mini-avatar-info" : showProfile suggestion.id)
+                                  [ HE.img $ if suggestion.unseenPosts > 0 then [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar newly-posted", HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts ] else [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar" ]
+                                  , HE.div [ HA.class' "mini-suggestion-info" ]
+                                          ( [ HE.div [ HA.class' "lynx-inline" ]
+                                                    [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands suggestion.karma ]
+                                                    , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show suggestion.karmaPosition ]
+                                                    ]
+                                            ] <> genderAge suggestion
+                                                  <> from suggestion
+                                                  <> onlineStatus model.user suggestion
+                                                  <> hasNotes suggestion.privateNote
+                                          )
+                                  ]
+                          ]
+                  , HE.div [ HA.class' "card-name-online" ]
+                          [ HE.strong [ HA.class' "card-name" ] [ HE.text suggestion.name ]
+                          , HE.div' [ HA.class' { "online-indicator": true, hidden: suggestion.availability /= Online || not suggestion.onlineStatus || not model.user.onlineStatus } ]
+                          ]
+                  , HE.div [ HA.class' "rest-card" ]
+                          [ HE.div [ HA.class' "card-headline" ] [ HE.text suggestion.headline ]
+                          , HE.div' [ HA.class' "tag-ruler" ]
+                          , HE.div_ $ [ HE.span [ HA.class' "lynx-inline" ] $ map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags ] <> [ HE.div' [ HA.class' "tag-ruler" ] ]
+                          , HE.div (HA.class' "card-description" : showProfile suggestion.id)
+                                  [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
+                                  , HE.div' [ SE.innerHtml $ SM.parse suggestion.description { id: _ } ]
+                                  ]
+                          ]
+                  , case model.showSuggestionChatInput of
+                          Just id | suggestion.id == id →
+                                HE.div [ HA.class' "see-profile-chat" ]
+                                      [ HE.div [ HA.class' "suggestion-input" ]
+                                              [ SIVC.chatBarInput (Left id) ChatInputSuggestion model
+                                              ]
+                                      ]
+                          _ → HE.div [ HA.class' "see-profile-chat" ]
+                                [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
+                                , if model.loadingContact == Just suggestion.id then
+                                        HE.div' [ HA.class' "loading" ]
+                                  else
+                                        HE.input
+                                              ( [ HA.class' "see-profile-button see-chat", HA.type' "button" ] <>
+                                                      ( if suggestion.isContact then
+                                                              [ HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ]
+                                                        else if suggestion.id == backerId then
+                                                              [ HA.value "Donate", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ]
+                                                        else
+                                                              [ HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
+                                                      )
+                                              )
+                                ]
+                  ]
+      hasNotes = case _ of
+            Nothing → []
+            Just note → [ HE.div [ HA.class' "card-private-note card-p" ] [ HE.div [ HA.class' "wrap-note" ] [ HE.text note ] ] ]
 
-praises ∷ ProfileModel → Array (Html ProfileMessage)
-praises model = case model.praise of
-      [] → [ HE.div [ HA.class' "praise" ] [ HE.text "You haven't received any praise yet" ] ]
-      prs → [ HE.div [ HA.class' "praise" ] [ HE.div [ HA.class' "ask-list" ] <<< SIVPR.praised $ map _.content prs ] ]
+      showProfile id = [ HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard id ]
 
-edit ∷ ProfileModel → Array (Html ProfileMessage)
-edit model =
-      [ --likely a rendering bug on flame as it wont work with regular div
-        HE.createElement "vid" [ HA.class' { "profile-section created-account": true, hidden: not model.fromTemporary } ] [ HE.text "Your account has been created" ]
-      , HE.div [ HA.class' "profile-section" ]
-              [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Avatar" ]
-              , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your profile picture" ]
-              , HE.div [ HA.class' "fit", HA.onClick SelectAvatar ]
-                      [ HE.img [ HA.class' "avatar-profile-edition", HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed ]
-                      , HE.input [ HA.id "avatar-file-input", HA.type' "file", HA.onChange' PrepareAvatar, HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
-                      , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
-                              [ HE.title [ HE.text "Reset profile picture" ]
-                              , HE.path' [ HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.5A7.5,7.5,0,1,1,15.5,8,7.5,7.5,0,0,1,8,15.5Z" ]
-                              , HE.path' [ HA.class' "a", HA.d "M11.65,7.38H4.4a.62.62,0,1,0,0,1.24h7.25a.62.62,0,0,0,0-1.24Z" ]
-                              ]
+arrow ∷ Html ImMessage → Boolean → Array String → ImMessage → Html ImMessage
+arrow svg freeTo extraClasses message = HE.div (HA.class' ("suggestion-arrow" : extraClasses) : if freeTo then [ HA.onClick message ] else []) [ svg ]
+
+genderAge ∷ Suggestion → Array (Html ImMessage)
+genderAge suggestion =
+      case DM.maybe [] (\c → [ HE.span_ [ HE.text c ] ]) suggestion.gender <> DM.maybe [] (\c → [ HE.span_ [ HE.text $ show c ] ]) suggestion.age of
+            [ g, a ] → [ HE.span [ HA.class' "lynx-inline" ] [ g, separator, a ] ]
+            ga → ga
+
+separator ∷ ∀ m. Html m
+separator = HE.span [ HA.class' "duller" ] [ HE.text " • " ]
+
+privateNotes ∷ Maybe String → Array (Html ImMessage)
+privateNotes = case _ of
+      Just note → [ HE.div [ HA.title "Your private note", HA.class' "card-private-note" ] [ HE.text note ] ]
+      Nothing → []
+
+onlineStatus ∷ User → Suggestion → Array (Html ImMessage)
+onlineStatus user suggestion
+      | not user.onlineStatus || not suggestion.onlineStatus = []
+      | otherwise = [ HE.span_ [ HE.text $ show suggestion.availability ] ]
+
+temporary ∷ Array (Html ImMessage)
+temporary =
+      [ HE.span [ HA.class' "quick-sign-up" ] [ HE.text "Quick-sign up user" ]
+      -- from https://thenounproject.com/icon/question-646495/
+      , HE.svg [ HA.class' "svg-explain-temporary-user", HA.viewBox "0 0 752 752" ]
+              [ HE.path' [ HA.d "m376 162.89c-117.53 0-213.11 95.582-213.11 213.11 0 117.53 95.582 213.11 213.11 213.11 117.53 0 213.11-95.582 213.11-213.11 0-117.53-95.582-213.11-213.11-213.11zm0 28.414c102.18 0 184.7 82.523 184.7 184.7 0 102.18-82.523 184.7-184.7 184.7-102.17 0-184.7-82.523-184.7-184.7 0-102.17 82.523-184.7 184.7-184.7zm0 66.301c-39.062 0-71.035 31.973-71.035 71.039-0.054688 3.8008 1.418 7.4688 4.0898 10.176 2.668 2.707 6.3125 4.2344 10.117 4.2344s7.4492-1.5273 10.117-4.2344c2.6719-2.707 4.1445-6.375 4.0898-10.176 0-23.711 18.914-42.625 42.621-42.625 23.711 0 42.625 18.914 42.625 42.625 0 14.742-5.9453 24.809-15.688 35.074-9.7461 10.266-23.262 19.555-35.816 29.598-3.3711 2.6992-5.3281 6.7812-5.3281 11.102v18.941c-0.054688 3.8047 1.4219 7.4688 4.0898 10.176 2.6719 2.7109 6.3164 4.2344 10.117 4.2344 3.8047 0 7.4492-1.5234 10.121-4.2344 2.668-2.707 4.1406-6.3711 4.0859-10.176v-11.988c10.352-7.9023 22.508-16.594 33.449-28.117 12.75-13.438 23.383-31.559 23.383-54.609 0-39.066-31.973-71.039-71.039-71.039zm0 198.91c-10.461 0-18.941 8.4805-18.941 18.941s8.4805 18.945 18.941 18.945c10.465 0 18.945-8.4844 18.945-18.945s-8.4805-18.941-18.945-18.941z" ]
+              ]
+      , HE.div [ HA.class' "explain-temporary-user" ]
+              [ HE.p_ [ HE.text "Quick-sign up means users that just got started on MeroChat and have yet to finish creating their account" ]
+              , HE.p [ HA.class' "lynx-inline" ]
+                      [ HE.text "You can opt to not be seen (or messaged by) quick-sign up users on the "
+                      , HE.span [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings ] [ HE.text " settings" ]
+                      , HE.text " page"
                       ]
-              ]
-      , HE.div [ HA.class' "profile-section" ]
-              [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Basic info" ]
-              , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "All fields are optional" ]
-              , HE.div [ HA.class' "profile-section-wedge" ]
-                      [ HE.input [ SC.onChange SetAge, HA.class' "modal-input margined", HA.type' "date", HA.placeholder "Your age", HA.value <<< DM.fromMaybe "" $ map SDT.formatIsoDate model.ageInputed ]
-                      , HE.select [ HA.class' "modal-select", HA.onInput SetGender ]
-                              [ HE.option [ HA.value "", HA.selected $ model.genderInputed == Nothing ] [ HE.text "Do not show my gender" ]
-                              , HE.option [ HA.value $ show Female, HA.selected $ model.genderInputed == Just Female ] [ HE.text $ show Female ]
-                              , HE.option [ HA.value $ show Male, HA.selected $ model.genderInputed == Just Male ] [ HE.text $ show Male ]
-                              , HE.option [ HA.value $ show NonBinary, HA.selected $ model.genderInputed == Just NonBinary ] [ HE.text $ show NonBinary ]
-                              , HE.option [ HA.value $ show Other, HA.selected $ model.genderInputed == Just Other ] [ HE.text $ show Other ]
-                              ]
-                      ]
-              , HE.div [ HA.class' "profile-section-wedge" ]
-                      [ HE.select [ HA.class' "modal-select margined", HA.onInput SetCountry ]
-                              ( HE.option [ HA.value "", HA.selected $ model.countryInputed == Nothing ] [ HE.text "Do not show my country" ]
-                                      : map (\c → HE.option [ HA.value $ show c.id, HA.selected $ model.countryInputed == Just c.id ] [ HE.text c.name ]) model.countries
-                              )
-                      , HE.div [ HA.class' "profile-languages" ]
-                              [ HE.select [ HA.class' "modal-select", HA.onInput SetLanguage ]
-                                      ( HE.option [ HA.value "", HA.selected $ DA.null model.languagesInputed ] [ HE.text "Do not show my languages" ]
-                                              : map (\c → HE.option [ HA.value $ show c.id, HA.selected (Just c.id == firstLanguage) ] [ HE.text c.name ]) model.languages
-                                      )
-                              , HE.div [ HA.class' { hidden: DA.null model.languagesInputed } ] $ map languageEntry model.languagesInputed
-                              ]
-                      ]
-              ]
-      , HE.div [ HA.class' "profile-section" ]
-              [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Display name" ]
-              , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Leave it blank for a new auto generated name" ]
-              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength nameMaxCharacters, HA.value $ DM.fromMaybe "" model.nameInputed, SC.onChange (SetAutoGenerated Name) ]
-              ]
-      , HE.div [ HA.class' "profile-section" ]
-              [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Headline" ]
-              , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "An one liner to grab attention. Leave blank for autogenerated" ]
-              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength headlineMaxCharacters, HA.value $ DM.fromMaybe "" model.headlineInputed, SC.onChange (SetAutoGenerated Headline) ]
-              ]
-      , HE.div [ HA.class' "profile-section" ]
-              [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Tags" ]
-              , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your interests, labels, things to talk about, etc" ]
-              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength tagMaxCharacters, HA.placeholder "Enter to add", SK.onEnter SetTag, enterKeyHint "enter" ]
-              , HE.div [ HA.class' { hidden: DA.null model.tagsInputed } ] $ map tagEntry model.tagsInputed
-              ]
-      , HE.div [ HA.class' "profile-section" ]
-              [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "About" ]
-              , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Whatever you feel like saying. Leave blank for autogenerated" ]
-              , HE.textarea [ HA.class' "modal-input", HA.maxlength descriptionMaxCharacters, HA.rows 7, HA.value $ DM.fromMaybe "" model.descriptionInputed, SC.onChange (SetAutoGenerated Description) ] [ HE.text $ DM.fromMaybe "" model.descriptionInputed ]
-              ]
-      , HE.div [ HA.class' "profile-section profile-buttons" ]
-              [ HE.input [ HA.type' "button", HA.class' "cancel", HA.value "Discard", HA.onClick Clear ]
-              , if model.loading then HE.div [ HA.class' "loading-over" ]
-                      [ HE.div' [ HA.class' "loading" ]
-                      ]
-                else
-                      HE.input [ HA.type' "button", HA.onClick Save, HA.class' "green-button bigger", HA.value "Save" ]
-              , HE.span [ HA.class' { "request-error-message": true, hidden: model.updateRequestStatus == Nothing } ] [ HE.text $ DM.maybe "" unwrapFailure model.updateRequestStatus ]
               ]
       ]
+
+from ∷ Suggestion → Array (Html ImMessage)
+from suggestion = DM.maybe [] (\c → [ HE.span [ HA.class' "lynx-inline" ] [ HE.span [ HA.class' "duller" ] [ HE.text "from " ], HE.span_ [ HE.text c ] ] ]) suggestion.country
+
+speaks ∷ Suggestion → Array (Html ImMessage)
+speaks suggestion
+      | DA.null suggestion.languages = []
+      | otherwise = [ HE.div [ HA.class' "lynx-inline" ] $ HE.span [ HA.class' "duller" ] [ HE.text "speaks " ] : (DA.intersperse separator $ map (\c → HE.span_ [ HE.text c ]) suggestion.languages) ]
+
+badges ∷ ∀ message. Array Badge → Array (Html message)
+badges source = map (it <<< SB.badgeFor) source
       where
-      firstLanguage = DA.head model.languagesInputed
-      languages = DH.fromArrayBy _.id _.name model.languages
-      languageEntry id = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick <<< SetLanguage $ show id ] [ HE.text (SU.fromJust (DH.lookup id languages) <> " x ") ]
+      it bf = HE.div [ HA.class' "badge inline-control", HA.title bf.description ] [ HE.img [ HA.width "18px", HA.height "18px", HA.class' "badge-img", HA.src $ SR.resourcePath (Left SR.Favicon) Ico ], HE.span [ HA.class' "badge-text" ] [ HE.text bf.text ] ]
 
-      tagEntry tag = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick $ SetTag tag ] [ HE.text $ tag <> " x " ]
+profileContextMenu ∷ User → Boolean → Array (Html ImMessage)
+profileContextMenu user delete =
+      [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmFavorite user.id user.name user.favorite ] [ HE.text $ if user.favorite then "Unfavorite" else "Favorite" ]
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmPrivateNote user.id ] [ HE.text "Private note" ]
+      , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmDeleteChat user.id ] [ HE.text "Delete chat" ]
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmBlockUser user.id ] [ HE.text "Block" ]
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmReport user.id ] [ HE.text "Report" ]
 
-      unwrapFailure = case _ of
-            Failure s → s
-            _ → ""
+      ]
 
-      enterKeyHint = HA.createAttribute "enterkeyhint"
-
-preview ∷ ProfileModel → Array (Html ProfileMessage)
-preview model =
-      [ HE.div [ HA.class' "avatar-info" ]
-              [ HE.div [ HA.class' "big-avatar-info" ]
-                      [ HE.img [ HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed, HA.class' "big-suggestion-avatar" ]
-                      , HE.div [ HA.class' "big-suggestion-info" ]
-                              ( HE.strong [ HA.class' "big-card-name" ] [ HE.text $ DM.fromMaybe "" model.nameInputed ]
-                                      : SIVP.badges model.user.badges <> [ HE.div [ HA.class' "duller" ] onlineStatus ]
-                              )
-                      , HE.div [ HA.class' "big-suggestion-info auto-left" ]
-                              ( [ HE.div_
-                                        [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands model.user.karma ]
-                                        , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show model.user.karmaPosition ]
-                                        ]
-                                ]
-                                      <> genderAge
-                                      <> from
-                                      <> speaks
-                              )
-                      ]
+welcomeTemporary ∷ ImModel → Html ImMessage
+welcomeTemporary model = HE.div [ HA.class' "card-top-welcome-filter" ]
+      [ HE.div [ HA.class' "card-top-header" ]
+              [ HE.div [ HA.class' "welcome" ] [ HE.text $ "Welcome, " <> model.user.name ]
+              , signUpCall model.user.joined
               ]
-      , HE.div [ HA.class' "full-card-headline-tags" ]
-              ( [ HE.div [ HA.class' "card-headline" ] [ HE.text $ DM.fromMaybe "" model.headlineInputed ]
-                , HE.hr' [ HA.class' "tag-ruler" ]
-                ] <> map (HE.span [ HA.class' "tag" ] <<< DA.singleton <<< HE.text) model.tagsInputed <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
-              )
-      , HE.div [ HA.class' "card-description", HA.title "See full profile" ]
-              [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-              , HE.div' [ HA.innerHtml $ SM.parse (DM.fromMaybe "" model.descriptionInputed) { id: _ } ]
+      , HE.div [ HA.class' "back-filter" ]
+              [ SIS.arrow [ HA.class' "svg-back-profile hidden", HA.onClick $ ToggleInitialScreen true ]
+              , suggestionsFilter model
               ]
       ]
-      where
-      onlineStatus
-            | not model.user.onlineStatus = []
-            | otherwise = [ HE.span_ [ HE.text $ show Online ] ]
-      genderAge =
-            case DM.maybe [] (\c → [ HE.span_ [ HE.text $ show c ] ]) model.genderInputed <> DM.maybe [] (\c → [ HE.span_ [ HE.text <<< show $ DST.ageFrom c ] ]) model.ageInputed of
-                  [ g, a ] → [ HE.div_ [ g, separator, a ] ]
-                  ga → ga
-      from = DM.maybe [] (\c → [ HE.div_ [ HE.span [ HA.class' "duller" ] [ HE.text "from " ], HE.span_ [ HE.text <<< _.name <<< SU.fromJust $ DA.find ((c == _) <<< _.id) model.countries ] ] ]) model.countryInputed
-      speaks
-            | DA.null model.languagesInputed = []
-            | otherwise = [ HE.div_ $ HE.span [ HA.class' "duller" ] [ HE.text "speaks " ] : (DA.intersperse separator $ map languageEntry model.languagesInputed) ]
-      languages = DH.fromArrayBy _.id _.name model.languages
-      languageEntry id = HE.span_ [ HE.text <<< SU.fromJust $ DH.lookup id languages ]
 
+signUpCall ∷ DateTimeWrapper → Html ImMessage
+signUpCall joined = HE.div [ HA.class' "sign-up-call lynx-inline" ]
+      [ HE.text "Enjoying MeroChat?"
+      , HE.span [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit) ] [ HE.text $ " Create an account  " <> remaining ]
+      , HE.text " to keep your chats"
+      ]
+      where
+      remaining = case DI.floor <<< SC.coerce $ SU.temporaryUserExpiration joined of
+            0 → " today"
+            1 → " until tomorrow"
+            n → " in " <> show n <> " days"
+
+welcome ∷ ImModel → Html ImMessage
+welcome model = HE.div [ HA.class' "card-top-welcome-filter" ]
+      [ HE.div [ HA.class' "card-top-header" ]
+              [ HE.div [ HA.class' "welcome" ] [ HE.text $ "Welcome, " <> model.user.name <> "!" ]
+              , HE.div [ HA.class' "welcome-new lynx-inline" ] $
+                      if not SP.hasPrivilege StartChats model.user then
+                            [ HE.span [ HA.class' "no-self-start" ] [ CP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges) ]
+                            ]
+                      else
+                            case model.user.profileVisibility of
+                                  Nobody → warn "hidden"
+                                  Contacts → warn "contacts only"
+                                  _ →
+                                        [
+                                        ]
+              ]
+      , HE.div [ HA.class' "back-filter" ]
+              [ SIS.arrow [ HA.class' "svg-back-profile hidden", HA.onClick $ ToggleInitialScreen true ]
+              , suggestionsFilter model
+              ]
+      ]
+
+      where
+      warn level =
+            [ HE.text $ "Your profile is set to " <> level <> ". Change your "
+            , HE.span [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings ] [ HE.text " settings " ]
+            , HE.text "to see new chat suggestions"
+            ]
+
+suggestionsFilter ∷ ImModel → Html ImMessage
+suggestionsFilter model =
+      HE.div [ HA.class' { "suggestions-filter": true, hidden: model.user.profileVisibility == Nobody } ]
+            [ HE.text $ "Showing: " <> filterName
+            , SIS.gear [ HA.id $ show SuggestionsFilterMenu, HA.class' "suggestions-filter-gear" ]
+            , HE.div [ HA.class' { "user-menu mini": true, visible: model.toggleContextMenu == ShowSuggestionsFilterMenu } ]
+                    [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom /= OnlineOnly && model.user.suggestionsFrom /= ContactsOnly && model.user.suggestionsFrom /= FavoritesOnly }, HA.onClick $ ToggleSuggestionsFrom ThisWeek ] [ HE.text "New suggestions" ]
+                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom == OnlineOnly }, HA.onClick $ ToggleSuggestionsFrom OnlineOnly ] [ HE.text "Online users" ]
+                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom == ContactsOnly }, HA.onClick $ ToggleSuggestionsFrom ContactsOnly ] [ HE.text "Contacts" ]
+                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom == FavoritesOnly }, HA.onClick $ ToggleSuggestionsFrom FavoritesOnly ] [ HE.text "Favorites" ]
+                    ]
+            ]
+      where
+      filterName
+            | model.user.suggestionsFrom == OnlineOnly = "online users"
+            | model.user.suggestionsFrom == ContactsOnly = "contacts"
+            | model.user.suggestionsFrom == FavoritesOnly = "favorites"
+            | otherwise = "new suggestions"
+
+miniSuggestions ∷ ImModel → Html ImMessage
+miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
+      case model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions) of
+            Just suggestion | not model.smallScreen && DM.isJust model.chatting && not model.showCollapsedMiniSuggestions →
+                  [ HE.svg [ HA.class' "svg-32 svg-text-color", HA.viewBox "0 0 24 24", HA.onClick ToggleCollapsedMiniSuggestions ]
+                          [ HE.path' [ HA.d "M18 12L12 18L6 12", HA.strokeWidth "2" ]
+                          , HE.path' [ HA.d "M18 6L12 12L6 6", HA.strokeWidth "2" ]
+                          ]
+
+                  , seeAllSuggestions
+                  , HE.div [ HA.class' "mini-suggestion-cards" ]
+                          [ HE.div [ HA.class' "mini-avatar-info-arrows" ]
+                                  [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
+                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
+                                          [ avatar suggestion
+                                          , HE.div [ HA.class' "mini-suggestion-info" ]
+                                                  ( [ HE.div [ HA.class' "lynx-inline" ]
+                                                            [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands suggestion.karma ]
+                                                            , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show suggestion.karmaPosition ]
+                                                            ]
+                                                    ] <> genderAge suggestion
+                                                          <> onlineStatus model.user suggestion
+                                                  )
+                                          ]
+                                  , arrow nextArrow model.freeToFetchSuggestions [ "next-arrow" ] $ SpecialRequest NextSuggestion
+                                  ]
+                          , HE.div [ HA.class' "mini-name-options" ]
+                                  [ HE.strong_ [ HE.text suggestion.name ]
+                                  , HE.div [ HA.class' { "mini-options": true, hidden: suggestion.id == backerId } ]
+                                          [ HE.svg [ HA.class' "svg-32 svg-mini-chat", HA.viewBox "0 0 24 24", HA.onClick $ if suggestion.isContact then ResumeSuggestionChat suggestion.id else ToggleMiniChatInput ]
+                                                  [ HE.path' [ HA.d "M4.32698 6.63803L5.21799 7.09202L4.32698 6.63803ZM4.7682 20.2318L4.06109 19.5247H4.06109L4.7682 20.2318ZM18.362 16.673L18.816 17.564L18.816 17.564L18.362 16.673ZM19.673 15.362L20.564 15.816L20.564 15.816L19.673 15.362ZM19.673 6.63803L20.564 6.18404L20.564 6.18404L19.673 6.63803ZM18.362 5.32698L18.816 4.43597L18.816 4.43597L18.362 5.32698ZM5.63803 5.32698L6.09202 6.21799L5.63803 5.32698ZM7.70711 17.2929L7 16.5858L7.70711 17.2929ZM5 9.8C5 8.94342 5.00078 8.36113 5.03755 7.91104C5.07337 7.47262 5.1383 7.24842 5.21799 7.09202L3.43597 6.18404C3.18868 6.66937 3.09012 7.18608 3.04419 7.74817C2.99922 8.2986 3 8.97642 3 9.8H5ZM5 12V9.8H3V12H5ZM3 12V17H5V12H3ZM3 17V19.9136H5V17H3ZM3 19.9136C3 21.2054 4.56185 21.8524 5.4753 20.9389L4.06109 19.5247C4.40757 19.1782 5 19.4236 5 19.9136H3ZM5.4753 20.9389L8.41421 18L7 16.5858L4.06109 19.5247L5.4753 20.9389ZM15.2 16H8.41421V18H15.2V16ZM17.908 15.782C17.7516 15.8617 17.5274 15.9266 17.089 15.9624C16.6389 15.9992 16.0566 16 15.2 16V18C16.0236 18 16.7014 18.0008 17.2518 17.9558C17.8139 17.9099 18.3306 17.8113 18.816 17.564L17.908 15.782ZM18.782 14.908C18.5903 15.2843 18.2843 15.5903 17.908 15.782L18.816 17.564C19.5686 17.1805 20.1805 16.5686 20.564 15.816L18.782 14.908ZM19 12.2C19 13.0566 18.9992 13.6389 18.9624 14.089C18.9266 14.5274 18.8617 14.7516 18.782 14.908L20.564 15.816C20.8113 15.3306 20.9099 14.8139 20.9558 14.2518C21.0008 13.7014 21 13.0236 21 12.2H19ZM19 9.8V12.2H21V9.8H19ZM18.782 7.09202C18.8617 7.24842 18.9266 7.47262 18.9624 7.91104C18.9992 8.36113 19 8.94342 19 9.8H21C21 8.97642 21.0008 8.2986 20.9558 7.74817C20.9099 7.18608 20.8113 6.66937 20.564 6.18404L18.782 7.09202ZM17.908 6.21799C18.2843 6.40973 18.5903 6.71569 18.782 7.09202L20.564 6.18404C20.1805 5.43139 19.5686 4.81947 18.816 4.43597L17.908 6.21799ZM15.2 6C16.0566 6 16.6389 6.00078 17.089 6.03755C17.5274 6.07337 17.7516 6.1383 17.908 6.21799L18.816 4.43597C18.3306 4.18868 17.8139 4.09012 17.2518 4.04419C16.7014 3.99922 16.0236 4 15.2 4V6ZM8.8 6H15.2V4H8.8V6ZM6.09202 6.21799C6.24842 6.1383 6.47262 6.07337 6.91104 6.03755C7.36113 6.00078 7.94342 6 8.8 6V4C7.97642 4 7.2986 3.99922 6.74817 4.04419C6.18608 4.09012 5.66937 4.18868 5.18404 4.43597L6.09202 6.21799ZM5.21799 7.09202C5.40973 6.71569 5.71569 6.40973 6.09202 6.21799L5.18404 4.43597C4.43139 4.81947 3.81947 5.43139 3.43597 6.18404L5.21799 7.09202ZM8.41421 18V16C7.88378 16 7.37507 16.2107 7 16.5858L8.41421 18Z" ]
+                                                  , HE.path' [ HA.d "M8 9L16 9", HA.strokeWidth "2", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
+                                                  , HE.path' [ HA.d "M8 13L13 13", HA.strokeWidth "2", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
+                                                  ]
+                                          , HE.div [ HA.class' "outer-user-menu" ]
+                                                  [ SIS.contextMenu $ show MiniSuggestionContextMenu
+                                                  , HE.div [ HA.class' { "user-menu mini menu-up": true, visible: model.toggleContextMenu == ShowMiniSuggestionContextMenu } ] $ profileContextMenu suggestion false
+                                                  ]
+                                          ]
+                                  ]
+                          , HE.div [ HA.class' "mini-headline-tags", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
+                                  ( [ HE.div [ HA.class' "mini-headline" ] [ HE.text suggestion.headline ]
+                                    , HE.div' [ HA.class' "tag-ruler" ]
+                                    ] <> [ HE.span [ HA.class' "lynx-inline" ] $ map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags ]
+                                  )
+
+                          , HE.div [ HA.class' { "suggestion-input": true, hidden: not model.showMiniChatInput } ] [ SIVC.chatBarInput (Left suggestion.id) MiniChatInputSuggestion model ]
+                          ]
+                  ]
+            Just suggestion | model.showCollapsedMiniSuggestions && not model.smallScreen && DM.isJust model.chatting →
+                  [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 24 24", HA.onClick ToggleCollapsedMiniSuggestions ]
+                          [ HE.path' [ HA.d "M18 18L12 12L6 18", HA.stroke "#EFE5DC", HA.strokeWidth "2" ]
+                          , HE.path' [ HA.d "M18 12L12 6L6 12", HA.stroke "#EFE5DC", HA.strokeWidth "2" ]
+                          ]
+                  , seeAllSuggestions
+                  , HE.div [ HA.class' { "mini-suggestion-cards collapsed": true, taller: suggestion.unseenPosts > 0 } ]
+                          [ HE.div [ HA.class' "mini-avatar-info-arrows" ]
+                                  [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
+                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
+                                          [ avatar suggestion
+                                          , HE.div [ HA.class' "mini-suggestion-info" ]
+                                                  ( [ HE.strong [ HA.class' "collapsed-name" ] [ HE.text suggestion.name ]
+                                                    ] <> onlineStatus model.user suggestion
+                                                  )
+                                          ]
+                                  , arrow nextArrow model.freeToFetchSuggestions [ "next-arrow" ] $ SpecialRequest NextSuggestion
+                                  ]
+                          ]
+                  ]
+            _ → []
+      where
+      avatar suggestion
+            | suggestion.unseenPosts > 0 = HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar newly-posted", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts ]
+            | otherwise = HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar" ]
+
+seeAllSuggestions ∷ Html ImMessage
+seeAllSuggestions = HE.div [ HA.class' "see-all-suggestions inline-control" ]
+      [ HE.strong [ HA.class' "mini-chat-label" ] [ HE.text "Chat suggestions" ]
+      , HE.div [ HA.class' "see-all-home", HA.onClick ResumeSuggesting, HA.title "See all suggestions" ]
+              [ home
+              ]
+      ]

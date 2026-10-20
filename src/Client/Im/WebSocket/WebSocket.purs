@@ -3,19 +3,13 @@ module Client.Im.WebSocket where
 import Prelude
 
 import Client.Im.WebSocket.Connection (WebSocket)
-import Client.Im.WebSocket.Connection as WSWS
-import Client.Location as CCD
+import Client.Im.WebSocket.Connection as CIWC
 import Effect (Effect)
-import Environment (production)
 import Shared.Im.Types (WebSocketPayloadServer)
 import Shared.Json as SJ
-import Shared.Options.WebSocket (externalPort, localPort)
-import Unsafe.Coerce as EU
 
 createWebSocket ∷ Effect WebSocket
-createWebSocket = do
-      --hostName ← CCD.hostName
-      WSWS.create "wss://mero.chat" [] -- (protocol <> hostName <> endpoint) []
+createWebSocket = CIWC.create "wss://mero.chat" []
 
 sendPayload ∷ WebSocket → WebSocketPayloadServer → Effect Unit
-sendPayload ws = WSWS.sendString ws <<< SJ.toJson
+sendPayload ws = CIWC.sendString ws <<< SJ.toJson

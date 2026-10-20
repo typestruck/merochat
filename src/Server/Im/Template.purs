@@ -1,29 +1,9 @@
 module Server.Im.Template where
 
 import Prelude
-import Shared.Im.Types
 
-import Data.Array ((:))
-import Data.Array as DA
-import Data.DateTime (DateTime)
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Now as EN
-import Environment (production)
-import Shared.Extra as SE
-import Flame as F
-import Flame.Html.Attribute as HA
-import Flame.Html.Element as HE
-import Server.Template (defaultParameters)
-import Server.Template as ST
-import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Element as SE
 import Shared.Html (Html(..))
-import Shared.Im.Unread as SIU
-import Shared.Im.View as SIV
-import Shared.Modal (Modal(..), SpecialModal(..))
-import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
-import Shared.Resource as SP
 
 template ∷ _ → Effect Html
 template payload =
@@ -34,7 +14,7 @@ template payload =
                     { title = SIU.title unreadChats
                     , favicon = SIU.favicon unreadChats
                     , header =
-                            [ if production then SE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
+                            [ if production then SE.script' [ HA.type' "text/javascript", SE.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
                               else SE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
                             ]
                     , content = modals : [ SIV.view false m ]

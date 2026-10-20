@@ -5,26 +5,28 @@ import Prelude
 import Effect (Effect)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Renderer.String as FRS
-import Shared.Faq as SA
-import Shared.Privacy as SP
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
-import Shared.Terms as STM
-import Shared.Html (Html(..))
-import Shared.Resource (Bundle(..), ResourceType(..))
-import Shared.Resource as SPT
 import Shared.Extra as SE
+import Shared.Faq (faq)
+import Shared.Html (Html(..))
+import Shared.Privacy (privacy)
+import Shared.Resource (Bundle(..), ResourceType(..))
+import Shared.Resource as SR
+import Shared.Terms (terms)
+
+-- import Flame.Renderer.String as FRS
 
 template ∷ Effect Html
 template = do
       contents ← ST.template externalDefaultParameters
-            { css = externalDefaultParameters.css <> [ SE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.bundlePath Help Css ] ]
-            , javascript = [ SE.script' [ HA.type' "text/javascript", HA.src $ SPT.bundlePath Help Js ] ]
+            { css = externalDefaultParameters.css <> [ SE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SR.bundlePath Help Css ] ]
+            , javascript = [ SE.script' [ HA.type' "text/javascript", HA.src $ SR.bundlePath Help Js ] ]
             , content = externalDefaultParameters.content <> content
             , title = "MeroChat - Help"
             }
-      Html <$> FRS.render contents
+      -- Html <$> FRS.render contents
+      pure $ Html ""
       where
       content =
             [ HE.div [ HA.class' "external-help" ]
@@ -34,9 +36,9 @@ template = do
                             , HE.div [ HA.class' "entry", HA.id "privacy-link" ] [ HE.text "Privacy policy" ]
                             ]
                     , HE.div [ HA.class' "help" ]
-                            [ HE.div [ HA.id "faq" ] [ SA.faq ]
-                            , HE.div [ HA.id "terms", HA.class' "hidden" ] [ STM.terms ]
-                            , HE.div [ HA.id "privacy", HA.class' "hidden" ] [ SP.privacy ]
+                            [ HE.div [ HA.id "faq" ] [ faq ]
+                            , HE.div [ HA.id "terms", HA.class' "hidden" ] [ terms ]
+                            , HE.div [ HA.id "privacy", HA.class' "hidden" ] [ privacy ]
                             ]
                     ]
             ]

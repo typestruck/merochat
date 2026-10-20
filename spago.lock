@@ -25,11 +25,7 @@
             "either",
             "enums",
             "exceptions",
-<<<<<<< HEAD
-            "flame",
-=======
             "flame-lynx",
->>>>>>> cfa3b0e3 (bb)
             "foldable-traversable",
             "foreign",
             "foreign-object",
@@ -39,10 +35,7 @@
             "js-timers",
             "lists",
             "maybe",
-<<<<<<< HEAD
-=======
             "newtype",
->>>>>>> cfa3b0e3 (bb)
             "node-buffer",
             "node-fs-aff",
             "node-http",
@@ -51,10 +44,7 @@
             "nullable",
             "numbers",
             "ordered-collections",
-<<<<<<< HEAD
-=======
             "partial",
->>>>>>> cfa3b0e3 (bb)
             "payload",
             "prelude",
             "random",
@@ -4670,45 +4660,8 @@
           "unsafe-coerce"
         ]
       },
-<<<<<<< HEAD
-      "flame": {
-        "git": "https://github.com/easafe/purescript-flame.git",
-        "ref": "b7d7c47a78e7677234ca74b2640c6292d87a7e02",
-        "dependencies": [
-          "aff",
-          "argonaut-codecs",
-          "argonaut-core",
-          "argonaut-generic",
-          "arrays",
-          "bifunctors",
-          "console",
-          "effect",
-          "either",
-          "exceptions",
-          "foldable-traversable",
-          "foreign",
-          "foreign-object",
-          "maybe",
-          "newtype",
-          "nullable",
-          "partial",
-          "prelude",
-          "random",
-          "refs",
-          "spec",
-          "strings",
-          "tuples",
-          "typelevel-prelude",
-          "unsafe-coerce",
-          "web-dom",
-          "web-events",
-          "web-html",
-          "web-uievents"
-        ]
-=======
       "flame-lynx": {
         "path": "../purescript-flame-lynx"
->>>>>>> cfa3b0e3 (bb)
       },
       "payload": {
         "git": "https://github.com/easafe/purescript-payload",
@@ -5244,16 +5197,9 @@
         "unsafe-coerce"
       ]
     },
-<<<<<<< HEAD
-    "flame": {
-      "type": "git",
-      "url": "https://github.com/easafe/purescript-flame.git",
-      "rev": "b7d7c47a78e7677234ca74b2640c6292d87a7e02",
-=======
     "flame-lynx": {
       "type": "local",
       "path": "../purescript-flame-lynx",
->>>>>>> cfa3b0e3 (bb)
       "dependencies": [
         "aff",
         "argonaut-codecs",

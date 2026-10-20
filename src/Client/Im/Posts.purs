@@ -3,17 +3,19 @@ module Client.Im.Posts where
 import Prelude
 
 import Client.AppId (imAppId)
-import Client.File as CCF
-import Client.Network (routes)
-import Client.Network as CCN
+import Client.File as CF
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.Im.WebSocket as CIW
+import Client.Im.WebSocket.Connection (WebSocket)
+import Client.Network (routes)
+import Client.Network as CN
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Symbol as TDS
+import Data.Symbol as DS
 import Data.Tuple.Nested ((/\))
 import Effect.Class as EC
+import Flame.Html.Event (Event)
 import Shared.Content (Content(..))
 import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), SelectedImage, WebSocketPayloadServer(..))
 import Shared.Modal (Modal(..), SpecialModal(..))
@@ -22,8 +24,6 @@ import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
 import Shared.User (ProfileTab(..))
 import Type.Proxy (Proxy(..))
-import Web.Event.Internal.Types (Event)
-import Web.Socket.WebSocket (WebSocket)
 
 displayPosts ∷ Int → Array Post → ImModel → NextMessage
 displayPosts userId posts model =
@@ -44,14 +44,14 @@ displayPosts userId posts model =
             | DA.null posts = []
             | otherwise =
                     [ do
-                            void <<< CCN.silentRequest $ routes.posts.seen { body: { id: (SU.fromJust $ DA.head posts).id, poster: userId } }
+                            void <<< CN.silentRequest $ routes.posts.seen { body: { id: (SU.fromJust $ DA.head posts).id, poster: userId } }
                             pure Nothing
                     ]
 
 fetchPosts ∷ Int → { before ∷ Maybe Int, after ∷ Maybe Int } → ImModel → MoreMessages
 fetchPosts userId pagination model = model { posts = model.posts { freeToFetch = false } } /\ [ fetch ]
       where
-      fetch = CCN.retryableRequest (FetchPosts userId pagination) (DisplayPosts userId) $ routes.posts.get { query: { poster: userId, before: pagination.before, after: pagination.after } }
+      fetch = CN.retryableRequest (FetchPosts userId pagination) (DisplayPosts userId) $ routes.posts.get { query: { poster: userId, before: pagination.before, after: pagination.after } }
 
 togglePostForm ∷ ImModel → NoMessages
 togglePostForm model = model { showSuggestionsPostForm = not model.showSuggestionsPostForm } /\ []
@@ -97,7 +97,7 @@ sendPost model = model { posts = model.posts { freeToSend = not maySend } } /\ e
       where
       maySend = model.posts.mode == TextOnly && DM.isJust model.posts.text || model.posts.mode == LinkOnly && DM.isJust model.posts.link || model.posts.mode == ImageOnly && DM.isJust model.posts.image
       send = do
-            response ← CCN.silentRequest $ routes.posts.post
+            response ← CN.silentRequest $ routes.posts.post
                   { body:
                           { content: case model.posts.mode of
                                   LinkOnly → Link (SU.fromJust model.posts.link) model.posts.caption
@@ -168,18 +168,18 @@ preparePostImage ∷ Event → ImModel → MoreMessages
 preparePostImage event model = model /\ [ before ]
       where
       before = do
-            CCF.compressImage imAppId event false $ \width height base64 → SetPostImage $ Just { width, height, base64 }
+            CF.compressImage imAppId event false $ \width height base64 → SetPostImage $ Just { width, height, base64 }
             pure Nothing
 
 setPostImage ∷ SelectedImage → ImModel → NoMessages
 setPostImage selected model =
       if isTooLarge $ DM.maybe "" _.base64 selected then
             model
-                  { erroredFields = [ TDS.reflectSymbol (Proxy ∷ Proxy "posts") ]
+                  { erroredFields = [ DS.reflectSymbol (Proxy ∷ Proxy "posts") ]
                   } /\ []
       else
             model
                   { posts = model.posts { image = selected }
                   } /\ []
       where
-      isTooLarge contents = maxImageSize < CCF.fileSize contents
+      isTooLarge contents = maxImageSize < CF.fileSize contents

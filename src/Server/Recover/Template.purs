@@ -6,7 +6,6 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
@@ -14,8 +13,10 @@ import Shared.Extra as SE
 import Shared.Html (Html(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
-import Shared.Resource as SP
+import Shared.Resource as SR
 import Shared.Routes (routesSpec)
+
+-- import Flame.Renderer.String as FRS
 
 template ∷ Maybe String → Effect Html
 template token = do
@@ -23,10 +24,11 @@ template token = do
             { content = externalDefaultParameters.content <> content
             , javascript = javascript
             }
-      Html <$> FRS.render contents
+      -- Html <$> FRS.render contents
+      pure $ Html ""
       where
       javascript =
-            [ SE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Recover Js ]
+            [ SE.script' [ HA.type' "text/javascript", HA.src $ SR.bundlePath Recover Js ]
             ]
       content =
             [ HE.div [ HA.class' "pastel-area column" ]

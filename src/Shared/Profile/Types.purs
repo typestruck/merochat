@@ -3,11 +3,12 @@ module Shared.Profile.Types where
 import Prelude
 
 import Data.Argonaut (class DecodeJson, class EncodeJson)
-import Data.Argonaut.Decode.Generic as DADGR
-import Data.Argonaut.Encode.Generic as DAEGR
+import Data.Argonaut.Decode.Generic as DADG
+import Data.Argonaut.Encode.Generic as DAEG
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
+import Flame.Html.Event (Event)
 import Shared.Ask (Ask, A)
 import Shared.DateTime (DateWrapper)
 import Shared.Modal (ScreenModal)
@@ -17,7 +18,6 @@ import Shared.Praise (Praise)
 import Shared.Privilege (Privilege)
 import Shared.Profile.Mode (ProfileMode)
 import Shared.User (BasicUser, Gender)
-import Web.Event.Internal.Types (Event)
 
 data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
@@ -115,10 +115,10 @@ derive instance Eq What
 derive instance Ord What
 
 instance EncodeJson What where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance DecodeJson What where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance Bounded What where
       bottom = Name

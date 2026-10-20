@@ -5,8 +5,8 @@ import Prelude
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Extra as SE
 import Shared.Backer.Types (BackerMessage, BackerModel)
+import Shared.Extra as SE
 
 view ∷ BackerModel → Html BackerMessage
 view model = HE.div [ HA.id "backer" ]
@@ -25,7 +25,7 @@ view model = HE.div [ HA.id "backer" ]
               , HE.h3_ [ HE.text "Become a backer on Liberapay" ]
               , SE.a [ HA.href "https://liberapay.com/merochat/donate", HA.target "_blank" ] [ HE.img [ HA.alt "Donate using Liberapay", HA.src "https://liberapay.com/assets/widgets/donate.svg" ] ]
               , HE.h3_ [ HE.text "Become a backer on Patreon" ]
-              , SE.a [ HA.href "https://www.patreon.com/bePatron?u=41075080", HA.target "_blank", HA.class' "patreon-button" ]
+              , SE.a [ HA.href "https://www.patreon.com/bePatron?u=41075080", HA.target "_blank", HA.class' "patreon-button inline-control" ]
                       [ HE.svg [ HA.viewBox "0 0 569 546", HA.class' "svg-patreon" ]
                               [ HE.g_
                                       [ HE.circle' [ HA.cx "362.589996", HA.cy "204.589996", HA.r "204.589996" ]
@@ -35,9 +35,9 @@ view model = HE.div [ HA.id "backer" ]
                       , HE.text "Become a Patron"
                       ]
               , HE.h3 [ HA.class' "bottom" ] [ HE.text "Other ways to help" ]
-              , HE.p_
+              , HE.p [ HA.class' "lynx-inline" ]
                       [ HE.text "Not all contributions have to be financial. Spreading the word, inviting new people to try MeroChat out, reporting bugs or undesired behavior is also a lot of help" ]
-              , HE.p_
+              , HE.p [ HA.class' "lynx-inline" ]
                       [ HE.text "Likewise, if you have any interest in design or programming, MeroChat is "
                       , SE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "free and open source software" ]
                       ]

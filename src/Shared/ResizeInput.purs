@@ -2,16 +2,16 @@ module Shared.ResizeInput where
 
 import Prelude
 
+import Client.UIEvent as CU
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class as EC
+import Flame.Html.Event (Event)
 import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.DOM.Element as WDE
-import Web.Event.Event as WEE
-import Web.Event.Internal.Types (Event)
 
 foreign import resizeInput ∷ Element → Effect Unit
 
@@ -21,6 +21,6 @@ resizeInputFrom event model = model /\ [ resize ]
       where
       resize = do
             EC.liftEffect <<< resizeInput <<< SU.fromJust $ do
-                  target ← WEE.target event
+                  target ← CU.target event
                   WDE.fromEventTarget target
             pure Nothing

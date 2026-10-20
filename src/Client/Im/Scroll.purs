@@ -2,45 +2,42 @@ module Client.Im.Scroll where
 
 import Prelude
 
-import Client.Dom as CCD
+import Client.Dom as CD
+import Client.UIEvent as CU
 import Data.Maybe (Maybe(..))
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Class (liftEffect)
-import Shared.Element as SE
+import Effect.Class as EC
+import Flame.Html.Event (Event)
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (HistoryMessage, ImMessage)
+import Shared.Element as SE
+import Shared.Im.Types (ImMessage)
 import Shared.Unsafe as SU
-import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
-import Web.Event.Event (target)
-import Web.Event.Event as WEE
-import Web.Event.Internal.Types (Event)
-import Web.HTML.HTMLElement as WHH
+import Web.HTML.HTMLElement as WHHE
 
 -- | When jumping into a chat history the last message should be visible
 scrollLastMessage ∷ Effect Unit
 scrollLastMessage = do
-      node ← CCD.unsafeGetElementById MessageHistory
-      CCD.scrollDown node
+      node ← CD.unsafeGetElementById MessageHistory
+      CD.scrollDown node
 
 scrollLastMessageAff ∷ Aff (Maybe ImMessage)
 scrollLastMessageAff = do
-      liftEffect scrollLastMessage
+      EC.liftEffect scrollLastMessage
       pure Nothing
 
 scrollIntoView ∷ ∀ r. { id ∷ Int | r } → Effect Unit
 scrollIntoView message = do
-      element ← CCD.unsafeQuerySelector ("#" <> SE.messageElementId message.id)
-      CCD.scrollIntoView element
+      element ← CD.unsafeQuerySelector $ "#" <> SE.messageElementId message.id
+      CD.scrollIntoView element
 
 isScrolledDown ∷ Event → Effect Boolean
 isScrolledDown event = do
-      let element = SU.fromJust (WEE.target event >>= WDE.fromEventTarget)
+      let element = SU.fromJust $ CU.target event >>= WDE.fromEventTarget
       top ← WDE.scrollTop element
       height ← WDE.scrollHeight element
-      offset ← WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element
+      offset ← WHHE.offsetHeight <<< SU.fromJust $ WHHE.fromElement element
       pure $ top + lenience >= height - offset
 
       where

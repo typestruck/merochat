@@ -16,7 +16,7 @@ terms =
             , HE.p_ [ HE.text "By using the Site in any capacity, you accept these conditions and agree to comply with the most recent version of this agreement. We reserve the right to update this agreement at any time without prior notice. Your continued use of the Site implies your acceptance of the agreement as updated." ]
             , HE.div [ HA.class' "hide-internal" ]
                     [ HE.h2_ [ HE.text "Privacy policy" ]
-                    , HE.p_
+                    , HE.p [ HA.class' "lynx-inline" ]
                             [ HE.text "You can view the privacy policy at "
                             , SE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "https://mero.chat/privacy." ]
                             ]
@@ -25,7 +25,7 @@ terms =
             , HE.p_ [ HE.text """The Site is provided "as is" without any warranty. MeroChat nor any of its workers will be liable to any loss or damage related to the use, or inability to use, the Site.""" ]
             , HE.p_ [ HE.text "You are responsible for keeping your account information (such as password or email) and personal data confidential." ]
             , HE.h2_ [ HE.text "Intellectual property rights" ]
-            , HE.p_
+            , HE.p [ HA.class' "lynx-inline" ]
                     [ HE.text "MeroChat is free (as in freedom) software. You can view the source code license at "
                     , SE.a [ HA.href "https://github.com/typestruck/merochat/blob/master/LICENSE", HA.target "_blank" ] [ HE.text "https://github.com/typestruck/merochat/LICENSE." ]
                     ]

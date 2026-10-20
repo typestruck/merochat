@@ -1,7 +1,6 @@
 module Shared.KarmaPrivileges.View where
 
 import Prelude
-import Shared.KarmaPrivileges.Types
 
 import Data.Array as DA
 import Data.Tuple (Tuple(..))
@@ -10,6 +9,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Intl as SI
+import Shared.KarmaPrivileges.Types (KarmaPrivilegesMessage(..), KarmaPrivilegesModel, ToggleBoard(..))
 import Shared.Svg as SS
 
 view ∷ KarmaPrivilegesModel → Html KarmaPrivilegesMessage
@@ -22,7 +22,7 @@ view model@{ top10, inBetween10, userPosition, toggleBoard, privileges, stats: {
                                     , HE.div [ HA.class' "duller" ] [ HE.text "Your karma ranking" ]
                                     ]
                             , HE.div [ HA.class' "margin-m" ]
-                                    [ HE.div [ HA.class' "green-tab" ]
+                                    [ HE.div [ HA.class' "green-tab lynx-inline" ]
                                             [ HE.span [ HA.class' { "regular-green-tab": true, "selected-green-tab": toggleBoard == InBetween10 }, HA.onClick $ ToggleBoardDisplay InBetween10 ] [ HE.text "Your position" ]
                                             , HE.span [ HA.class' { "regular-green-tab": true, "selected-green-tab": toggleBoard == Top10 }, HA.onClick $ ToggleBoardDisplay Top10 ] [ HE.text "Top 10" ]
                                             ]

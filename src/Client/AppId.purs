@@ -12,6 +12,8 @@ import Shared.Settings.Types (SettingsMessage)
 
 data ClientAppId
       = Im
+      | Login
+      | Landing
       | Profile
       | Settings
       | Feedback
@@ -27,6 +29,12 @@ experimentsAppId = AppId Experiments
 imAppId ∷ AppId ClientAppId ImMessage
 imAppId = AppId Im
 
+loginAppId ∷ ∀ message. AppId ClientAppId message
+loginAppId = AppId Login
+
+landingAppId ∷ AppId ClientAppId Unit
+landingAppId = AppId Landing
+
 karmaPrivilegesAppId ∷ AppId ClientAppId KarmaPrivilegesMessage
 karmaPrivilegesAppId = AppId KarmaPrivileges
 
@@ -39,6 +47,8 @@ settingsAppId = AppId Settings
 instance Show ClientAppId where
       show = case _ of
             Im → "im-app-id"
+            Login → "login-app-id"
+            Landing → "landing-app-id"
             Profile → "profile-app-id"
             Settings → "settings-app-id"
             Feedback → "feedback-app-id"

@@ -2,20 +2,19 @@ module Shared.Im.View.Posts where
 
 import Prelude
 
-import Client.Privilege as CCP
+import Client.Privilege as CP
 import Data.Array as DA
-import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.String as DS
-import Data.Symbol as TDS
+import Data.Symbol as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
-import Shared.Change as SCN
-import Shared.DateTime as SDT
+import Shared.Change as SC
+import Shared.DateTime as SD
+import Shared.Extra as SE
 import Shared.Im.Svg as SIS
-import Shared.Im.Types (ImMessage(..), ImModel, IntWrapper(..), PostMode(..), RetryableRequest(..))
+import Shared.Im.Types (ImMessage(..), ImModel, PostMode(..), RetryableRequest(..))
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Markdown as SM
 import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
@@ -28,18 +27,18 @@ import Type.Proxy (Proxy(..))
 
 posted ∷ ∀ message. String → Post → Html message
 posted userName post = HE.div [ HA.class' "post-entry" ]
-      [ HE.div [ HA.class' "post-header" ] [ HE.div_ [ HE.text userName ], HE.div [ HA.class' "post-header-separator duller" ] [ HE.text " • " ], HE.div [ HA.class' "duller" ] [ HE.text <<< SDT.ago $ SC.coerce post.date ] ]
-      , HE.div' [ HA.class' "post-content", HA.innerHtml $ SM.parse post.content { id: _ } ]
+      [ HE.div [ HA.class' "post-header lynx-inline" ] [ HE.div_ [ HE.text userName ], HE.div [ HA.class' "post-header-separator duller" ] [ HE.text " • " ], HE.div [ HA.class' "duller" ] [ HE.text <<< SD.ago $ SC.coerce post.date ] ]
+      , HE.div' [ HA.class' "post-content", SE.innerHtml $ SM.parse post.content { id: _ } ]
       ]
 
 postForm ∷ ImModel → Array (Html ImMessage)
 postForm model =
       [ SIS.closeX [ HA.onClick $ if model.modal == Special ShowPostForm then SpecialRequest (ToggleModal HideModal) else ToggleSuggestionPostForm ]
       , HE.strong [ HA.class' "bottom" ] [ HE.text "Post to MeroChat" ]
-      , HE.div [ HA.class' "posts-input-tab" ]
-              [ HE.div [ HA.onClick $ SetPostMode TextOnly, HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == TextOnly } ] [ textIcont, HE.text "Text" ]
-              , HE.div [ HA.onClick $ SetPostMode LinkOnly, HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == LinkOnly } ] [ linkIcon, HE.text "Link" ]
-              , HE.div [ HA.onClick $ SetPostMode ImageOnly, HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == ImageOnly } ] [ HE.svg [ HA.class' "post-input-tab-svg", HA.viewBox "0 0 16 16" ] $ SIVC.imageButtonElements "", HE.text " Image" ]
+      , HE.div [ HA.class' "posts-input-tab lynx-inline" ]
+              [ HE.div [ HA.onClick $ SetPostMode TextOnly, HA.class' { "regular-posts-input-tab": true, "inline-control": true, "selected-posts-input-tab": model.posts.mode == TextOnly } ] [ textIcont, HE.text "Text" ]
+              , HE.div [ HA.onClick $ SetPostMode LinkOnly, HA.class' { "regular-posts-input-tab": true, "inline-control": true, "selected-posts-input-tab": model.posts.mode == LinkOnly } ] [ linkIcon, HE.text "Link" ]
+              , HE.div [ HA.onClick $ SetPostMode ImageOnly, HA.class' { "regular-posts-input-tab": true, "inline-control": true, "selected-posts-input-tab": model.posts.mode == ImageOnly } ] [ HE.svg [ HA.class' "post-input-tab-svg", HA.viewBox "0 0 16 16" ] $ SIVC.imageButtonElements "", HE.text " Image" ]
               ]
 
       , case model.posts.mode of
@@ -48,7 +47,7 @@ postForm model =
                     , HA.placeholder "What's in your mind?"
                     , HA.maxlength maxPostCharacters
                     , HA.onInput' ResizeChatInput
-                    , SCN.onChange (SetPostText <<< SCN.toMaybe)
+                    , SC.onChange $ SetPostText <<< SC.toMaybe
                     , HA.autocomplete "off"
                     , HA.value $ DM.fromMaybe "" model.posts.text
                     ]
@@ -58,7 +57,7 @@ postForm model =
                                   [ HE.input
                                           [ HA.class' "chat-input"
                                           , HA.maxlength maxPostCharacters
-                                          , SCN.onChange (SetPostLink <<< SCN.toMaybe)
+                                          , SC.onChange $ SetPostLink <<< SC.toMaybe
                                           , HA.value $ DM.fromMaybe "" model.posts.link
                                           , HA.placeholder "Link (required)"
                                           ]
@@ -67,16 +66,16 @@ postForm model =
                                           , HA.value $ DM.fromMaybe "" model.posts.caption
                                           , HA.placeholder "Caption"
                                           , HA.maxlength maxPostCharacters
-                                          , SCN.onChange (SetPostCaption <<< SCN.toMaybe)
+                                          , SC.onChange $ SetPostCaption <<< SC.toMaybe
                                           ]
                                   ]
                       else
-                            CCP.notEnoughKarma "post links" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+                            CP.notEnoughKarma "post links" $ SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
                     ]
               ImageOnly → HE.div []
                     [ if SP.hasPrivilege SendImages model.user then
                             HE.div [ HA.class' "post-links" ]
-                                  [ if DA.elem (TDS.reflectSymbol (Proxy ∷ _ "posts")) model.erroredFields then
+                                  [ if DA.elem (DS.reflectSymbol (Proxy ∷ _ "posts")) model.erroredFields then
                                           HE.div [ HA.class' "error-message" ] [ HE.text $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file" ]
                                     else if DM.isJust model.posts.image then
                                           HE.img [ HA.src $ DM.maybe "" _.base64 model.posts.image ]
@@ -92,11 +91,11 @@ postForm model =
                                           , HA.value $ DM.fromMaybe "" model.posts.caption
                                           , HA.placeholder "Caption"
                                           , HA.maxlength maxPostCharacters
-                                          , SCN.onChange (SetPostCaption <<< SCN.toMaybe)
+                                          , SC.onChange $ SetPostCaption <<< SC.toMaybe
                                           ]
                                   ]
                       else
-                            CCP.notEnoughKarma "post images" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+                            CP.notEnoughKarma "post images" $ SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
                     ]
       , HE.div [ HA.class' "see-profile-chat posted" ]
               [ if not model.posts.freeToSend then

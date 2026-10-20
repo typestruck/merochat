@@ -1,30 +1,27 @@
 module Client.Im.History where
 
-import Client.Im.Flame
-import Debug
 import Prelude
-import Shared.Im.Types
 
-import Client.Dom as CCD
-import Client.Network (routes)
-import Client.Network as CCN
+import Client.Dom as CD
+import Client.Im.Flame (MoreMessages, NoMessages)
 import Client.Im.Scroll as CIS
+import Client.Network (routes)
+import Client.Network as CN
+import Client.UIEvent as CU
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Data.Tuple.Nested ((/\))
-import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame as F
+import Flame.Html.Event (Event)
 import Shared.Im.Contact as SIC
-import Shared.Modal (Modal(..))
+import Shared.Im.Types (HistoryMessage, ImMessage(..), ImModel, ReactWith(..), RetryableRequest(..), ShowContextMenu(..))
 import Shared.Unsafe as SU
 import Unsafe.Coerce as UC
-import Web.Event.Event as WEE
-import Web.Event.Internal.Types (Event)
-import Web.HTML.HTMLElement as WHH
+import Web.HTML.HTMLElement as WHHE
 
 --to avoid issues with older missed unread messages just get the whole chat history on first load
 fetchHistory ∷ Int → Boolean → ImModel → MoreMessages
@@ -36,7 +33,7 @@ fetchHistory userId shouldFetch model
                           model
                                 { freeToFetchChatHistory = false
                                 } /\
-                                [ CCN.retryableRequest
+                                [ CN.retryableRequest
                                         (FetchHistory contact.user.id true)
                                         (DisplayHistory contact.user.id)
                                         (routes.im.history { query: { with: contact.user.id, skip: if contact.shouldFetchChatHistory then 0 else DA.length contact.history } })
@@ -47,9 +44,9 @@ displayHistory ∷ Int → Array HistoryMessage → ImModel → NoMessages
 displayHistory userId history model =
       updatedModel /\
             if shouldFetchChatHistory then
-                  [ liftEffect CIS.scrollLastMessage *> pure Nothing ]
+                  [ EC.liftEffect CIS.scrollLastMessage *> pure Nothing ]
             else if not $ DA.null history then
-                  [ liftEffect (CIS.scrollIntoView <<< SU.fromJust $ DA.last history) *> pure Nothing ]
+                  [ EC.liftEffect (CIS.scrollIntoView <<< SU.fromJust $ DA.last history) *> pure Nothing ]
             else
                   []
       where
@@ -80,20 +77,20 @@ setReacWithText ∷ String → Event → ImModel → NoMessages
 setReacWithText id event model = model { react = WithText } /\ [ stop ]
       where
       stop = EC.liftEffect do
-            WEE.stopPropagation event
-            element ← CCD.unsafeQuerySelector $ "#" <> id
-            WHH.focus $ UC.unsafeCoerce element
+            CU.stopPropagation event
+            element ← CD.unsafeQuerySelector $ "#" <> id
+            WHHE.focus $ UC.unsafeCoerce element
             pure Nothing
 
 react ∷ Int → Int → Either String String → Event → ImModel → NoMessages
 react userId messageId value event model = model /\ [ save ]
       where
       save = do
-            EC.liftEffect $ WEE.stopPropagation event
+            EC.liftEffect $ CU.stopPropagation event
             reaction ← EC.liftEffect case value of
                   Right text → pure text
-                  Left id → CCD.unsafeQuerySelector ("#" <> id) >>= CCD.value >>= (pure <<< DS.toUpper)
-            void <<< CCN.silentRequest $ routes.im.react { body: { id: messageId, reaction } }
+                  Left id → CD.unsafeQuerySelector ("#" <> id) >>= CD.value >>= (pure <<< DS.toUpper)
+            void <<< CN.silentRequest $ routes.im.react { body: { id: messageId, reaction } }
             pure <<< Just $ DisplayReaction userId messageId reaction
 
 displayReaction ∷ Int → Int → String → ImModel → NoMessages

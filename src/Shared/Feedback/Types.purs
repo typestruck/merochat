@@ -3,13 +3,13 @@ module Shared.Feedback.Types where
 import Prelude
 
 import Data.Argonaut (class DecodeJson, class EncodeJson)
-import Data.Argonaut.Decode.Generic as DADGR
-import Data.Argonaut.Encode.Generic as DAEGR
+import Data.Argonaut.Decode.Generic as DADG
+import Data.Argonaut.Encode.Generic as DAEG
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
+import Flame.Html.Event (Event)
 import Shared.Modal (ScreenModal)
 import Shared.Network (RequestStatus)
-import Web.Event.Internal.Types (Event)
 
 -- | Used for validation / error and success messages
 data Status
@@ -37,7 +37,7 @@ derive instance Eq Status
 derive instance Generic Status _
 
 instance EncodeJson Status where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance DecodeJson Status where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson

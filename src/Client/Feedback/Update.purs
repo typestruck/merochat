@@ -1,10 +1,9 @@
 module Client.Feedback.Update (update) where
 
 import Prelude
-import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
 
 import Client.AppId (feedbackAppId)
-import Client.File as CCF
+import Client.File as CF
 import Client.Network (routes)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -13,10 +12,11 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Flame (Update)
+import Flame.Html.Event (Event)
+import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
 import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
-import Web.Event.Internal.Types (Event)
 
 update ∷ Update FeedbackModel FeedbackMessage
 update model =
@@ -41,7 +41,7 @@ beforeSetScreenshot ∷ Event → FeedbackModel → FeedbackModel /\ Array (Aff 
 beforeSetScreenshot event model = model /\ [ before ]
       where
       before = do
-            CCF.compressImage feedbackAppId event false (\_ _ b → SetScreenshot b)
+            CF.compressImage feedbackAppId event false $ \_ _ b → SetScreenshot b
             pure Nothing
 
 setScreenshot ∷ String → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))

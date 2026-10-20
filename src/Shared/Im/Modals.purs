@@ -1,45 +1,41 @@
 module Shared.Im.View.Modal where
 
 import Prelude
-import Shared.Im.Types
 
 import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.String as DS
-import Data.Symbol as TDS
+import Data.Symbol as DS
 import Data.Time.Duration (Days(..))
-import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
-import Shared.Change as SCN
+import Shared.Change as SC
 import Shared.Element (ElementId(..))
-import Shared.Im.Contact as SIC
-import Shared.Im.Svg as SIA
-import Shared.Im.Svg as SIS
-import Shared.Im.View.Posts as SIVP
+import Shared.Extra (br)
 import Shared.Extra as SE
-import Shared.Im.View.Profile as CISP
+import Shared.Im.Contact as SIC
+import Shared.Im.Svg as SIS
+import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, ReportReason(..), RetryableRequest(..), Theme(..))
+import Shared.Im.View.Posts as SIVP
+import Shared.Im.View.Profile as SIVP
 import Shared.Modal (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
-import Shared.Options.Post (maxPostCharacters)
 import Shared.Options.PrivateNote (maxNoteCharacters)
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Profile.Mode (ProfileMode(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
-import Shared.Resource as SP
+import Shared.Resource as SR
 import Shared.Setter as SS
-import Shared.Svg as SSI
+import Shared.Svg as SS
 import Shared.Unsafe as SU
-import Shared.User as SUR
+import Shared.User as SU
 import Type.Proxy (Proxy(..))
 
 lazyLoad ∷ Bundle → Html ImMessage
-lazyLoad resource = SE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.bundlePath resource Css, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
+lazyLoad resource = SE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SR.bundlePath resource Css, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
 
 modals ∷ ImModel → Html ImMessage
 modals model =
@@ -72,7 +68,7 @@ modals model =
                   ConfirmPrivateNote id → [ confirmPrivateNote id model ]
             Special sp → case sp of
                   -- _ should be synced to model.suggesting
-                  ShowSuggestionCard _ → [ CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model ]
+                  ShowSuggestionCard _ → [ SIVP.individualSuggestion (SU.fromJust $ model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions)) model ]
                   ShowPostForm → [ postForm model ]
                   ShowRules → [ rulesForm ]
             _ → []
@@ -98,7 +94,7 @@ confirmReport id erroredFields =
             [ SIS.closeX [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
             , HE.span [ HA.class' "report-title" ] [ HE.text "Report user" ]
             , HE.div [ HA.class' "report-reasons" ] $ DA.mapWithIndex toRadio [ DatingContent, Harassment, HateSpeech, Spam, Minor, OtherReason ]
-            , HE.span [ HA.class' { "error-message": true, "hidden": not (DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "reportReason")) erroredFields) } ] [ HE.text "Please choose a reason" ]
+            , HE.span [ HA.class' { "error-message": true, "hidden": not <<< DA.elem (DS.reflectSymbol (Proxy ∷ Proxy "reportReason")) $ erroredFields } ] [ HE.text "Please choose a reason" ]
             , HE.div [ HA.class' "report-comment" ]
                     [ HE.label_ [ HE.text "Comment" ]
                     , HE.input [ HA.type' "text", HA.maxlength 300, HA.class' "modal-input", HA.onInput setReportComment ]
@@ -109,14 +105,14 @@ confirmReport id erroredFields =
                     ]
             ]
       where
-      setReportComment value = SetField (_ { reportComment = Just value })
+      setReportComment value = SetField $ _ { reportComment = Just value }
 
       toRadio i reason =
             let
                   idName = show i
             in
-                  HE.div [ HA.class' "reason" ]
-                        [ HE.input [ HA.type' "radio", HA.id $ "report-" <> idName, HA.name "report-reason", HA.onInput (const (SetField (_ { reportReason = Just reason, erroredFields = [] }))) ]
+                  HE.div [ HA.class' "reason inline-control" ]
+                        [ HE.input [ HA.type' "radio", HA.id $ "report-" <> idName, HA.name "report-reason", HA.onInput <<< const <<< SetField $ _ { reportReason = Just reason, erroredFields = [] } ]
                         , HE.label [ HA.for $ "report-" <> idName ] [ HE.text $ show reason ]
                         ]
 
@@ -178,7 +174,7 @@ confirmPrivateNote id model =
                             , HA.placeholder "What to save?"
                             , HA.maxlength maxNoteCharacters
                             , HA.onInput' ResizeChatInput
-                            , SCN.onChange (SetPrivateNote <<< SCN.toMaybe)
+                            , SC.onChange $ SetPrivateNote <<< SC.toMaybe
                             , HA.autocomplete "off"
                             ]
                             [ HE.text $ DM.fromMaybe "" privateNote ]
@@ -191,13 +187,13 @@ confirmPrivateNote id model =
             ]
       where
       inputtedNote = model.privateNote
-      privateNote =  (_.user <$> SIC.findContact id model.contacts <|> DA.find (\suggestion → suggestion.id == id) model.suggestions) >>= _.privateNote
+      privateNote = (_.user <$> SIC.findContact id model.contacts <|> DA.find (\suggestion → suggestion.id == id) model.suggestions) >>= _.privateNote
 
 modalMenu ∷ ImModel → Html ImMessage
 modalMenu model =
       HE.div [ HA.class' { "modal-placeholder": true, hidden: not screenModal } ]
             ( [ HE.div [ HA.class' "modal-menu-mobile" ]
-                      [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
+                      [ SIS.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
                       , HE.strong_
                               [ HE.text $ case model.modal of
                                       Screen m → show m
@@ -213,15 +209,15 @@ modalMenu model =
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowHelp, HA.class' { entry: true, selected: model.modal == Screen ShowHelp } ] [ HE.text $ show ShowHelp ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowFeedback, HA.class' { entry: true, selected: model.modal == Screen ShowFeedback } ] [ HE.text $ show ShowFeedback ]
                       , HE.div [ HA.class' "entry theme-modal" ]
-                              [ SSI.sun [ HA.onClick $ SetTheme Light ]
-                              , SSI.moon [ HA.onClick $ SetTheme Dark ]
+                              [ SS.sun [ HA.onClick $ SetTheme Light ]
+                              , SS.moon [ HA.onClick $ SetTheme Dark ]
                               ]
                       , if model.user.temporary then
                               HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmTerminationTemporaryUser ] [ HE.text "Delete my data" ]
                         else
                               HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmLogout ] [ HE.text "Logout" ]
                       ]
-              , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SUR.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
+              , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SU.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
                       [ SIS.closeX [ HA.class' "close-x" ]
                       ]
               ] <>
@@ -249,7 +245,7 @@ confirmTermination = HE.div [ HA.class' "modal-placeholder-overlay" ]
               , HE.span' [ HA.class' "request-error-message" ]
               , HE.span [ HA.class' "success-message right-align" ]
                       [ HE.text "Your data has been deleted"
-                      , SE.br
+                      , br
                       , HE.text "You will be logged out..."
                       ]
               ]
@@ -267,13 +263,13 @@ temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { 
             , HE.div [ HA.class' "duller last" ] [ HE.text "Create your account now, it is free!" ]
             , HE.div_
                     [ HE.label_ [ HE.text "Email" ]
-                    , HE.input [ HA.class' "modal-input", HA.type' "text", HA.id "email", HA.value $ DM.fromMaybe "" temporaryEmail, HA.onInput (SS.setJust (Proxy ∷ Proxy "temporaryEmail")), HA.maxlength emailMaxCharacters ]
-                    , HE.span [ HA.class' { "error-message": true, hidden: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "temporaryEmail")) erroredFields } ] [ HE.text "Please enter a valid email" ]
+                    , HE.input [ HA.class' "modal-input", HA.type' "text", HA.id "email", HA.value $ DM.fromMaybe "" temporaryEmail, HA.onInput <<< SS.setJust $ (Proxy ∷ Proxy "temporaryEmail"), HA.maxlength emailMaxCharacters ]
+                    , HE.span [ HA.class' { "error-message": true, hidden: not $ DA.elem (DS.reflectSymbol (Proxy ∷ Proxy "temporaryEmail")) erroredFields } ] [ HE.text "Please enter a valid email" ]
                     ]
             , HE.div_
                     [ HE.label_ [ HE.text "Password" ]
-                    , HE.input [ HA.class' "modal-input", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.value $ DM.fromMaybe "" temporaryPassword, HA.onInput (SS.setJust (Proxy ∷ Proxy "temporaryPassword")) ]
-                    , HE.span [ HA.class' { "error-message": true, hidden: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "temporaryPassword")) erroredFields } ] [ HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more" ]
+                    , HE.input [ HA.class' "modal-input", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.value $ DM.fromMaybe "" temporaryPassword, HA.onInput <<< SS.setJust $ (Proxy ∷ Proxy "temporaryPassword") ]
+                    , HE.span [ HA.class' { "error-message": true, hidden: not $ DA.elem (DS.reflectSymbol (Proxy ∷ Proxy "temporaryPassword")) erroredFields } ] [ HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more" ]
                     ]
             , HE.div_
                     [ HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Create account", HA.onClick CreateUserFromTemporary ]
@@ -281,7 +277,7 @@ temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { 
                     ]
             ]
       where
-      remaining = DI.floor <<< SC.coerce $ SUR.temporaryUserExpiration joined
+      remaining = DI.floor <<< SC.coerce $ SU.temporaryUserExpiration joined
       expired = remaining < 0
       remainingTime = case remaining of
             0 → " only a few hours left"

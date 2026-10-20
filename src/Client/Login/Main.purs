@@ -2,39 +2,68 @@ module Client.Login.Main where
 
 import Prelude
 
-import Client.Account as CCA
-import Client.Dom as CCD
-import Client.Location as CCL
+import Client.AppId (loginAppId)
+import Client.Location as CL
 import Client.Network (routes)
-import Client.Network as CCNT
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String (Pattern(..))
+import Data.String as DS
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff as EA
-import Effect.Class (liftEffect)
-import Shared.Network (RequestStatus(..))
+import Effect.Class as EC
+import Effect.Exception as EE
+import Flame (Application, Update)
+import Flame as F
+import Shared.Login.View as SLV
+import Shared.Network as SN
+import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Routes (routesSpec)
-import Shared.Unsafe as SU
-import Web.Event.Internal.Types (Event)
-import Web.UIEvent.KeyboardEvent as WUK
 
-login ∷ Effect Unit
-login = do
-      maybeRegisterLogin ← CCA.validateEmailPassword
-      case maybeRegisterLogin of
-            Nothing → pure unit
-            Just registerLogin →
-                  EA.launchAff_ do
-                        status ← CCA.formRequest $ routes.login.post { body: registerLogin }
-                        liftEffect $ when (status == Success) do
-                              -- the location to go after login is either the query parameter next or /im
-                              redirect ← CCL.queryParameter "next"
-                              CCL.setLocation $ DM.fromMaybe (routesSpec.im.get {}) redirect
+type Model = { email ∷ String, password ∷ String, loading ∷ Boolean, error ∷ String }
 
-loginOnEnter ∷ Event → Effect Unit
-loginOnEnter event = do
-      let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
-      when (pressed == "Enter") login
+data Message = SetEmail String | SetPassword String | Submit | KeyPressed String | Failed String | LoggedIn
+
+initialModel ∷ Model
+initialModel = { email: "", password: "", loading: false, error: "" }
+
+application ∷ Effect Unit → Application Model Message
+application authenticated =
+      { model: initialModel
+      , view: SLV.view { setEmail: SetEmail, setPassword: SetPassword, submit: Submit, keyPressed: KeyPressed }
+      , update: update authenticated
+      , subscribe: []
+      }
+
+update ∷ Effect Unit → Update Model Message
+update authenticated model message = case message of
+      LoggedIn → F.noMessages initialModel
+      SetEmail email → F.noMessages $ model { email = email }
+      SetPassword password → F.noMessages $ model { password = password }
+      Failed error → F.noMessages $ model { loading = false, error = error }
+      KeyPressed "Enter" → update authenticated model Submit
+      KeyPressed _ → F.noMessages model
+      Submit | model.loading → F.noMessages model
+      Submit →
+            let
+                  email = DS.trim model.email
+            in
+                  if DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email) then
+                        F.noMessages $ model { error = "Please enter a valid email" }
+                  else if DS.length model.password < passwordMinCharacters then
+                        F.noMessages $ model { error = "Password must be " <> show passwordMinCharacters <> " characters or more" }
+                  else model { loading = true, error = "" } /\
+                        [ do
+                                result ← EA.attempt $ routes.login.post { body: { email, password: model.password } }
+                                case result of
+                                      Left error → pure <<< Just <<< Failed $ EE.message error
+                                      Right (Left error) → pure <<< Just <<< Failed $ SN.errorMessage error
+                                      Right (Right _) → EC.liftEffect authenticated *> pure (Just LoggedIn)
+                        ]
 
 main ∷ Effect Unit
-main = CCA.registerEvents login
+main = F.mount loginAppId $ application do
+      redirect ← CL.queryParameter "next"
+      CL.setLocation $ DM.fromMaybe (routesSpec.im.get {}) redirect

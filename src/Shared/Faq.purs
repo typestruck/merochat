@@ -5,8 +5,8 @@ import Prelude
 
 import Flame (Html)
 import Flame.Html.Attribute as HA
-import Shared.Extra as SE
 import Flame.Html.Element as HE
+import Shared.Extra as SE
 
 faq ∷ ∀ m. Html m
 faq =
@@ -45,12 +45,12 @@ faq =
             , HE.h2 [ HA.id "mero" ] [ HE.text "What does Mero in MeroChat stand for?" ]
             , HE.p_ [ HE.text "Until someone finds a backronym, it is the Guarani word for (water)melons. Not surprisingly, the app is full of them" ]
             , HE.h2_ [ HE.text "Recommend me some music" ]
-            , HE.p_
+            , HE.p [ HA.class' "lynx-inline" ]
                     [ HE.text "Listen to "
                     , SE.a [ HA.href "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q", HA.target "_blank" ] [ HE.text "Metá Metá" ]
                     ]
             , HE.h2 [ HA.id "canihelp" ] [ HE.text "Wow, I love it. How can I help?" ]
-            , HE.p_
+            , HE.p [ HA.class' "lynx-inline" ]
                     [ HE.text "Right?! If you can spare some, consider backing MeroChat. The entire "
                     , SE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "source code" ]
                     , HE.text " is also freely avaible in case this is your thing. That being said, just letting others know about MeroChat is already a huge help. Reporting bugs, bad user behavior or other issues is also highly appreciated"

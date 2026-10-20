@@ -6,28 +6,28 @@ module Shared.Im.View.ChatInput
       ) where
 
 import Prelude
-import Shared.Availability
-import Shared.Im.Types
 
-import Client.Dom as CCD
-import Client.Im.Swipe as CIT
-import Client.Privilege as CCP
+import Client.Dom as CD
+import Client.Im.Swipe as CIS
+import Client.Privilege as CP
 import Data.Array as DA
-import Shared.Extra as SE
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Symbol as TDS
+import Data.Symbol as DS
 import Data.Tuple (Tuple(..))
-import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Flame.Html.Event (Event)
 import Flame.Types (NodeData)
+import Shared.Availability (Availability(..))
 import Shared.Element (ElementId(..))
+import Shared.Extra as SE
 import Shared.Im.Contact as SIC
-import Shared.Im.Emoji as SIE
+import Shared.Im.Emoji (byCategory)
 import Shared.Im.Svg as SIS
+import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Keydown as SK
 import Shared.Modal (ChatModal(..), Modal(..), ScreenModal(..))
 import Shared.Privilege (Privilege(..))
@@ -35,7 +35,6 @@ import Shared.Privilege as SP
 import Shared.Resource (maxImageSizeKB)
 import Shared.Setter as SS
 import Type.Proxy (Proxy(..))
-import Web.Event.Event (Event)
 
 chat ∷ ImModel → Html ImMessage
 chat model =
@@ -64,26 +63,26 @@ imageModal model =
                           [ HE.img [ HA.src $ DM.maybe "" _.base64 model.selectedImage ]
                           ]
                   , HE.div [ HA.class' "image-form-controls" ]
-                          [ HE.input [ HA.placeholder "Caption", HA.value $ DM.fromMaybe "" model.imageCaption, HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
+                          [ HE.input [ HA.placeholder "Caption", HA.value $ DM.fromMaybe "" model.imageCaption, HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput <<< SS.setJust $ (Proxy ∷ Proxy "imageCaption") ]
                           , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick $ ForceSendMessage ChatInput, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
                           ]
                   ]
             else
-                  [ CCP.notEnoughKarma "send images" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+                  [ CP.notEnoughKarma "send images" $ SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
                   , HE.div [ HA.class' "image-buttons" ] [ HE.button [ HA.class' "green-button", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Dismiss" ] ]
                   ]
       where
-      imageValidationFailed = DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage")) model.erroredFields
+      imageValidationFailed = DA.elem (DS.reflectSymbol (Proxy ∷ Proxy "selectedImage")) model.erroredFields
 
 audioModal ∷ ImModel → Html ImMessage
 audioModal model =
       HE.div [ HA.class' { "modal-form audio-form": true, hidden: model.modal /= Chat ShowAudioPrompt } ]
             if SP.hasPrivilege SendAudios model.user then
                   [ HE.div [ HA.class' "duller" ] [ HE.text "Hold the button to record. Release to send, or slide left to discard" ]
-                  , audioButton [ CIT.onTouchStart $ Just BeforeAudioMessage, CIT.onTouchEnd AudioMessage ]
+                  , audioButton [ CIS.onTouchStart $ Just BeforeAudioMessage, CIS.onTouchEnd AudioMessage ]
                   ]
             else
-                  [ CCP.notEnoughKarma "send audios" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+                  [ CP.notEnoughKarma "send audios" $ SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
                   , HE.div [ HA.class' "image-buttons" ] [ HE.button [ HA.class' "green-button", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Dismiss" ] ]
                   ]
 
@@ -92,7 +91,7 @@ chatBarInput eid elementId model = SE.fragment
       [ emojiModal elementId model
       , HE.div [ HA.class' { hidden: not available || DM.isNothing model.chatting && DA.null model.suggestions } ]
               [ HE.div [ HA.class' "chat-input-options" ]
-                      [ HE.div [ HA.class' "send-enter" ]
+                      [ HE.div [ HA.class' "send-enter inline-control" ]
                               [ HE.input [ HA.type' "checkbox", HA.autocomplete "off", HA.checked model.messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter" ]
                               , HE.label [ HA.for "message-enter" ] [ HE.text "Send message on enter" ]
                               ]
@@ -126,12 +125,12 @@ chatBarInput eid elementId model = SE.fragment
             _ → map (_.name <<< _.user) chatting
 
       typingStatus
-            | elementId == ChatInput = [ HA.onKeydown (SetTyping <<< DT.snd) ]
+            | elementId == ChatInput = [ HA.onInput SetTyping ]
             | otherwise = []
 
       filterEnterKeydown
-            | model.messageEnter && not model.smallScreen = [ SK.keyDownOn "Enter" (EnterSendMessage elementId), SK.keyDownOn "Escape" (const ResumeSuggesting) ]
-            | model.messageEnter = [ SK.keyDownOn "Enter" (EnterSendMessage elementId) ]
+            | model.messageEnter && not model.smallScreen = [ SK.keyDownOn "Enter" <<< EnterSendMessage $ elementId, SK.keyDownOn "Escape" <<< const $ ResumeSuggesting ]
+            | model.messageEnter = [ SK.keyDownOn "Enter" <<< EnterSendMessage $ elementId ]
             | otherwise = []
 
 emojiButton ∷ ImModel → Html ImMessage
@@ -186,17 +185,17 @@ emojiModal elementId model
       | model.smallScreen || model.modal /= Chat ShowEmojis = HE.div' [ HA.class' "emoji-wrapper hidden" ]
       | otherwise =
               HE.div [ HA.class' "emoji-wrapper" ]
-                    [ HE.div [ HA.class' "emojis", emojiClickEvent (SetEmoji elementId) ] $ map toEmojiCategory SIE.byCategory
+                    [ HE.div [ HA.class' "emojis", emojiClickEvent (SetEmoji elementId) ] $ map toEmojiCategory byCategory
                     ]
               where
               toEmojiCategory (Tuple name pairs) = HE.div_
                     [ HE.div [ HA.class' "duller" ] [ HE.text name ]
-                    , HE.div_ $ map (\c → HE.span_ [ HE.text c.s ]) pairs
+                    , HE.div [ HA.class' "lynx-inline" ] $ map (\c → HE.span_ [ HE.text c.s ]) pairs
                     ]
 
 emojiClickEvent ∷ (Event → ImMessage) → NodeData ImMessage
 emojiClickEvent message = HA.createRawEvent "click" handler
       where
       handler event
-            | CCD.tagNameFromTarget event == "SPAN" = pure <<< Just $ message event
+            | CD.tagNameFromTarget event == "SPAN" = pure <<< Just $ message event
             | otherwise = pure Nothing

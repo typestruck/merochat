@@ -2,7 +2,7 @@
     --im-background-color: #F0E8DD;
     --im-second-background-color: #696460;
     --im-text-color: #FBFEFB;
-    --im-chat-background-image: url('https://static.mero.chat/file/default/chat-background-light.svg');
+    --im-chat-background-image: url('../../../file/default/chat-background-light.svg');
     --merochat-green: #327B4F;
 }
 

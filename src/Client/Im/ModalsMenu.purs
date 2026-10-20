@@ -2,31 +2,30 @@ module Client.Im.ModalsMenu where
 
 import Prelude
 
-import Client.Dom as CCD
+import Client.AppId (loginAppId)
+import Client.Dom as CD
 import Client.EventTypes (modalVisible)
 import Client.Im.Chat as CIC
 import Client.Im.Flame (MoreMessages, NextMessage)
-import Client.Im.Pwa (SwMessage(..))
-import Client.Im.Pwa as CIP
-import Client.Im.Suggestion (byAvailability)
-import Client.Location as CCL
+import Client.Im.Suggestion as CIS
+import Client.Location as CL
+import Client.Lynx.Session as CLS
 import Client.Network (routes)
-import Client.Network as CCN
+import Client.Network as CN
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
 import Effect.Aff (Aff)
-import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame as F
-import Flame.Subscription.Unsafe.CustomEvent as FS
+import Flame.Subscription.Unsafe.CustomEvent as FSUC
 import Payload.Client (ClientResponse)
 import Prim.Coerce (class Coercible)
-import Shared.Html (Html(..))
 import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
+import Shared.Html (Html(..))
 import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), ShowContextMenu(..))
 import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..))
@@ -41,17 +40,14 @@ toggleInitialScreen toggle model =
             , modal = HideModal
             , showChangelogs = model.showChangelogs && toggle
             -- false toggle means we are showing suggestions
-            , suggestions = if not toggle then byAvailability model.suggestions else model.suggestions
-            } /\ [ updateDraft, updateServiceWorker ]
+            , suggestions = if not toggle then CIS.byAvailability model.suggestions else model.suggestions
+            } /\ [ updateDraft ]
       where
-      updateServiceWorker = do
-            EC.liftEffect $ CIP.postMessage NotChatting
-            pure Nothing
       updateDraft
             | toggle = EC.liftEffect do
-                    input ← CCD.unsafeGetElementById ChatInput
-                    draft ← CCD.value input
-                    CCD.setValue input ""
+                    input ← CD.unsafeGetElementById ChatInput
+                    draft ← CD.value input
+                    CD.setValue input ""
                     if DM.isNothing model.chatting then
                           pure Nothing
                     else
@@ -63,9 +59,12 @@ logout after model = model /\ [ out ]
       where
       out = do
             void $ routes.logout { body: {} }
-            liftEffect <<< CCL.setLocation $ case after of
-                  LoginPage → routesSpec.login.get {}
-                  Banned → routesSpec.banned {}
+            EC.liftEffect do
+                  native ← CLS.isNativeSession
+                  if native then F.navigate loginAppId
+                  else CL.setLocation $ case after of
+                        LoginPage → routesSpec.login.get {}
+                        Banned → routesSpec.banned {}
             pure Nothing
 
 modal ∷ Modal → ImModel → NextMessage
@@ -95,7 +94,7 @@ modal toggled model =
                         } /\ [ visible ShowMenu ]
       where
       visible toggle = do
-            EC.liftEffect $ FS.broadcast modalVisible toggle
+            EC.liftEffect $ FSUC.broadcast modalVisible toggle
             pure Nothing
 
       showModal ∷ ∀ query response. Coercible response String ⇒ (query → Aff (ClientResponse response)) → query → ScreenModal → Bundle → ElementId → NextMessage
@@ -117,16 +116,15 @@ modal toggled model =
                                 [ visible toggle ]
                           else
                                 [ visible toggle
-                                , CCN.retryableRequest (ToggleModal $ Screen toggle) (SetModalContents resource root <<< SC.coerce) (req query)
+                                , CN.retryableRequest (ToggleModal $ Screen toggle) (SetModalContents resource root <<< SC.coerce) (req query)
                                 ]
 
 setModalContents ∷ Bundle → ElementId → String → ImModel → NextMessage
 setModalContents resource root html model = model /\ [ loadModal ]
       where
-      loadModal = liftEffect do
-            element ← CCD.unsafeGetElementById root
-            CCD.setInnerHTML element html
+      loadModal = EC.liftEffect do
+            element ← CD.unsafeGetElementById root
+            CD.setInnerHTML element html
             --scripts don't load when inserted via innerHTML and dynamic module import is a whole can of worms
-            CCD.loadScript resource
+            CD.loadScript resource
             pure Nothing
-

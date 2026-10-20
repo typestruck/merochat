@@ -2,20 +2,12 @@ module Server.Profile.Template where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Flame as F
-import Record as R
-import Shared.Ask (Ask)
-import Shared.Element (ElementId(..))
-import Shared.Element as SE
 import Shared.Html (Html(..))
 import Shared.Profile.Mode (ProfileMode)
-import Shared.Profile.Types (ProfileAsk)
-import Shared.Profile.View as SPV
 
-template ∷ _ → Effect Html
-template payload =
+template ∷ _ → ProfileMode → Effect Html
+template payload mode =
       pure $ Html "" {- do
       Html <$> F.preMount (SE.toQuerySelector ProfileEditionForm)
             { view: SPV.view

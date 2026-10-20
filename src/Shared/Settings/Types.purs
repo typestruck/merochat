@@ -3,15 +3,15 @@ module Shared.Settings.Types where
 import Prelude
 
 import Data.Argonaut (class DecodeJson, class EncodeJson)
-import Data.Argonaut.Decode.Generic as DADGR
-import Data.Argonaut.Encode.Generic as DAEGR
+import Data.Argonaut.Decode.Generic as DADG
+import Data.Argonaut.Encode.Generic as DAEG
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
+import Flame.Html.Event (Event)
 import Shared.Modal (ScreenModal)
 import Shared.Network (RequestStatus)
 import Shared.SuggestionsFrom (SuggestionsFrom)
 import Shared.User (ProfileVisibility)
-import Web.Event.Internal.Types (Event)
 
 type SM =
       ( email ∷ String
@@ -81,17 +81,17 @@ derive instance Eq Tab
 derive instance Generic Tab _
 
 instance DecodeJson Tab where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance EncodeJson Tab where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 derive instance Eq SettingRequest
 
 derive instance Generic SettingRequest _
 
 instance DecodeJson SettingRequest where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance EncodeJson SettingRequest where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson

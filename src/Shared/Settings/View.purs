@@ -2,18 +2,14 @@ module Shared.Settings.View (view, formId) where
 
 import Prelude
 
-import Client.Dom as CCD
 import Data.Array ((:))
 import Data.Array as DA
-import Data.Enum as DE
-import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodePoints as DSC
 import Data.Symbol (class IsSymbol)
-import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute (ToSpecialEvent)
 import Flame.Html.Attribute as HA
@@ -24,23 +20,21 @@ import Record as R
 import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
 import Shared.File as SF
+import Shared.Lynx as SL
 import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (maxImageSizeKB)
 import Shared.Settings.Types (SM, SettingsMessage(..), SettingsModel, SettingRequest(..), SettingsRequestStatus, Tab(..))
 import Shared.SuggestionsFrom (SuggestionsFrom(..))
-import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Data.Symbol as TDS
 import Type.Proxy (Proxy(..))
-import Web.DOM.Element as WDE
-import Web.Event.Event as WEE
 
 view ∷ SettingsModel → Html SettingsMessage
 view model =
       HE.div [ HA.id "settings-edition", HA.class' { hidden: not model.visible } ]
             [ HE.div [ HA.class' "modal-section" ]
-                    [ HE.div [ HA.class' "green-tab" ]
+                    [ HE.div [ HA.class' "green-tab lynx-inline" ]
                             [ HE.div [ HA.onClick $ setTab Privacy, HA.class' { "regular-green-tab": true, "selected-green-tab": model.tab == Privacy } ] [ HE.text "Privacy" ]
                             , HE.div [ HA.onClick $ setTab Account, HA.class' { "regular-green-tab": true, "selected-green-tab": model.tab == Account } ] [ HE.text "Account" ]
                             , HE.div [ HA.onClick $ setTab Chats, HA.class' { "regular-green-tab": true, "selected-green-tab": model.tab == Chats } ] [ HE.text "Chats" ]
@@ -59,32 +53,32 @@ view model =
 privacySection ∷ SettingsModel → Html SettingsMessage
 privacySection model = HE.div [ HA.id $ show PrivacySettings ]
       [ HE.label_ [ HE.text "Profile visibility" ]
-      , SE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-              [ SE.option [ HA.selected $ model.profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Show profile (default)" ]
-              , SE.option [ HA.selected $ model.profileVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Show profile only to registered users" ]
-              , SE.option [ HA.selected $ model.profileVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Show profile only to contacts" ]
-              , SE.option [ HA.selected $ model.profileVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not show profile" ]
+      , HE.div [ HA.class' "modal-input" ]
+              [ SL.choice (model.profileVisibility == Everyone) (SetSField $ _ { profileVisibility = Everyone }) "Show profile (default)"
+              , SL.choice (model.profileVisibility == NoTemporaryUsers) (SetSField $ _ { profileVisibility = NoTemporaryUsers }) "Show profile only to registered users"
+              , SL.choice (model.profileVisibility == Contacts) (SetSField $ _ { profileVisibility = Contacts }) "Show profile only to contacts"
+              , SL.choice (model.profileVisibility == Nobody) (SetSField $ _ { profileVisibility = Nobody }) "Do not show profile"
               ]
 
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= Everyone } ] [ HE.text "All users can see your profile and send you messages" ]
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= NoTemporaryUsers } ]
               [ HE.text "All users (excluding quick sign up users) can see your"
-              , SE.br
+              , HE.text "\n"
               , HE.text "profile and send you messages"
               ]
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= Contacts } ]
               [ HE.text "Only users you have previously messaged can see your"
-              , SE.br
+              , HE.text "\n"
               , HE.text "profile or send you messages"
               ]
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= Nobody } ] [ HE.text "No one can see your profile or message you" ]
 
       , HE.label_ [ HE.text "Posts visibility" ]
-      , SE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { postsVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-              [ SE.option [ HA.selected $ model.postsVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Show posts (default)" ]
-              , SE.option [ HA.selected $ model.postsVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Show posts only to registered users" ]
-              , SE.option [ HA.selected $ model.postsVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Show posts only to contacts" ]
-              , SE.option [ HA.selected $ model.postsVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not show posts" ]
+      , HE.div [ HA.class' "modal-input" ]
+              [ SL.choice (model.postsVisibility == Everyone) (SetSField $ _ { postsVisibility = Everyone }) "Show posts (default)"
+              , SL.choice (model.postsVisibility == NoTemporaryUsers) (SetSField $ _ { postsVisibility = NoTemporaryUsers }) "Show posts only to registered users"
+              , SL.choice (model.postsVisibility == Contacts) (SetSField $ _ { postsVisibility = Contacts }) "Show posts only to contacts"
+              , SL.choice (model.postsVisibility == Nobody) (SetSField $ _ { postsVisibility = Nobody }) "Do not show posts"
               ]
       , HE.div [ HA.class' "duller" ] $ case model.postsVisibility of
               Everyone → [ HE.text "All users can see your posts" ]
@@ -94,11 +88,11 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               TemporarilyBanned → []
 
       , HE.label_ [ HE.text "Asks" ]
-      , SE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { asksVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-              [ SE.option [ HA.selected $ model.asksVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Allow asks from everyone" ]
-              , SE.option [ HA.selected $ model.asksVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Allow asks only from registered users (default)" ]
-              , SE.option [ HA.selected $ model.asksVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Allow asks only from contacts" ]
-              , SE.option [ HA.selected $ model.asksVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not allow asks" ]
+      , HE.div [ HA.class' "modal-input" ]
+              [ SL.choice (model.asksVisibility == Everyone) (SetSField $ _ { asksVisibility = Everyone }) "Allow asks from everyone"
+              , SL.choice (model.asksVisibility == NoTemporaryUsers) (SetSField $ _ { asksVisibility = NoTemporaryUsers }) "Allow asks only from registered users (default)"
+              , SL.choice (model.asksVisibility == Contacts) (SetSField $ _ { asksVisibility = Contacts }) "Allow asks only from contacts"
+              , SL.choice (model.asksVisibility == Nobody) (SetSField $ _ { asksVisibility = Nobody }) "Do not allow asks"
               ]
       , HE.div [ HA.class' "duller" ] $ case model.asksVisibility of
               Everyone → [ HE.text "All users can send you asks" ]
@@ -108,27 +102,27 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               TemporarilyBanned → []
 
       , HE.label_ [ HE.text "Show:" ]
-      , HE.div_
-              [ HE.input [ HA.id "read-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.readReceipts, HA.onChange (SetSField (_ { readReceipts = not model.readReceipts })) ]
+      , HE.div [ HA.class' "inline-control" ]
+              [ HE.input [ HA.id "read-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.readReceipts, HA.onChange <<< SetSField $ _ { readReceipts = not model.readReceipts } ]
               , HE.label [ HA.for "read-toggle", HA.class' "inline" ] [ HE.text "Read receipts" ]
               ]
-      , HE.div_
-              [ HE.input [ HA.id "online-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.onlineStatus, HA.onChange (SetSField (_ { onlineStatus = not model.onlineStatus })) ]
+      , HE.div [ HA.class' "inline-control" ]
+              [ HE.input [ HA.id "online-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.onlineStatus, HA.onChange <<< SetSField $ _ { onlineStatus = not model.onlineStatus } ]
               , HE.label [ HA.for "online-toggle", HA.class' "inline" ] [ HE.text "Online status" ]
               ]
-      , HE.div_
-              [ HE.input [ HA.id "message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.messageTimestamps, HA.onChange (SetSField (_ { messageTimestamps = not model.messageTimestamps })) ]
+      , HE.div [ HA.class' "inline-control" ]
+              [ HE.input [ HA.id "message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.messageTimestamps, HA.onChange <<< SetSField $ _ { messageTimestamps = not model.messageTimestamps } ]
               , HE.label [ HA.for "message-toggle", HA.class' "inline" ] [ HE.text "Message timestamps" ]
               ]
-      , HE.div_
-              [ HE.input [ HA.id "typing-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.typingStatus, HA.onChange (SetSField (_ { typingStatus = not model.typingStatus })) ]
+      , HE.div [ HA.class' "inline-control" ]
+              [ HE.input [ HA.id "typing-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.typingStatus, HA.onChange <<< SetSField $ _ { typingStatus = not model.typingStatus } ]
               , HE.label [ HA.for "typing-toggle", HA.class' "inline" ] [ HE.text "Typing status" ]
               ]
-      , HE.div_
-              [ HE.input [ HA.id "last-message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.lastMessageOnContactList, HA.onChange (SetSField (_ { lastMessageOnContactList = not model.lastMessageOnContactList })) ]
+      , HE.div [ HA.class' "inline-control" ]
+              [ HE.input [ HA.id "last-message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.lastMessageOnContactList, HA.onChange <<< SetSField $ _ { lastMessageOnContactList = not model.lastMessageOnContactList } ]
               , HE.label [ HA.for "last-message-toggle", HA.class' "inline" ] [ HE.text "Last messages on contact list" ]
               ]
-      , HE.br
+      , HE.text "\n"
       , HE.div [ HA.class' "section-buttons privacy" ]
               [ HE.input
                       [ HA.type' "button"
@@ -147,14 +141,14 @@ accountSection model = HE.div_
       , terminate
       ]
       where
-      terminate = HE.div [ HA.id (formId (Proxy ∷ Proxy "confirmTermination")) ]
+      terminate = HE.div [ HA.id <<< formId $ (Proxy ∷ Proxy "confirmTermination") ]
             [ HE.label_ [ HE.text "Permanently delete all my data and close my account" ]
             , HE.div [ HA.class' "section-buttons margined" ]
                     [ HE.input [ HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount ]
                     , HE.span' [ HA.class' "request-error-message" ]
                     , HE.span [ HA.class' "success-message" ]
                             [ HE.text "Account terminated!"
-                            , SE.br
+                            , HE.text "\n"
                             , HE.text "You will be logged out..."
                             ]
                     ]
@@ -172,11 +166,11 @@ accountSection model = HE.div_
 chatsSection ∷ SettingsModel → Html SettingsMessage
 chatsSection model = HE.div [ HA.id $ show ChatSettings ]
       [ HE.label_ [ HE.text "Initial suggestions screen" ]
-      , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { suggestionsFrom = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-              [ HE.option [ HA.selected $ model.suggestionsFrom == ThisWeek, HA.value <<< show $ DE.fromEnum ThisWeek ] [ HE.text "New suggestions" ]
-              , HE.option [ HA.selected $ model.suggestionsFrom == OnlineOnly, HA.value <<< show $ DE.fromEnum OnlineOnly ] [ HE.text "Online users" ]
-              , HE.option [ HA.selected $ model.suggestionsFrom == ContactsOnly, HA.value <<< show $ DE.fromEnum ContactsOnly ] [ HE.text "Contacts" ]
-              , HE.option [ HA.selected $ model.suggestionsFrom == FavoritesOnly, HA.value <<< show $ DE.fromEnum FavoritesOnly ] [ HE.text "Favorites" ]
+      , HE.div [ HA.class' "modal-input" ]
+              [ SL.choice (model.suggestionsFrom == ThisWeek) (SetSField $ _ { suggestionsFrom = ThisWeek }) "New suggestions"
+              , SL.choice (model.suggestionsFrom == OnlineOnly) (SetSField $ _ { suggestionsFrom = OnlineOnly }) "Online users"
+              , SL.choice (model.suggestionsFrom == ContactsOnly) (SetSField $ _ { suggestionsFrom = ContactsOnly }) "Contacts"
+              , SL.choice (model.suggestionsFrom == FavoritesOnly) (SetSField $ _ { suggestionsFrom = FavoritesOnly }) "Favorites"
               ]
       , HE.div [ HA.class' "duller" ]
               [ HE.text $ case model.suggestionsFrom of
@@ -196,15 +190,15 @@ chatsSection model = HE.div [ HA.id $ show ChatSettings ]
               ]
 
       , HE.div [] [ HE.text "Chat background" ]
-      , HE.div_
-              [ HE.input [ HA.id "background-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.ownBackground, HA.onChange (SetSField (_ { ownBackground = not model.ownBackground })) ]
+      , HE.div [ HA.class' "inline-control" ]
+              [ HE.input [ HA.id "background-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.ownBackground, HA.onChange <<< SetSField $ _ { ownBackground = not model.ownBackground } ]
               , HE.label [ HA.for "background-toggle", HA.class' "inline" ] [ HE.text $ if DM.isJust model.chatBackground then "Use this background instead of contacts'" else "No chat backgrounds" ]
               ]
       , if DM.isJust model.chatBackground then
               HE.img [ HA.class' "chat-background-preview", HA.src <<< DM.fromMaybe "" $ SA.fromAvatarPath model.chatBackground ]
         else
               HE.div []
-                    [ HE.div [ HA.class' { errored: true, hidden: not (DA.elem (TDS.reflectSymbol (Proxy ∷ _ "chatBackground")) model.erroredFields) } ]
+                    [ HE.div [ HA.class' { errored: true, hidden: not <<< DA.elem (TDS.reflectSymbol (Proxy ∷ _ "chatBackground")) $ model.erroredFields } ]
                             [ HE.div [ HA.class' "error-message" ] [ HE.text $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file" ]
                             ]
                     , HE.input
@@ -240,12 +234,12 @@ fieldConfirmationSection model field inputType maxChars validator fieldErrorMess
       HE.div [ HA.id $ formId field ]
             [ HE.div [ HA.class' { errored: hasErrors } ]
                     [ HE.label_ [ HE.text capitalizedStringField ]
-                    , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.class' "modal-input", HA.value fieldValue, onChangeValue (setValidatedField validator field), HA.autocomplete $ "new-" <> stringField ]
+                    , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.class' "modal-input", HA.value fieldValue, onChangeValue <<< setValidatedField validator $ field, HA.autocomplete $ "new-" <> stringField ]
                     , HE.div [ HA.class' "error-message" ] [ HE.text fieldErrorMessage ]
                     ]
             , HE.div [ HA.class' { errored: hasConfirmationErrors } ]
                     [ HE.label_ [ HE.text $ "Confirm " <> stringField ]
-                    , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.autocomplete $ "new-" <> stringField, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation) ]
+                    , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.autocomplete $ "new-" <> stringField, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue <<< setValidatedField (_ == fieldValue) $ fieldConfirmation ]
                     , HE.div [ HA.class' "error-message" ] [ HE.text $ capitalizedStringField <> " confirmation must match " <> stringField ]
                     ]
             , HE.div [ HA.class' "section-buttons" ]
@@ -253,7 +247,7 @@ fieldConfirmationSection model field inputType maxChars validator fieldErrorMess
                     , HE.span' [ HA.class' "request-error-message" ]
                     , HE.span [ HA.class' "success-message" ]
                             [ HE.text $ capitalizedStringField <> " changed!"
-                            , SE.br
+                            , HE.text "\n"
                             , HE.text "You will be logged out..."
                             ]
                     ]
@@ -276,12 +270,7 @@ fieldConfirmationSection model field inputType maxChars validator fieldErrorMess
                   message
 
 onChangeValue ∷ ∀ message. ToSpecialEvent message String
-onChangeValue constructor = HA.createRawEvent "change" handler
-      where
-      handler event = Just <<< constructor <$> CCD.value (extractElement event)
-      extractElement event = SU.fromJust do
-            target ← WEE.target event
-            WDE.fromEventTarget target
+onChangeValue = HA.onInput
 
 validateEmail ∷ String → Boolean
 validateEmail email = DS.contains (Pattern "@") email && DS.contains (Pattern ".") email

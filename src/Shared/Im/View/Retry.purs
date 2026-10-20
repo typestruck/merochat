@@ -2,22 +2,22 @@ module Shared.Im.View.Retry where
 
 import Prelude
 
-import Data.Foldable as DA
+import Data.Foldable as DF
 import Flame (Html)
-import Shared.Im.Types
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Im.Types (ImMessage(..), RequestFailure, RetryableRequest)
 
 retry ∷ String → RetryableRequest → Array RequestFailure → Html ImMessage
 retry failedText requestMessage failedRequests =
       HE.div
-            [ HA.class' { retry: true, hidden: not $ DA.any ((requestMessage == _) <<< _.routes) failedRequests } ]
+            [ HA.class' { retry: true, hidden: not $ DF.any ((requestMessage == _) <<< _.routes) failedRequests } ]
             <<< retryForm failedText $ SpecialRequest requestMessage
 
 retryForm ∷ String → ImMessage → Array (Html ImMessage)
 retryForm failedText message =
       [ HE.text failedText
-      , HE.span [ HA.class' "retry-button", HA.onClick message ]
+      , HE.span [ HA.class' "retry-button inline-control", HA.onClick message ]
               [ HE.text "Retry"
               , retryIcon "svg-16"
               ]

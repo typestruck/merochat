@@ -1,48 +1,44 @@
 module Shared.Im.Types where
 
 import Prelude
-import Shared.Availability
-import Shared.Element
-import Shared.Modal
 
 import Data.Argonaut.Decode (class DecodeJson)
-import Data.Argonaut.Decode.Generic as DADGR
+import Data.Argonaut.Decode.Generic as DADG
 import Data.Argonaut.Encode (class EncodeJson)
-import Data.Argonaut.Encode.Generic as DAEGR
+import Data.Argonaut.Encode.Generic as DAEG
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-import Data.Int as DI
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.Show.Generic as DGRS
+import Data.Show.Generic as DSG
 import Data.Tuple (Tuple)
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested (type (/\))
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Effect.Timer (TimeoutId)
+import Flame.Html.Event (Event)
 import Foreign as F
 import Foreign.Object (Object)
-import Foreign.Object as FO
+import Payload.Server.QueryParams (DecodeError(..))
 import Shared.Ask (Ask)
+import Shared.Availability (Availability)
 import Shared.Changelog (Changelog, ChangelogAction)
-import Shared.Content (Content(..))
+import Shared.Content (Content)
 import Shared.DateTime (DateTimeWrapper)
-import Shared.Experiments.Types (ExperimentsMessage(..))
+import Shared.Element (ElementId)
+import Shared.Modal (Modal, ScreenModal)
 import Shared.Post (Post)
-import Shared.Praise (Praise, PraisedFor, PraiseDisplay)
+import Shared.Praise (PraiseDisplay, PraisedFor)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.SuggestionsFrom (SuggestionsFrom)
-import Payload.Server.QueryParams (DecodeError(..))
 import Shared.Unsafe as SU
-import Shared.User (User, ProfileTab(..))
+import Shared.User (ProfileTab, User)
 import Unsafe.Coerce as UC
-import Web.Event.Internal.Types (Event)
 
 type Report =
       { reason ∷ ReportReason
@@ -242,7 +238,7 @@ type RequestFailure =
       }
 
 type UpdatedProfile =
-      { id :: Int
+      { id ∷ Int
       , name ∷ String
       , avatar ∷ Maybe String
       , description ∷ String
@@ -393,25 +389,22 @@ data ImMessage
       | RemoveChatBackground
       | AcknowledgeRules String
       | ReconnectWebSocket
-      | PushedMessages (Array ClientMessagePayload)
       | SetSmallScreen
       | ReceiveMessage WebSocketPayloadClient Boolean
       | TrackAvailability
       | Escape
       | PreventStop Event
-      | AskNotification
       | ToggleAskNotification
       | CloseWebSocket When
       | HighlightMessage IntWrapper
       | ClearHighlightedMessage
+      | ConnectWebSocket
       | SetNameFromProfile String
       | SendUpdatedProfile
       | SetChatBackgroundFromProfile Boolean (Maybe String)
       | SetAvatarFromProfile (Maybe String)
       | SetCompletedFields (Array ProfileColumn)
       | CheckUserExpiration
-      | StartPwa
-      | UpdateSubscription
       | UpdateWebSocketStatus WebSocketConnectionStatus
       | SetField (ImModel → ImModel)
       | TerminateTemporaryUser
@@ -621,73 +614,73 @@ instance DecodeJson TimeoutIdWrapper where
       decodeJson = Right <<< UC.unsafeCoerce
 
 instance DecodeJson Favorited where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson WebSocketPayloadServer where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson AfterLogout where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson PostMode where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson WebSocketPayloadClient where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson ShowContextMenu where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson RetryableRequest where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson ReportReason where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson MessageStatus where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson WebSocketConnectionStatus where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson ReactWith where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance EncodeJson WebSocketConnectionStatus where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson ReactWith where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson TimeoutIdWrapper where
       encodeJson = UC.unsafeCoerce
 
 instance EncodeJson AfterLogout where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson WebSocketPayloadServer where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson WebSocketPayloadClient where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson Favorited where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson PostMode where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson ShowContextMenu where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson RetryableRequest where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson ReportReason where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson MessageStatus where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance Show MessageStatus where
       show = case _ of
@@ -707,10 +700,10 @@ instance Show ReportReason where
             OtherReason → "Other"
 
 instance Show WebSocketPayloadServer where
-      show = DGRS.genericShow
+      show = DSG.genericShow
 
 instance Show MessageError where
-      show = DGRS.genericShow
+      show = DSG.genericShow
 
 derive instance Eq ShowContextMenu
 derive instance Eq AfterLogout

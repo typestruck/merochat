@@ -2,15 +2,15 @@ module Shared.Experiments.Doppelganger where
 
 import Prelude
 
-import Client.Dom as CCD
+import Client.Dom as CD
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
-import Shared.Extra as SE
 import Flame.Html.Element as HE
 import Shared.Experiments.Types (DoppelgangerSection(..), ExperimentsMessage(..), ExperimentsModel)
+import Shared.Extra as SE
 import Shared.Unsafe as SU
 import Web.HTML.HTMLInputElement as WHHI
 
@@ -32,14 +32,14 @@ view model = HE.div [ HA.class' "word-chain duller" ]
             | DA.null model.doppelganger.matches = HE.div [] [ HE.text "No evil clones found. Yet." ]
             | otherwise = HE.div [ HA.class' "matches" ]
                     [ HE.div [] [ HE.text "You have evil clones!" ]
-                    , HE.div []
+                    , HE.div [ HA.class' "lynx-inline" ]
                             [ HE.text "You and "
-                            , HE.span_ <<< DA.intersperse (HE.text ", ") $ map matchLink model.doppelganger.matches
+                            , HE.span [ HA.class' "lynx-inline" ] <<< DA.intersperse (HE.text ", ") $ map matchLink model.doppelganger.matches
                             , HE.text " have chosen the exact same 9 answers"
                             ]
                     ]
 
-      showChoice questionId choice = HE.div [ HA.class' "choice-option" ]
+      showChoice questionId choice = HE.div [ HA.class' "choice-option inline-control" ]
             [ --i think it is a bug on flame, input checked property for that position in the group is not cleared
               SE.managed { createNode: createOption, updateNode: resetChecked } [ HA.checked false, HA.autocomplete "off", HA.type' "radio", HA.name $ "choices" <> show questionId, HA.value $ show choice.id, HA.id $ show choice.id, HA.onChange $ SelectChoice questionId choice.id ] model.doppelganger.selectedChoice
             , HE.label [ HA.for $ show choice.id ] [ HE.text choice.description ]
@@ -58,7 +58,7 @@ view model = HE.div [ HA.class' "word-chain duller" ]
                   ]
 
       createOption _ = do
-            element ← SU.fromJust <<< WHHI.fromElement <$> CCD.createElement "input"
+            element ← SU.fromJust <<< WHHI.fromElement <$> CD.createElement "input"
             WHHI.setType "radio" element
             pure $ WHHI.toNode element
 

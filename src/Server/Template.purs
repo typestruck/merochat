@@ -5,15 +5,15 @@ import Prelude
 
 import Data.Either (Either(..))
 import Effect (Effect)
-import Environment (production)
 import Flame (Html)
 import Flame.Html.Attribute as HA
-import Shared.Extra as SE
 import Flame.Html.Element as HE
-import Shared.App.Banner as SAB
+import Shared.App.Banner (banner)
+import Shared.Extra as SE
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
-import Shared.Resource as SP
+import Shared.Resource as SR
 import Shared.Routes (routesSpec)
+import Shared.Svg (logo)
 import Shared.Svg as SS
 
 type Parameters a =
@@ -30,7 +30,7 @@ type Parameters a =
 defaultParameters ∷ ∀ a. Parameters a
 defaultParameters =
       { title: "MeroChat - Friendly Random Chat"
-      , favicon: SP.resourcePath (Left Favicon) Ico
+      , favicon: SR.resourcePath (Left Favicon) Ico
       , javascript: []
       , header: []
       , css: []
@@ -44,15 +44,15 @@ defaultParameters =
 externalDefaultParameters ∷ ∀ a. Parameters a
 externalDefaultParameters =
       { title: "MeroChat - Text only, friendly random chat!"
-      , favicon: SP.resourcePath (Left Favicon) Ico
+      , favicon: SR.resourcePath (Left Favicon) Ico
       , javascript: []
       , bundled: false
       , css: []
       , header:
-              [ SAB.banner
+              [ banner
               , HE.div [ HA.class' "header" ]
                       [ HE.div [ HA.id "header", HA.class' "big-logo" ]
-                              [ SS.logo
+                              [ logo
 
                               ]
                       , HE.div [ HA.class' "menu-merochat" ]
@@ -72,8 +72,10 @@ externalDefaultParameters =
                                       ]
                               ]
                       ]
-              , if production then SE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
-                else SE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
+              ,
+                --, if production then SE.script' [ HA.type' "text/javascript", SE.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
+                --else
+                SE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
               ]
       , content: []
       , footer:
@@ -110,12 +112,12 @@ templateWith parameters =
       styleSheets =
             ( if parameters.bundled then []
               else
-                    [ SE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Base Css ]
+                    [ SE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SR.bundlePath Base Css ]
                     ]
             ) <> parameters.css
       javascript =
             ( if parameters.bundled then []
               else
-                    [ SE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Common Js ]
+                    [ SE.script' [ HA.type' "text/javascript", HA.src $ SR.bundlePath Common Js ]
                     ]
             ) <> parameters.javascript

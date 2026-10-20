@@ -1,39 +1,35 @@
 module Shared.Im.View.ChatHistory where
 
 import Prelude
-import Shared.Availability
-import Shared.Im.Types
-import Shared.User
 
-import Client.Im.Swipe as CIT
-import Data.Array ((!!), (:))
+import Client.Im.Swipe as CIS
+import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-
 import Effect (Effect)
 import Effect.Uncurried (EffectFn5)
 import Effect.Uncurried as EU
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Flame.Html.Event (Event)
 import Flame.Types (NodeData)
 import Safe.Coerce as SC
+import Shared.Availability (Availability(Unavailable))
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Element as SE
+import Shared.Extra as SE
 import Shared.Im.Contact as SIC
-import Shared.Im.Scroll as SIS
-import Shared.Im.View.ChatInput as SICI
+import Shared.Im.Scroll (scrollEventName)
+import Shared.Im.Types (ImMessage(..), ImModel, MessageStatus(..), ReactWith(..), RetryableRequest(..), ShowContextMenu(..))
+import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Profile as SIVP
 import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Options.Reaction (maxReactionCharacters)
-import Shared.Resource (Media(..), ResourceType(..))
-import Shared.Resource as SP
 import Shared.Unsafe as SU
-import Web.Event.Internal.Types (Event)
 
 data ScrollAction = ResetScrollDown | SetScrollDown | Fetch | None
 
@@ -47,7 +43,7 @@ runScrollEvent = EU.runEffectFn5 runScrollEvent_
 -- determine weather or not to scroll down to incoming messages
 -- check if older chat history should be fetched
 onScrollEvent ∷ Int → NodeData ImMessage
-onScrollEvent userId = HA.createRawEvent SIS.scrollEventName handler
+onScrollEvent userId = HA.createRawEvent scrollEventName handler
       where
       handler event = do
             what ← runScrollEvent event None SetScrollDown ResetScrollDown Fetch
@@ -94,9 +90,9 @@ chatHistory model =
                           [ HE.div
                                   [ HA.class' "message-content", HA.id $ SE.messageElementId entry.id ]
                                   [ HE.div [ HA.class' "message-content-in" ]
-                                          [ HE.div' [ HA.innerHtml $ SM.parse entry.content { id: _ } ]
+                                          [ HE.div' [ SE.innerHtml $ SM.parse entry.content { id: _ } ]
                                           ]
-                                  , HE.div [ HA.class' "message-status error-message" ]
+                                  , HE.div [ HA.class' "message-status error-message lynx-inline" ]
                                           [ HE.span [ HA.class' { hidden: not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.agoWithTime $ SC.coerce entry.date ]
                                           , HE.span_ [ HE.text " - Failed to send" ]
                                           ]
@@ -110,7 +106,7 @@ chatHistory model =
                           reactionTextId = "reaction-text-" <> show entry.id
                           isContextMenuVisible = model.toggleContextMenu == ShowMessageContextMenu entry.id
                           mobileEvents
-                                | model.smallScreen = [ CIT.onTouchStart Nothing, CIT.onTouchEnd (QuoteMessage entry.id entry.content <<< Left), HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
+                                | model.smallScreen = [ CIS.onTouchStart Nothing, CIS.onTouchEnd $ QuoteMessage entry.id entry.content <<< Left, HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
                                 | otherwise = []
                     in
                           HE.div
@@ -120,7 +116,7 @@ chatHistory model =
                                         , "incoming-message": incomingMessage
                                         , highlighted: model.highlighted == Just entry.id
                                         }
-                                , HA.onDblclick' (QuoteMessage entry.id entry.content <<< Right <<< Just)
+                                , HA.createEventMessage "dblclick" $ QuoteMessage entry.id entry.content <<< Right <<< Just
                                 ]
                                 ( [ HE.div
                                           ([ HA.class' { "message-content": true, "editing-message": model.editing == Just entry.id }, HA.id $ SE.messageElementId entry.id ] <> mobileEvents) -- id is used to scroll into view
@@ -142,25 +138,25 @@ chatHistory model =
                                                             else
                                                                   HE.div [ HA.class' "reaction-text" ]
                                                                         [ HE.input [ HA.id reactionTextId, HA.placeholder $ "Max " <> show maxReactionCharacters <> " characters", HA.maxlength maxReactionCharacters, HA.type' "text", HA.class' "reaction-input" ]
-                                                                        , HE.svg [ HA.class' "send-button", HA.onClick' (React contact.user.id entry.id $ Left reactionTextId), HA.viewBox "0 0 16 16" ] $ SICI.sendButtonElements "React with text"
+                                                                        , HE.svg [ HA.class' "send-button", HA.onClick' (React contact.user.id entry.id $ Left reactionTextId), HA.viewBox "0 0 16 16" ] $ SIVC.sendButtonElements "React with text"
                                                                         ]
 
                                                           ]
-                                                  , HE.div' [ HA.innerHtml $ SM.parse entry.content { id: _ } ]
+                                                  , HE.div' [ SE.innerHtml $ SM.parse entry.content { id: _ } ]
                                                   , HE.div [ HA.class' "message-context-options" ]
                                                           [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
                                                                   [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
                                                                           [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
                                                                           ]
                                                                   , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history entry.id } ]
-                                                                          [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage entry.id entry.content (Right Nothing)) ] [ HE.text "Reply" ]
+                                                                          [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage entry.id entry.content <<< Right $ Nothing) ] [ HE.text "Reply" ]
                                                                           , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] [ HE.text "Edit" ]
                                                                           , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ DeleteMessage entry.id ] [ HE.text "Unsend" ]
                                                                           ]
                                                                   ]
                                                           ]
                                                   ]
-                                          , HE.div [ HA.class' "message-status" ]
+                                          , HE.div [ HA.class' "message-status lynx-inline" ]
                                                   [ HE.span [ HA.class' { hidden: not entry.edited } ] [ HE.text "Edited - " ]
                                                   , HE.span [ HA.class' { hidden: noTimestamps } ] [ HE.text <<< SD.agoWithTime $ SC.coerce entry.date ]
                                                   , HE.span [ HA.class' { hidden: incomingMessage || noReadReceipts } ] [ HE.text $ " - " <> show entry.status ]
@@ -176,4 +172,3 @@ chatHistory model =
                                                       ]
                                               ]
                                 )
-

@@ -1,34 +1,32 @@
 module Shared.Experiments.Debate where
 
-import Prelude hiding (join)
-
-import Data.Array ((:))
-import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Experiments.Types (DebateSection(..), ExperimentsMessage(..), ExperimentsModel, PaperPlaneSection(..), PaperPlaneStatus(..))
-import Shared.Options.Debate (maxStatementCharacters, maxTopicCharacters)
+import Shared.Experiments.Types (DebateSection(..), ExperimentsMessage(..), ExperimentsModel)
+import Shared.Lynx as SL
+import Shared.Options.Debate (maxStatementCharacters)
+import Prelude hiding (join)
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.class' "paper-plane duller" ]
-      [ HE.a [ HA.class' "debate-how", HA.onClick ToggleFormat ] [ HE.text "Click here to check the debate format" ]
+      [ HE.span [ HA.class' "debate-how", HA.onClick ToggleFormat ] [ HE.text "Click here to check the debate format" ]
       , HE.div [ HA.class' { "debate-format": true, hidden: not model.debate.showFormat } ]
               [ HE.text "To start a debate, select a topic and pick a side (either pro or against). Someone else will join the debate arguing of the opposite site. Debates are divided into rounds: "
-              , HE.br
+              , HE.text "\n"
               , HE.text "- Every round has a statement from both sides"
-              , HE.br
+              , HE.text "\n"
               , HE.text "- Under each statement a maximum of six clarifying questions are allowed. Each question is allowed one response"
-              , HE.br
+              , HE.text "\n"
               , HE.text "- A round ends when either all questions have been answered or both parties agreed to move into the next round"
-              , HE.br
+              , HE.text "\n"
               , HE.text "There is no limit to the number of rounds. At any start either participant may decide to end the debate"
-              , HE.br
+              , HE.text "\n"
               , HE.text "Debates may be either private or public. Public debates are visible to users besides the arguing parties, and users may vote on who they think argued better"
               ]
-      , HE.div [ HA.class' "green-tab" ]
+      , HE.div [ HA.class' "green-tab lynx-inline" ]
               [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.debate.section == ShowNewDebate }, HA.onClick $ ToggleDebateSection ShowNewDebate ] [ HE.text "New" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.debate.section == ShowMine }, HA.onClick $ ToggleDebateSection ShowMine ] [ HE.text "Mine" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.debate.section == ShowJoin }, HA.onClick $ ToggleDebateSection ShowJoin ] [ HE.text "Join" ]
@@ -46,35 +44,35 @@ new ∷ ExperimentsModel → Html ExperimentsMessage
 new model =
       HE.div [ HA.class' "new-throw" ]
             [ HE.label [] [ HE.text "Topic for debate" ]
-            , HE.select [ HA.class' "modal-select debate-topic", HA.onInput SetDebateTopic ]
-                    [ HE.option [ HA.value "" ] [ HE.text "Select a topic" ]
-                    , HE.option [ HA.value "Capitalism should be replaced by a different economic system" ] [ HE.text "Capitalism should be replaced by a different economic system" ]
-                    , HE.option [ HA.value "Alcohol should be illegal" ] [ HE.text "Alcohol should be illegal" ]
-                    , HE.option [ HA.value "All drugs should be decriminalized" ] [ HE.text "All drugs should be decriminalized" ]
-                    , HE.option [ HA.value "Summer is the best season of the year" ] [ HE.text "Summer is the best season of the year" ]
-                    , HE.option [ HA.value "God exists" ] [ HE.text "God exists" ]
-                    , HE.option [ HA.value "Eating meat is unethical" ] [ HE.text "Eating meat is unethical" ]
-                    , HE.option [ HA.value "Morality is objective" ] [ HE.text "Morality is objective" ]
-                    , HE.option [ HA.value "Pineapple belongs on pizza" ] [ HE.text "Pineapple belongs on pizza" ]
-                    , HE.option [ HA.value "Taylor Swift is a bigger pop star than Michael Jackson" ] [ HE.text "Taylor Swift is a bigger pop star than Michael Jackson" ]
-                    , HE.option [ HA.value "Science can solve all of our problems" ] [ HE.text "Science can solve all of our problems" ]
-                    , HE.option [ HA.value "Billionaires should not exist" ] [ HE.text "Billionaires should not exist" ]
-                    , HE.option [ HA.value "Cats are better than dogs" ] [ HE.text "Cats are better than dogs" ]
-                    , HE.option [ HA.value "Memes are a form of art" ] [ HE.text "Memes are a form of art" ]
-                    , HE.option [ HA.value "AI will destroy the world" ] [ HE.text "AI will destroy the world" ]
-                    , HE.option [ HA.value "Short form content is bad for mental health" ] [ HE.text "Short form content is bad for mental health" ]
-                    , HE.option [ HA.value "Climate change is the most urgent scientific issue" ] [ HE.text "Climate change is the most urgent scientific issue" ]
-                    , HE.option [ HA.value "Cars dependency is bad for society" ] [ HE.text "Cars dependency is bad for society" ]
-                    , HE.option [ HA.value "All countries should have open borders" ] [ HE.text "All countries should have open borders" ]
-                    , HE.option [ HA.value "We are living in a simulation" ] [ HE.text "We are living in a simulation" ]
-                    , HE.option [ HA.value "Aliens exist" ] [ HE.text "Aliens exist" ]
-                    , HE.option [ HA.value "Living forever would be a good thing" ] [ HE.text "Living forever would be a good thing" ]
+            , HE.div [ HA.class' "modal-select debate-topic" ]
+                    [ SL.choice (DM.isNothing model.debate.topic) (SetDebateTopic "") "Select a topic"
+                    , SL.choice (model.debate.topic == Just "Capitalism should be replaced by a different economic system") (SetDebateTopic "Capitalism should be replaced by a different economic system") "Capitalism should be replaced by a different economic system"
+                    , SL.choice (model.debate.topic == Just "Alcohol should be illegal") (SetDebateTopic "Alcohol should be illegal") "Alcohol should be illegal"
+                    , SL.choice (model.debate.topic == Just "All drugs should be decriminalized") (SetDebateTopic "All drugs should be decriminalized") "All drugs should be decriminalized"
+                    , SL.choice (model.debate.topic == Just "Summer is the best season of the year") (SetDebateTopic "Summer is the best season of the year") "Summer is the best season of the year"
+                    , SL.choice (model.debate.topic == Just "God exists") (SetDebateTopic "God exists") "God exists"
+                    , SL.choice (model.debate.topic == Just "Eating meat is unethical") (SetDebateTopic "Eating meat is unethical") "Eating meat is unethical"
+                    , SL.choice (model.debate.topic == Just "Morality is objective") (SetDebateTopic "Morality is objective") "Morality is objective"
+                    , SL.choice (model.debate.topic == Just "Pineapple belongs on pizza") (SetDebateTopic "Pineapple belongs on pizza") "Pineapple belongs on pizza"
+                    , SL.choice (model.debate.topic == Just "Taylor Swift is a bigger pop star than Michael Jackson") (SetDebateTopic "Taylor Swift is a bigger pop star than Michael Jackson") "Taylor Swift is a bigger pop star than Michael Jackson"
+                    , SL.choice (model.debate.topic == Just "Science can solve all of our problems") (SetDebateTopic "Science can solve all of our problems") "Science can solve all of our problems"
+                    , SL.choice (model.debate.topic == Just "Billionaires should not exist") (SetDebateTopic "Billionaires should not exist") "Billionaires should not exist"
+                    , SL.choice (model.debate.topic == Just "Cats are better than dogs") (SetDebateTopic "Cats are better than dogs") "Cats are better than dogs"
+                    , SL.choice (model.debate.topic == Just "Memes are a form of art") (SetDebateTopic "Memes are a form of art") "Memes are a form of art"
+                    , SL.choice (model.debate.topic == Just "AI will destroy the world") (SetDebateTopic "AI will destroy the world") "AI will destroy the world"
+                    , SL.choice (model.debate.topic == Just "Short form content is bad for mental health") (SetDebateTopic "Short form content is bad for mental health") "Short form content is bad for mental health"
+                    , SL.choice (model.debate.topic == Just "Climate change is the most urgent scientific issue") (SetDebateTopic "Climate change is the most urgent scientific issue") "Climate change is the most urgent scientific issue"
+                    , SL.choice (model.debate.topic == Just "Cars dependency is bad for society") (SetDebateTopic "Cars dependency is bad for society") "Cars dependency is bad for society"
+                    , SL.choice (model.debate.topic == Just "All countries should have open borders") (SetDebateTopic "All countries should have open borders") "All countries should have open borders"
+                    , SL.choice (model.debate.topic == Just "We are living in a simulation") (SetDebateTopic "We are living in a simulation") "We are living in a simulation"
+                    , SL.choice (model.debate.topic == Just "Aliens exist") (SetDebateTopic "Aliens exist") "Aliens exist"
+                    , SL.choice (model.debate.topic == Just "Living forever would be a good thing") (SetDebateTopic "Living forever would be a good thing") "Living forever would be a good thing"
                     ]
             , HE.label [] [ HE.text "Is your position pro or against?" ]
-            , HE.select [ HA.class' "modal-select debate-topic", HA.onInput SetInFavor ]
-                    [ HE.option [ HA.value "", HA.selected $ DM.isNothing model.debate.inFavor ] [ HE.text $ "Select your position" ]
-                    , HE.option [ HA.value "true" ] [ HE.text $ "Yes, I agree with: " <> DM.fromMaybe "" model.debate.topic ]
-                    , HE.option [ HA.value "false" ] [ HE.text $ "No, I DO NOT agree with: " <> DM.fromMaybe "" model.debate.topic ]
+            , HE.div [ HA.class' "modal-select debate-topic" ]
+                    [ HE.text "Select your position"
+                    , SL.choice (model.debate.inFavor == Just true) (SetInFavor "true") $ "Yes, I agree with: " <> DM.fromMaybe "" model.debate.topic
+                    , SL.choice (model.debate.inFavor == Just false) (SetInFavor "false") $ "No, I DO NOT agree with: " <> DM.fromMaybe "" model.debate.topic
                     ]
 
             , HE.div [ HA.class' { "arguing debate-topic": true, hidden: DM.isNothing model.debate.inFavor } ]
@@ -95,7 +93,7 @@ new model =
                     HE.input
                           [ HA.type' "button"
                           , HA.onClick StartDebate
-                          , HA.disabled (DM.isNothing model.debate.topic || DM.isNothing model.debate.inFavor || DM.isNothing model.debate.statement)
+                          , HA.disabled $ DM.isNothing model.debate.topic || DM.isNothing model.debate.inFavor || DM.isNothing model.debate.statement
                           , HA.class' "green-button"
                           , HA.value "Start debate"
                           ]

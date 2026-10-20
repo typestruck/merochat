@@ -3,20 +3,22 @@ module Client.Im.Chat where
 import Prelude
 
 import Client.AppId (imAppId)
-import Client.Dom as CCD
-import Client.File as CCF
+import Client.Dom as CD
+import Client.File as CF
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
-import Client.Im.Suggestion as SIS
+import Client.Im.Suggestion as CIS
 import Client.Im.WebSocket as CIW
+import Client.Im.WebSocket.Connection (WebSocket)
 import Client.Network (routes)
-import Client.Network as CCNT
+import Client.Network as CN
+import Client.UIEvent as CU
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime)
-import Data.DateTime as DT
+import Data.DateTime as DD
 import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
@@ -25,43 +27,36 @@ import Data.Ord as DO
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
-import Data.Symbol as TDS
+import Data.Symbol as DS
 import Data.Time.Duration (Milliseconds(..), Minutes(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class as EC
 import Effect.Now as EN
-import Effect.Uncurried (EffectFn1)
-import Effect.Uncurried as EU
 import Flame as F
+import Flame.Html.Event (Event)
 import Safe.Coerce as SC
 import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.DateTime as ST
-import Shared.Element as SE
+import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
+import Shared.Element as SE
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), SelectedImage, ShowContextMenu(..), TimeoutIdWrapper, Touch, Turn, WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Modal (ChatModal(..), Modal(..))
-import Shared.ResizeInput as SRI
+import Shared.ResizeInput as SR
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
 import Shared.User (User)
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 import Web.DOM.Element as WDE
-import Web.Event.Event (Event)
-import Web.Event.Event as WEE
-import Web.HTML.Event.DataTransfer as WHEDT
-import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHE
-import Web.HTML.HTMLTextAreaElement as WHHTA
-import Client.Im.WebSocket.Connection (WebSocket)
+import Web.HTML.HTMLTextAreaElement as WHHT
 
 -- | Send a message on enter
 enterSendMessage ∷ ElementId → Event → ImModel → NoMessages
@@ -69,7 +64,7 @@ enterSendMessage elementId event model =
       model /\ [ prevent, messageContent elementId model ]
       where
       prevent = EC.liftEffect do
-            WEE.preventDefault event
+            CU.preventDefault event
             pure Nothing
 
 -- | Send a message on button click
@@ -82,8 +77,8 @@ forceSendMessage elementId model =
 -- | Is the message to be sent an audio, text or image?
 messageContent ∷ ElementId → ImModel → Aff (Maybe ImMessage)
 messageContent elementId model = do
-      input ← EC.liftEffect $ CCD.unsafeGetElementById elementId
-      value ← EC.liftEffect $ CCD.value input
+      input ← EC.liftEffect $ CD.unsafeGetElementById elementId
+      value ← EC.liftEffect $ CD.value input
       date ← EC.liftEffect $ map DateTimeWrapper EN.nowDateTime
       cleanUp input
       pure <<< Just $ SendMessage elementId (DM.maybe (Text value) toImage model.selectedImage) date
@@ -92,8 +87,8 @@ messageContent elementId model = do
 
       cleanUp input = EC.liftEffect do
             WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
-            CCD.setValue input ""
-            SRI.resizeInput input
+            CD.setValue input ""
+            SR.resizeInput input
 
 -- | Prepare and send a message via web socket
 prepareSendMessage ∷ ElementId → Content → DateTimeWrapper → WebSocket → ImModel → MoreMessages
@@ -107,7 +102,7 @@ prepareSendMessage elementId content dt webSocket model = case content of
             ChatInput → Tuple false model
             _ →
                   let
-                        user = SU.fromJust (model.suggesting >>= (\suggestionId → DA.find ((suggestionId == _) <<< _.id) model.suggestions))
+                        user = SU.fromJust $ model.suggesting >>= (\suggestionId → DA.find ((suggestionId == _) <<< _.id) model.suggestions)
                   in
                         case SIC.findContact user.id model.contacts of
                               Nothing →
@@ -120,7 +115,7 @@ prepareSendMessage elementId content dt webSocket model = case content of
                                     Tuple contact.shouldFetchChatHistory model
                                           { chatting = Just contact.user.id
                                           , suggestions = DA.filter ((user.id /= _) <<< _.id) model.suggestions
-                                          , suggesting = SIS.moveSuggestion model 1 --move it along so mini suggestions dont disappear
+                                          , suggesting = CIS.moveSuggestion model 1 --move it along so mini suggestions dont disappear
                                           }
 
 sendMessage ∷ Int → String → Boolean → Content → DateTimeWrapper → WebSocket → ImModel → NoMessages
@@ -234,9 +229,9 @@ makeTurn user contact =
                         previousRecipientCharacters = characters previousRecipientMessages
 
                         senderReplyDelay =
-                              SC.coerce (DT.diff (getDate $ DAN.head senderMessages) (getDate $ DAN.last previousRecipientMessages) ∷ Minutes)
+                              SC.coerce (DD.diff (getDate $ DAN.head senderMessages) (getDate $ DAN.last previousRecipientMessages) ∷ Minutes)
                         recipientReplyDelay =
-                              SC.coerce (DT.diff (getDate $ DAN.head recipientMessages) (getDate $ DAN.last senderMessages) ∷ Minutes)
+                              SC.coerce (DD.diff (getDate $ DAN.head recipientMessages) (getDate $ DAN.last senderMessages) ∷ Minutes)
                   in
                         Just
                               { senderStats:
@@ -271,14 +266,14 @@ makeTurn user contact =
       countCharacters total entry = total + DSC.length entry.content
 
       getDate = SC.coerce <<< _.date
-      accountAge { joined: DateTimeWrapper dt } = DI.toNumber $ ST.daysDiff dt
+      accountAge { joined: DateTimeWrapper dt } = DI.toNumber $ SD.daysDiff dt
 
 -- | Find the cursor on the chatting textarea and set text at is position
 setAtCursor ∷ Element → String → Effect (Maybe ImMessage)
 setAtCursor input text = do
-      let textarea = SU.fromJust $ WHHTA.fromElement input
-      end ← WHHTA.selectionEnd textarea
-      value ← WHHTA.value textarea
+      let textarea = SU.fromJust $ WHHT.fromElement input
+      end ← WHHT.selectionEnd textarea
+      value ← WHHT.value textarea
       let { before, after } = DS.splitAt end value
       setTextAt input (end + DS.length text + 1) $ before <> text <> after
       pure Nothing
@@ -286,19 +281,19 @@ setAtCursor input text = do
 -- | Set text on the chatting textarea at the given cursor position
 setTextAt ∷ Element → Int → String → Effect Unit
 setTextAt input position markdown = do
-      let textarea = SU.fromJust $ WHHTA.fromElement input
-      WHHE.focus $ WHHTA.toHTMLElement textarea
-      WHHTA.setValue markdown textarea
-      WHHTA.setSelectionEnd position textarea
-      SRI.resizeInput input
+      let textarea = SU.fromJust $ WHHT.fromElement input
+      WHHE.focus $ WHHT.toHTMLElement textarea
+      WHHT.setValue markdown textarea
+      WHHT.setSelectionEnd position textarea
+      SR.resizeInput input
 
 -- | Handle drag and drop
 catchFile ∷ Event → ImModel → NoMessages
 catchFile event model = model /\ [ catchIt ]
       where
       catchIt = EC.liftEffect do
-            CCF.compressImageFromFileList (WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event) imAppId false (\width height base64 → SetSelectedImage $ Just { width, height, base64 })
-            CCD.preventStop event
+            CF.compressImageFromFileList (CU.files event) imAppId false $ \width height base64 → SetSelectedImage $ Just { width, height, base64 }
+            CU.preventStop event
             pure Nothing
 
 -- | Handle file input selection
@@ -309,20 +304,20 @@ setSelectedImage selected model =
             , selectedImage = selected
             , erroredFields =
                     if isTooLarge $ DM.maybe "" _.base64 selected then
-                          [ TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage") ]
+                          [ DS.reflectSymbol (Proxy ∷ Proxy "selectedImage") ]
                     else
                           []
             } /\ (if model.smallScreen then [] else [ pure <<< Just $ FocusInput ImageFormCaption ])
       where
-      isTooLarge contents = maxImageSize < CCF.fileSize contents
+      isTooLarge contents = maxImageSize < CF.fileSize contents
 
 -- | Insert an emoji into the chatting textarea
 setEmoji ∷ ElementId → Event → ImModel → NextMessage
 setEmoji elementId event model = model /\ [ setIt, hideModal ]
       where
       setIt = EC.liftEffect do
-            emoji ← CCD.innerTextFromTarget event
-            input ← CCD.unsafeGetElementById elementId
+            emoji ← CD.innerTextFromTarget event
+            input ← CD.unsafeGetElementById elementId
             setAtCursor input emoji
       hideModal = pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
 
@@ -335,7 +330,7 @@ sendTyping text now webSocket model =
             F.noMessages model
       where
       minimumLength = 7
-      enoughTime (DateTimeWrapper dt) = let (Milliseconds ms) = DT.diff now dt in ms >= 800.0
+      enoughTime (DateTimeWrapper dt) = let (Milliseconds ms) = DD.diff now dt in ms >= 800.0
 
       setIt = do
             EC.liftEffect <<< CIW.sendPayload webSocket $ Typing { id: SU.fromJust model.chatting }
@@ -370,15 +365,15 @@ modal toggle model =
             _ → []
       where
       pickImage = EC.liftEffect do
-            fileInput ← CCD.unsafeGetElementById ImageFileInput
-            CCF.triggerFileSelect fileInput
+            fileInput ← CD.unsafeGetElementById ImageFileInput
+            CF.triggerFileSelect fileInput
             pure Nothing
 
 prepareSelectedImage ∷ Event → ImModel → MoreMessages
 prepareSelectedImage event model = model /\ [ before ]
       where
       before = do
-            CCF.compressImage imAppId event false $ \width height base64 → SetSelectedImage $ Just { width, height, base64 }
+            CF.compressImage imAppId event false $ \width height base64 → SetSelectedImage $ Just { width, height, base64 }
             pure Nothing
 
 -- | Record an audio message
@@ -386,7 +381,7 @@ beforeAudioMessage ∷ ImModel → MoreMessages
 beforeAudioMessage model = model /\ [ record ]
       where
       record = EC.liftEffect do
-            mimeType ← CCD.acceptedAudioCodec
+            mimeType ← CD.acceptedAudioCodec
             CIR.start { audio: true } { mimeType } SendAudioMessage
             pure Nothing
 
@@ -430,7 +425,7 @@ quoteMessage messageId contents touchEvent model =
 
       fromDoubleClick event = do
             classes ← EC.liftEffect <<< WDE.className <<< SU.fromJust $ do
-                  target ← WEE.target event
+                  target ← CU.target event
                   WDE.fromEventTarget target
             if DS.contains (Pattern "message") classes then
                   quoteIt
@@ -442,9 +437,9 @@ quoteMessage messageId contents touchEvent model =
             | otherwise = pure Nothing
 
       quoteIt = EC.liftEffect do
-            input ← CCD.unsafeGetElementById ChatInput
+            input ← CD.unsafeGetElementById ChatInput
             let markup = sanitized <> "\n\n"
-            value ← WHHTA.value <<< SU.fromJust $ WHHTA.fromElement input
+            value ← WHHT.value <<< SU.fromJust $ WHHT.fromElement input
             setAtCursor input $ if DS.null value then markup else "\n" <> markup
 
 editMessage ∷ String → Int → ImModel → NoMessages
@@ -455,8 +450,8 @@ editMessage message id model =
             } /\ [ setIt *> pure Nothing ]
       where
       setIt = EC.liftEffect do
-            input ← CCD.unsafeGetElementById ChatInput
-            CCD.setValue input message
+            input ← CD.unsafeGetElementById ChatInput
+            CD.setValue input message
             WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
 
 deleteMessage ∷ Int → WebSocket → ImModel → NoMessages
@@ -494,4 +489,4 @@ messageFromExperiment userId message webSocket model =
                   , content: Text message
                   , turn: Nothing
                   }
-            CCNT.retryableRequest FetchMissedContacts DisplayNewContacts $ routes.im.contact { query: { id: userId } }
+            CN.retryableRequest FetchMissedContacts DisplayNewContacts $ routes.im.contact { query: { id: userId } }

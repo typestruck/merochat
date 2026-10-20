@@ -9,13 +9,13 @@ import Flame.Html.Element as HE
 import Shared.Im.Svg (nextArrow)
 import Shared.Im.Svg as SIS
 import Shared.Im.Types (ImMessage(..), ImModel)
-import Shared.Im.View.Profile as SISP
+import Shared.Im.View.Profile as SIVP
 
 logoMenu ∷ ImModel → Html ImMessage
 logoMenu model
       | model.smallScreen = HE.div [ HA.class' "relative" ]
-              [ HE.div [ HA.class' "suggestion-mobile-button", HA.onClick $ ToggleInitialScreen false ]
-                      [ HE.i_ [ HE.text "Start new chat" ]
+              [ HE.div [ HA.class' "suggestion-mobile-button inline-control", HA.onClick $ ToggleInitialScreen false ]
+                      [ HE.i [ HA.class' "suggestion-mobile-label" ] [ HE.text "Start new chat" ]
                       , nextArrow
                       ]
               ]
@@ -24,7 +24,7 @@ logoMenu model
                       [ HE.div [ HA.class' "fortune-deets" ]
                               [ HE.text $ DM.fromMaybe "" model.fortune
                               ]
-                      , HE.svg [ HA.viewBox "0 0 512 512", HA.onClick (ToggleFortune false) ]
+                      , HE.svg [ HA.viewBox "0 0 512 512", HA.onClick <<< ToggleFortune $ false ]
                               [ HE.title [ HE.text "Close" ]
                               , HE.polygon' [ HA.points "438.627 118.627 393.373 73.373 256 210.746 118.627 73.373 73.373 118.627 210.746 256 73.373 393.373 118.627 438.627 256 301.254 393.373 438.627 438.627 393.373 301.254 256 438.627 118.627" ]
                               ]
@@ -38,7 +38,7 @@ logoMenu model
                                           ]
                                   ]
                             else
-                                  [ SISP.miniSuggestions model
-                                  , SIS.invertedMerochat [ HA.class' "inverted-merochat-svg", HA.viewBox "0 0 122 22", HA.fill "none", HA.onDblclick $ ToggleFortune true ]
+                                  [ SIVP.miniSuggestions model
+                                  , SIS.invertedMerochat [ HA.class' "inverted-merochat-svg", HA.viewBox "0 0 122 22", HA.fill "none", HA.createEvent "dblclick" $ ToggleFortune true ]
                                   ]
               ]

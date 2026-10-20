@@ -2,25 +2,21 @@ module Shared.Experiments.PaperPlane where
 
 import Prelude
 
-import Client.Privilege as CCP
+import Client.Privilege as CP
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Experiments.Types (ExperimentsMessage(..), ExperimentsModel, PaperPlaneSection(..), PaperPlaneStatus(..))
+import Shared.Experiments.Types (ExperimentsMessage(..), ExperimentsModel, PaperPlaneSection(..))
 import Shared.Options.PaperPlane (maxMessageCharacters, maxPaperPlanes)
-<<<<<<< HEAD
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
-=======
-import Shared.Extra as SE
->>>>>>> 356c2478 (Add more elements)
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.class' "paper-plane duller" ]
-      [ HE.div [ HA.class' "green-tab" ]
+      [ HE.div [ HA.class' "green-tab lynx-inline" ]
               [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.paperPlane.section == ShowNew }, HA.onClick $ TogglePaperPlaneSection ShowNew ] [ HE.text "New" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.paperPlane.section == ShowFlyingBy }, HA.onClick $ TogglePaperPlaneSection ShowFlyingBy ] [ HE.text "Flying by" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.paperPlane.section == ShowCaught }, HA.onClick $ TogglePaperPlaneSection ShowCaught ] [ HE.text "Caught" ]
@@ -43,9 +39,9 @@ caught model =
             [ HE.div [ HA.class' "paper-thrown-entry" ]
                     [ HE.div [ HA.class' "paper-flown-message" ] [ HE.text plane.message ]
                     ]
-            , HE.div [ HA.class' "paper-thrown-from" ]
+            , HE.div [ HA.class' "paper-thrown-from lynx-inline" ]
                     [ HE.text $ "from "
-                    , SE.a [ HA.onClick $ MessagePaperPlane plane.thrower plane.message ] [ HE.text plane.name ]
+                    , HE.span [ HA.onClick $ MessagePaperPlane plane.thrower plane.message ] [ HE.text plane.name ]
                     ]
             ]
 
@@ -61,10 +57,10 @@ flyingBy model =
             [ HE.div [ HA.class' "paper-thrown-entry" ]
                     [ HE.div [ HA.class' "paper-flown-message" ] [ HE.text plane.message ]
                     ]
-            , HE.div [ HA.class' "paper-thrown-options" ]
-                    [ SE.a [ HA.class' "paper-catch report", HA.onClick $ ReportPlane plane.id plane.thrower ] [ HE.text "Report" ]
-                    , SE.a [ HA.class' "paper-catch", HA.onClick $ PassPaperPlane plane.id ] [ HE.text "Pass" ]
-                    , SE.a [ HA.class' "paper-catch", HA.onClick $ CatchPaperPlane plane.id ] [ HE.text "Catch!" ]
+            , HE.div [ HA.class' "paper-thrown-options lynx-inline" ]
+                    [ HE.span [ HA.class' "paper-catch report", HA.onClick $ ReportPlane plane.id plane.thrower ] [ HE.text "Report" ]
+                    , HE.span [ HA.class' "paper-catch", HA.onClick $ PassPaperPlane plane.id ] [ HE.text "Pass" ]
+                    , HE.span [ HA.class' "paper-catch", HA.onClick $ CatchPaperPlane plane.id ] [ HE.text "Catch!" ]
                     ]
             ]
 
@@ -80,9 +76,9 @@ new model =
                       , HA.onInput SetPlaneMessage
                       , HA.placeholder "What does the world need to know?"
                       ]
-              , if  not $ SP.hasPrivilege SendPaperPlanes model.user then
-                      CCP.notEnoughKarma "throw paper planes" RedirectKarma
-               else if DA.length model.paperPlane.thrown == maxPaperPlanes then
+              , if not $ SP.hasPrivilege SendPaperPlanes model.user then
+                      CP.notEnoughKarma "throw paper planes" RedirectKarma
+                else if DA.length model.paperPlane.thrown == maxPaperPlanes then
                       HE.div [ HA.class' "paper-waiting" ] [ HE.text "Waiting for planes to be caught..." ]
                 else if model.paperPlane.loading then
                       HE.div' [ HA.class' "loading" ]

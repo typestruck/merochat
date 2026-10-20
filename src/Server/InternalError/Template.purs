@@ -5,14 +5,16 @@ import Prelude
 import Effect (Effect)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+
+-- import Flame.Renderer.String as FRS
 
 template ∷ String → Effect String
 template reason = do
       contents ← ST.template externalDefaultParameters { content = content }
-      FRS.render contents
+      -- FRS.render contents
+      pure ""
       where
       content =
             [ HE.div [ HA.class' "green-box" ]

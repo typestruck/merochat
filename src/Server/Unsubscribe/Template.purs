@@ -5,10 +5,11 @@ import Prelude
 import Effect (Effect)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Html (Html(..))
+
+-- import Flame.Renderer.String as FRS
 
 template ∷ Effect Html
 template = do
@@ -16,7 +17,8 @@ template = do
             { content = externalDefaultParameters.content <> content
             , title = "MeroChat - Unsubscribe from Emails"
             }
-      Html <$> FRS.render contents
+      -- Html <$> FRS.render contents
+      pure $ Html ""
       where
       content =
             [ HE.div [ HA.class' "pastel-area green-box" ]

@@ -1,28 +1,28 @@
 module Client.Settings.Update where
 
 import Prelude
-import Shared.Im.Types
 
 import Client.AppId (imAppId, settingsAppId)
-import Client.File as CCF
 import Client.File as CF
-import Client.Location as CCL
+import Client.Location as CL
 import Client.Network (routes)
-import Client.Network as CNN
+import Client.Network as CN
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Data.Symbol (class IsSymbol)
-import Data.Symbol as TDS
+import Data.Symbol as DS
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class as EC
 import Flame (Update)
+import Flame.Html.Event (Event)
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
 import Payload.ResponseTypes (Response(..))
+import Shared.Im.Types (ImMessage(SetChatBackgroundFromProfile, SetPrivacySettings))
 import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Resource (maxImageSize)
@@ -30,7 +30,6 @@ import Shared.Routes (routesSpec)
 import Shared.Settings.Types (SettingRequest(..), SettingsMessage(..), SettingsModel, PrivacySettings)
 import Shared.Settings.View as SSV
 import Type.Proxy (Proxy(..))
-import Web.Event.Internal.Types (Event)
 
 update ∷ Update SettingsModel SettingsMessage
 update model message =
@@ -56,7 +55,7 @@ changePrivacySettings ∷ SettingRequest → SettingsModel → SettingsModel /\ 
 changePrivacySettings request model = model { requestStatus = Nothing } /\ [ change ]
       where
       change = do
-            result ← CNN.request $ routes.settings.account.privacy { body: privacySettings model }
+            result ← CN.request $ routes.settings.account.privacy { body: privacySettings model }
             case result of
                   Right _ → pure <<< Just $ ShowSuccess request
                   Left _ → pure <<< Just <<< SetSField $ _ { requestStatus = Just $ { request, status: Failure "" } }
@@ -70,18 +69,18 @@ showSuccess request model = model { requestStatus = Just { request, status: Succ
             EA.delay $ Milliseconds 3000.0
             pure <<< Just <<< SetSField $ _ { requestStatus = Nothing }
 
-privacySettings :: SettingsModel -> PrivacySettings
+privacySettings ∷ SettingsModel → PrivacySettings
 privacySettings model =
-            { asksVisibility: model.asksVisibility
-            , postsVisibility: model.postsVisibility
-            , profileVisibility: model.profileVisibility
-            , readReceipts: model.readReceipts
-            , typingStatus: model.typingStatus
-            , onlineStatus: model.onlineStatus
-            , messageTimestamps: model.messageTimestamps
-            , lastMessageOnContactList: model.lastMessageOnContactList
-            , suggestionsFrom: model.suggestionsFrom
-            }
+      { asksVisibility: model.asksVisibility
+      , postsVisibility: model.postsVisibility
+      , profileVisibility: model.profileVisibility
+      , readReceipts: model.readReceipts
+      , typingStatus: model.typingStatus
+      , onlineStatus: model.onlineStatus
+      , messageTimestamps: model.messageTimestamps
+      , lastMessageOnContactList: model.lastMessageOnContactList
+      , suggestionsFrom: model.suggestionsFrom
+      }
 
 toggleTerminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 toggleTerminateAccount model = model { confirmTermination = not model.confirmTermination } /\ []
@@ -94,10 +93,10 @@ changePassword model = model /\ [ requestAndLogout (Proxy ∷ Proxy "password") 
 
 requestAndLogout ∷ ∀ v field. IsSymbol field ⇒ Proxy field → Aff (ClientResponse v) → Aff (Maybe SettingsMessage)
 requestAndLogout field aff = do
-      status ← CNN.formRequest (SSV.formId field) aff
+      status ← CN.formRequest (SSV.formId field) aff
       when (status == Success) $ do
             EA.delay $ Milliseconds 3000.0
-            EC.liftEffect <<< CCL.setLocation $ routesSpec.login.get {}
+            EC.liftEffect <<< CL.setLocation $ routesSpec.login.get {}
       pure Nothing
 
 terminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
@@ -107,21 +106,21 @@ beforeSetChatBackground ∷ Event → SettingsModel → SettingsModel /\ Array (
 beforeSetChatBackground event model = model /\ [ before ]
       where
       before = do
-            CF.compressImage settingsAppId event true (\_ _ b → SetChatBackground $ Just b)
+            CF.compressImage settingsAppId event true $ \_ _ b → SetChatBackground $ Just b
             pure Nothing
 
 setChatBackground ∷ Maybe String → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 setChatBackground image model =
       if isTooLarge $ DM.fromMaybe "" image then
             model
-                  { erroredFields = [ TDS.reflectSymbol (Proxy ∷ Proxy "chatBackground") ]
+                  { erroredFields = [ DS.reflectSymbol (Proxy ∷ Proxy "chatBackground") ]
                   } /\ []
       else
             model
                   { chatBackground = image
                   } /\ []
       where
-      isTooLarge contents = maxImageSize < CCF.fileSize contents
+      isTooLarge contents = maxImageSize < CF.fileSize contents
 
 removeChatBackground ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 removeChatBackground model = model { chatBackground = Nothing } /\ [ save ]

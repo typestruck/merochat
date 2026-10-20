@@ -2,46 +2,37 @@
 module Client.Dom where
 
 import Prelude
-import Shared.Im.Types
 
-import Data.ArrayBuffer.Types (Uint8Array)
-import Data.Either (Either(..))
+import Client.UIEvent as CU
 import Data.Function.Uncurried (Fn2, Fn1)
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
-import Data.Nullable (Nullable)
-import Data.Nullable as DN
 import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
+import Foreign (Foreign)
 import Shared.Element (ElementId)
 import Shared.Resource (Bundle, ResourceType(..))
-import Shared.Resource as SP
+import Shared.Resource as SR
 import Shared.Unsafe as SU
-import Type.Row.Homogeneous (class Homogeneous)
 import Web.DOM.Document as WDD
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
-import Web.DOM.Element as WHE
 import Web.DOM.Node as WDN
-import Web.DOM.NonElementParentNode as WDNE
+import Web.DOM.NonElementParentNode as WDN
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.DOM.ParentNode as WDP
 import Web.Event.CustomEvent (CustomEvent)
 import Web.Event.Event (EventType(..))
 import Web.Event.Event as WEE
-import Web.Event.EventTarget as WET
+import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
-import Web.HTML (Navigator, Window)
 import Web.HTML as WH
 import Web.HTML.HTMLDocument as WHHD
 import Web.HTML.HTMLElement as WHHE
-import Web.HTML.HTMLScriptElement as WHS
-import Web.HTML.Window as HWH
+import Web.HTML.HTMLScriptElement as WHHS
 import Web.HTML.Window as WHW
-import Web.UIEvent.KeyboardEvent as WUK
-import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 
 foreign import innerHTML_ ∷ EffectFn2 Element String Unit
 foreign import removeFromClassList_ ∷ EffectFn2 Element String Unit
@@ -82,13 +73,13 @@ setChatExperiment = EventType "setChatExperiment"
 confirm ∷ String → Effect Boolean
 confirm message = do
       window ← WH.window
-      HWH.confirm message window
+      WHW.confirm message window
 
 -- | Adds an event to the given element
 addEventListener ∷ ∀ a. Element → EventType → (Event → Effect a) → Effect Unit
 addEventListener element eventType handler = do
-      listener ← WET.eventListener handler
-      WET.addEventListener eventType listener false $ WDE.toEventTarget element
+      listener ← WEE.eventListener handler
+      WEE.addEventListener eventType listener false $ WDE.toEventTarget element
 
 -- | Selects a single element
 unsafeGetElementById ∷ ElementId → Effect Element
@@ -100,16 +91,16 @@ getElementById ∷ ElementId → Effect (Maybe Element)
 getElementById elementId = do
       window ← WH.window
       document ← WHHD.toDocument <$> WHW.document window
-      WDNE.getElementById (show elementId) $ WDD.toNonElementParentNode document
+      WDN.getElementById (show elementId) $ WDD.toNonElementParentNode document
 
 loadScript ∷ Bundle → Effect Unit
 loadScript resource = do
       window ← WH.window
       document ← WHW.document window
       script ← WDD.createElement "script" $ WHHD.toDocument document
-      WHS.setSrc (SP.bundlePath resource Js) <<< SU.fromJust $ WHS.fromElement script
+      WHHS.setSrc (SR.bundlePath resource Js) <<< SU.fromJust $ WHHS.fromElement script
       body ← SU.fromJust <$> WHHD.body document
-      void <<< WDN.appendChild (WHE.toNode script) $ WHHE.toNode body
+      void <<< WDN.appendChild (WDE.toNode script) $ WHHE.toNode body
 
 -- | Selects a single element.
 unsafeQuerySelector ∷ String → Effect Element
@@ -144,14 +135,14 @@ toggleDisabled = EU.runEffectFn1 toggleDisabled_
 setInnerHTML ∷ Element → String → Effect Unit
 setInnerHTML element = EU.runEffectFn2 innerHTML_ element
 
-innerTextFromTarget ∷ Event → Effect String
+innerTextFromTarget ∷ Foreign → Effect String
 innerTextFromTarget event = EU.runEffectFn1 innerText_ $ SU.fromJust do
-      target ← WEE.target event
+      target ← CU.target event
       WDE.fromEventTarget target
 
-tagNameFromTarget ∷ Event → String
+tagNameFromTarget ∷ Foreign → String
 tagNameFromTarget event = WDE.tagName $ SU.fromJust do
-      target ← WEE.target event
+      target ← CU.target event
       WDE.fromEventTarget target
 
 createElement ∷ String → Effect Element

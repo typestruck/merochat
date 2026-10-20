@@ -1,29 +1,26 @@
 module Client.Im.Notification where
 
 import Prelude
-import Shared.Im.Types
 
-import Client.Dom as CCD
+import Client.AppId (imAppId)
+import Client.Dom as CD
 import Client.Im.Flame (NextMessage)
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Class (liftEffect)
+import Effect.Class as EC
 import Effect.Uncurried (EffectFn1)
-import Effect.Uncurried as EU
 import Flame.Subscription as FS
 import Shared.Element as SE
+import Shared.Im.Types (Contact, ImMessage(..), ImModel)
 import Shared.Im.Unread as SIU
-import Client.AppId (imAppId)
 import Shared.Resource (Media(..), ResourceType(..))
-import Shared.Resource as SP
+import Shared.Resource as SR
 import Shared.Unsafe as SU
-import Web.HTML.HTMLLinkElement as WHL
+import Web.HTML.HTMLLinkElement as WHH
 
 -- this can be seriously cleaned up
 
@@ -41,7 +38,7 @@ createNotification n = pure unit -- EU.runEffectFn1 createNotification_
 notifyUnreadChats ∷ ImModel → Array Int → NextMessage
 notifyUnreadChats model userIds = model /\
       [ do
-              liftEffect $ notify model userIds
+              EC.liftEffect $ notify model userIds
               pure $ Just SetDeliveredStatus
       ]
 
@@ -55,30 +52,20 @@ notify model userIds = do
 
       createNotification' { user } = createNotification
             { body: "New message from " <> user.name
-            , icon: SP.resourcePath (Left Loading) Png
+            , icon: SR.resourcePath (Left Loading) Png
             , handler: FS.send imAppId $ ResumeChat user.id --move to given chat when clicking on system notification
             }
 
 notify' ∷ ImModel → Array Int → Aff (Maybe ImMessage)
 notify' model userIds = do
-      liftEffect $ notify model userIds
+      EC.liftEffect $ notify model userIds
       pure Nothing
 
 updateTabCount ∷ ImModel → Array Contact → Effect Unit
 updateTabCount model contacts = do
-      CCD.setTitle $ SIU.title unreadChats
+      CD.setTitle $ SIU.title unreadChats
       unless model.smallScreen do
-            faviconElement ← CCD.unsafeGetElementById SE.Favicon
-            WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
+            faviconElement ← CD.unsafeGetElementById SE.Favicon
+            WHH.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHH.fromElement faviconElement
       where
       unreadChats = SIU.countUnreadChats model.user.id contacts
-
-checkNotifications ∷ Effect Unit
-checkNotifications = do
-      status ← CCD.notificationPermission
-      if status == "default" then
-            FS.send imAppId ToggleAskNotification
-      else if status == "granted" then
-            FS.send imAppId UpdateSubscription
-      else
-            pure unit

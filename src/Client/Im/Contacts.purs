@@ -1,20 +1,17 @@
 module Client.Im.Contacts where
 
 import Prelude
-import Shared.Im.Types
 
-import Client.Dom as CCD
+import Client.Dom as CD
 import Client.Im.Flame (NoMessages, MoreMessages)
 import Client.Im.History as CIH
-import Client.Im.Notification as CIU
-import Client.Im.Notification as CIUN
-import Client.Im.Pwa (SwMessage(..))
-import Client.Im.Pwa as CIP
+import Client.Im.Notification as CIN
 import Client.Im.Scroll as CIS
-import Client.Im.Suggestion as CISN
+import Client.Im.Suggestion as CIS
 import Client.Im.WebSocket as CIW
+import Client.Im.WebSocket.Connection (WebSocket)
 import Client.Network (routes)
-import Client.Network as CCN
+import Client.Network as CN
 import Control.Alt ((<|>))
 import Data.Array ((:))
 import Data.Array as DA
@@ -24,16 +21,14 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
-import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame as F
+import Flame.Html.Event (Event)
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
 import Shared.Modal (Modal(..))
 import Shared.Unsafe as SU
-import Web.Event.Internal.Types (Event)
-import Client.Im.WebSocket.Connection (WebSocket)
 
 -- | When a contact is selected from the list, update `chatting` accordingly
 resumeChat ∷ Int → ImModel → MoreMessages
@@ -55,18 +50,18 @@ resumeChat userId model =
                         , showChangelogs = model.showChangelogs && not model.smallScreen
                         , failedRequests = []
                         } /\
-                        ( screenEffects chatting <>
-                                [ updateReadCountEffect chatting.user.id
-                                , CIS.scrollLastMessageAff
-                                , loadDraft chatting.draft
-                                , fetchHistoryEffect chatting
-                                ]
+                        ( [ screenEffect
+                          , updateReadCountEffect chatting.user.id
+                          , CIS.scrollLastMessageAff
+                          , loadDraft chatting.draft
+                          , fetchHistoryEffect chatting
+                          ]
                         )
       where
       loadDraft currentDraft = EC.liftEffect do
-            input ← CCD.unsafeGetElementById ChatInput
-            previousDraft ← CCD.value input
-            CCD.setValue input currentDraft
+            input ← CD.unsafeGetElementById ChatInput
+            previousDraft ← CD.value input
+            CD.setValue input currentDraft
             if DM.isNothing model.chatting then
                   pure Nothing
             else
@@ -74,12 +69,7 @@ resumeChat userId model =
 
       updateReadCountEffect ui = pure <<< Just <<< SetReadStatus $ Just ui
       fetchHistoryEffect chatting = pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
-      removeNotifications chatting = do
-            EC.liftEffect <<< CIP.postMessage $ OpenChat chatting.user.id
-            pure Nothing
-      screenEffects chatting
-            | model.smallScreen = [ removeNotifications chatting ]
-            | otherwise = [ pure <<< Just $ FocusInput ChatInput ]
+      screenEffect = pure <<< Just $ FocusInput ChatInput
 
 -- | When coming back to the site mark messages as read if a chat is open
 setReadStatus ∷ Maybe Int → WebSocket → ImModel → MoreMessages
@@ -107,14 +97,14 @@ setMessageStatus webSocket userId newStatus model =
 
       updatedMessageIds = map _.id <<< DA.filter needsUpdate <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts
       updatedContacts = map (updateContact userId) model.contacts
-      setIt ui messages = liftEffect do
+      setIt ui messages = EC.liftEffect do
             let
                   changes =
                         { status: newStatus
                         , ids: [ ui /\ messages ]
                         }
             if model.webSocketStatus == Connected then do
-                  CIUN.updateTabCount model updatedContacts
+                  CIN.updateTabCount model updatedContacts
                   CIW.sendPayload webSocket $ ChangeStatus changes
                   pure Nothing
             else
@@ -126,7 +116,7 @@ setDeliveredStatus webSocket model@{ contacts, user: { id: loggedUserId } } =
       if DA.null ids then
             F.noMessages model
       else updatedModel /\
-            [ liftEffect do
+            [ EC.liftEffect do
                     CIW.sendPayload webSocket $ ChangeStatus
                           { status: Delivered
                           , ids
@@ -168,7 +158,7 @@ fetchContacts shouldFetch model@{ contacts }
       | shouldFetch =
               model
                     { freeToFetchContactList = false
-                    } /\ [ CCN.retryableRequest (FetchContacts true) DisplayContacts $ routes.im.contacts { query: { skip: DA.length contacts } } ]
+                    } /\ [ CN.retryableRequest (FetchContacts true) DisplayContacts $ routes.im.contacts { query: { skip: DA.length contacts } } ]
       | otherwise = F.noMessages model
 
 --paginated contacts
@@ -182,7 +172,7 @@ displaySuggestionContact userId contacts model =
             { contacts = model.contacts <> contacts
             , loadingContact = Nothing
             , suggestions = DA.filter ((_ /= userId) <<< _.id) model.suggestions
-            , suggesting = CISN.moveSuggestion model 1
+            , suggesting = CIS.moveSuggestion model 1
             } /\ [ resume ]
       where
       resume = pure <<< Just $ ResumeChat userId
@@ -221,7 +211,7 @@ displayMissedContacts contacts model = notifyTrack updatedModel $ map userId con
       newContacts = DH.values $ DH.difference new existing
 
 notifyTrack ∷ ImModel → Array Int → MoreMessages
-notifyTrack model userIds = track $ CIU.notifyUnreadChats model userIds
+notifyTrack model userIds = track $ CIN.notifyUnreadChats model userIds
       where
       track (m /\ a) = m /\ ((pure $ Just TrackAvailability) : a)
 
@@ -242,7 +232,7 @@ deleteChat userId model =
       lastMessageId = SIC.findContact userId model.contacts >>= (map _.id <<< DA.last <<< _.history)
 
       delete id = do
-            result ← CCN.request $ routes.im.delete { body: { userId, messageId: id } }
+            result ← CN.request $ routes.im.delete { body: { userId, messageId: id } }
             case result of
                   Left _ → pure <<< Just $ RequestFailed { routes: DeleteChat userId, errorMessage: Nothing }
                   _ → pure Nothing

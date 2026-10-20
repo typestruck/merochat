@@ -1,14 +1,15 @@
 module Shared.Feedback.View where
 
 import Prelude
-import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
 
 import Data.Maybe (Maybe(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Element (ElementId(..))
+import Shared.Extra (br)
 import Shared.Extra as SE
+import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
 import Shared.Network (RequestStatus(..))
 
 view ∷ FeedbackModel → Html FeedbackMessage
@@ -16,7 +17,7 @@ view model =
       HE.div [ HA.id $ show FeedbackForm, HA.class' { hidden: not model.visible } ]
             [ HE.div [ HA.class' "center duller" ]
                     [ HE.span_ [ HE.text "Use the form bellow to report any issues," ]
-                    , SE.br
+                    , br
                     , HE.span_ [ HE.text "send suggestions or shoot any questions you might have" ]
                     ]
             , HE.div [ HA.class' "extra-padding" ]
@@ -37,11 +38,13 @@ view model =
                     , HE.div [ HA.class' { "success-message": true, hidden: model.feedbackStatus /= Just (Request Success) } ] [ HE.text "Feedback sent!" ]
                     ]
             , HE.div [ HA.class' "duller center" ]
-                    [ SE.br
-                    , HE.span_ [ HE.text "You can also reach out at " ]
-                    , SE.a [ HA.href "https://reddit.com/r/MeroChat", HA.target "_blank" ] [ HE.text "r/MeroChat" ]
-                    , HE.span_ [ HE.text " and " ]
-                    , SE.a [ HA.href "https://twitter.com/MeroChat", HA.target "_blank" ] [ HE.text "@MeroChat" ]
+                    [ br
+                    , HE.span [ HA.class' "lynx-inline" ]
+                            [ HE.span_ [ HE.text "You can also reach out at " ]
+                            , SE.a [ HA.href "https://reddit.com/r/MeroChat", HA.target "_blank" ] [ HE.text "r/MeroChat" ]
+                            , HE.span_ [ HE.text " and " ]
+                            , SE.a [ HA.href "https://twitter.com/MeroChat", HA.target "_blank" ] [ HE.text "@MeroChat" ]
+                            ]
                     ]
             ]
       where

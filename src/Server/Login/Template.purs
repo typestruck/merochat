@@ -2,20 +2,18 @@ module Server.Login.Template where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Flame as F
 import Flame.Html.Attribute as HA
-import Flame.Html.Element as HE
-import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
-import Shared.Element (ElementId(..))
 import Shared.Extra as SE
 import Shared.Html (Html(..))
-import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
+import Shared.Login.View as SLV
 import Shared.Resource (Bundle(..), ResourceType(..))
-import Shared.Resource as SP
-import Shared.Routes (routesSpec)
+import Shared.Resource as SR
+
+-- import Flame.Renderer.String as FRS
 
 template ∷ Effect Html
 template = do
@@ -24,31 +22,16 @@ template = do
             , javascript = javascript
             , title = "MeroChat - Login"
             }
-      Html <$> FRS.render contents
+      -- Html <$> FRS.render contents
+      pure $ Html ""
       where
       javascript =
-            [ SE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Login Js ]
+            [ SE.script' [ HA.type' "text/javascript", HA.src $ SR.bundlePath Login Js ]
             ]
-      content =
-            [ HE.div [ HA.class' "pastel-area" ]
-                    [ HE.div [ HA.class' "sign-up-form form-up" ]
-                            [ HE.div [ HA.class' "input" ]
-                                    [ HE.input [ HA.placeholder "Email", HA.type' "text", HA.maxlength emailMaxCharacters, HA.id $ show EmailInput ]
-                                    , HE.span [ HA.class' "error-message" ] [ HE.text "Please enter a valid email" ]
-                                    ]
-                            , HE.div [ HA.class' "input" ]
-                                    [ HE.input [ HA.placeholder "Password", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id $ show PasswordInput ]
-                                    , HE.span [ HA.class' "error-message" ] [ HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more" ]
-                                    ]
-                            , HE.div [ HA.class' "input" ]
-                                    [ HE.input [ HA.type' "button", HA.value "Log in" ]
-                                    , HE.span' [ HA.class' "request-error-message error-message" ]
-                                    ]
-                            , HE.div [ HA.class' "forgot-sign-up" ]
-                                    [ SE.a [ HA.href $ routesSpec.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] [ HE.text "Forgot your password?" ]
-                                    , HE.span [ HA.class' "or" ] [ HE.text "or" ]
-                                    , SE.a [ HA.href $ routesSpec.landing {}, HA.class' "question-link" ] [ HE.text "Don't have an account?" ]
-                                    ]
-                            ]
-                    ]
-            ]
+
+content ∷ Array (F.Html Unit)
+content =
+      [ SLV.view
+              { setEmail: const unit, setPassword: const unit, submit: unit, keyPressed: const unit }
+              { email: "", password: "", loading: false, error: "" }
+      ]

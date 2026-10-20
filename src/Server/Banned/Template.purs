@@ -5,11 +5,12 @@ import Prelude
 import Effect (Effect)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
-import Shared.Html (Html(..))
 import Shared.Extra as SE
+import Shared.Html (Html(..))
+
+-- import Flame.Renderer.String as FRS
 
 template ∷ Effect Html
 template = do
@@ -17,7 +18,8 @@ template = do
             { content = externalDefaultParameters.content <> content
             , title = "MeroChat - Temporarily banned"
             }
-      Html <$> FRS.render contents
+      -- Html <$> FRS.render contents
+      pure $ Html ""
       where
       content =
             [ HE.div [ HA.class' "pastel-area" ]
@@ -28,7 +30,7 @@ template = do
                             , HE.div_ [ HE.text " a place to spread hate speech" ]
                             , HE.div_ [ HE.text " a marketplace" ]
                             ]
-                    , HE.p_
+                    , HE.p [ HA.class' "lynx-inline" ]
                             [ HE.text "To restore your account, please reach us at "
                             , SE.a [ HA.href "mailto:contact@mero.chat" ] [ HE.text "contact@mero.chat" ]
                             , HE.text ", "

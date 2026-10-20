@@ -3,8 +3,8 @@ module Shared.Experiments.Types where
 import Prelude
 
 import Data.Argonaut (class DecodeJson, class EncodeJson)
-import Data.Argonaut.Decode.Generic as DADGR
-import Data.Argonaut.Encode.Generic as DAEGR
+import Data.Argonaut.Decode.Generic as DADG
+import Data.Argonaut.Encode.Generic as DAEG
 import Data.Either (Either)
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
@@ -12,12 +12,12 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
+import Flame.Html.Event (Event)
 import Foreign as F
+import Shared.Experiment (Experiment(..))
 import Shared.Modal (ScreenModal)
 import Shared.Privilege (Privilege)
-import Shared.Experiment
 import Shared.Unsafe as SU
-import Web.Event.Internal.Types (Event)
 
 type ChatExperiment =
       { id ∷ Int
@@ -64,8 +64,6 @@ data ExperimentsMessage
       | StartDebate
       | AfterStartDebate Int
       | ToggleFormat
-
-
 
 type Match =
       { name ∷ String
@@ -192,28 +190,28 @@ derive instance Generic PaperPlaneStatus _
 derive instance Generic PaperPlaneSection _
 
 instance DecodeJson PaperPlaneSection where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson DebateSection where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson DoppelgangerSection where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance DecodeJson PaperPlaneStatus where
-      decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADG.genericDecodeJson
 
 instance EncodeJson DebateSection where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson PaperPlaneStatus where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson PaperPlaneSection where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance EncodeJson DoppelgangerSection where
-      encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEG.genericEncodeJson
 
 instance ToValue PaperPlaneStatus where
       toValue = F.unsafeToForeign <<< DE.fromEnum

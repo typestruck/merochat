@@ -1,3 +1,8 @@
 export function setTheme_(theme) {
-    window.switchTheme(theme, true);
+    globalThis.switchTheme(theme, true);
+}
+
+//defined by the theme-swither until we clean this up
+export function getTheme_() {
+    return globalThis.themeProperties || {};
 }

@@ -1,32 +1,44 @@
 let key = 'merochat-theme',
     light = 'light',
-    dark = 'dark';
+    dark = 'dark',
+    //lynx does not have these
+    hasDocument = typeof document !== 'undefined',
+    hasLocalStorage = typeof localStorage !== 'undefined';
 
-function switchTheme(theme, fromEvent = false) {
-    document.documentElement.style.setProperty('--background-color', theme === light ? '#FBFEFB' : '#1D2B35');
-    document.documentElement.style.setProperty('--text-color', theme === light ? '#1B1F3B' : '#FBFEFB');
-    document.documentElement.style.setProperty('--external-accent', theme === light ? '#EFE5DC' : '#274958');
-    document.documentElement.style.setProperty('--other-heading-color', theme === light ? '#42858C' : '#64FCD9');
-    document.documentElement.style.setProperty('--light-link-color', theme === light ? '#FBFEFB' : '#327B4F');
+globalThis.switchTheme = (theme, fromEvent = false) => {
+    let properties = {
+        '--background-color': theme === light ? '#FBFEFB' : '#1D2B35',
+        '--text-color': theme === light ? '#1B1F3B' : '#FBFEFB',
+        '--external-accent': theme === light ? '#EFE5DC' : '#274958',
+        '--other-heading-color': theme === light ? '#42858C' : '#64FCD9',
+        '--light-link-color': theme === light ? '#FBFEFB' : '#327B4F',
+        '--im-background-color': theme === light ? '#F0E8DD' : '#393E41',
+        '--im-second-background-color': theme === light ? '#B8574F' : '#26292C',
+        '--im-chat-background-image': theme === light ? 'url(/file/default/chat-background-light.svg)' : 'url(/file/default/chat-background-dark.svg)',
+    };
 
-    document.documentElement.style.setProperty('--im-background-color', theme === light ? '#F0E8DD' : '#393E41');
-    document.documentElement.style.setProperty('--im-second-background-color', theme === light ? '#B8574F' : '#26292C');
-    document.documentElement.style.setProperty('--im-chat-background-image', theme === light ? 'url(/file/default/chat-background-light.svg)' : 'url(/file/default/chat-background-dark.svg)');
+    if (hasDocument) {
+        for (let [name, value] of Object.entries(properties))
+            document.documentElement.style.setProperty(name, value);
+    }
+    else
+        globalThis.themeProperties = properties;
 
-    //if the user choose the theme instead of coming from the system preference, save it
-    if (fromEvent)
+    if (fromEvent && hasLocalStorage)
         localStorage.setItem(key, theme);
 }
 
-if (localStorage.getItem(key))
-    switchTheme(localStorage.getItem(key));
-else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)
-    switchTheme(light);
-else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    switchTheme(dark);
+let theme = dark;
 
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelector('#light-theme-switch').addEventListener('click', () => switchTheme(light, true));
-    document.querySelector('#dark-theme-switch').addEventListener('click', () => switchTheme(dark, true));
-});
+if (hasLocalStorage && localStorage.getItem(key))
+    theme = localStorage.getItem(key);
+else if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)
+    theme = light;
 
+globalThis.switchTheme(theme);
+
+if (hasDocument)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('#light-theme-switch')?.addEventListener('click', () => globalThis.switchTheme(light, true));
+        document.querySelector('#dark-theme-switch')?.addEventListener('click', () => globalThis.switchTheme(dark, true));
+    }, { once: true });

@@ -2,7 +2,7 @@ module Shared.Im.View.Praise where
 
 import Prelude
 
-import Client.Privilege as CCP
+import Client.Privilege as CP
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.Enum as DE
@@ -13,7 +13,7 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Change as SCN
+import Shared.Change as SC
 import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Options.Praise (maxPraiseCharacters)
@@ -28,7 +28,7 @@ praised rows = map display counts
       counts = map run $ DA.group rows
       run p = DAN.head p /\ DAN.length p
 
-      display (praise /\ n) = HE.div [ HA.class' "praise-entry" ]
+      display (praise /\ n) = HE.div [ HA.class' "praise-entry lynx-inline" ]
             $
                   [ HE.div [ HA.class' "tag tag-praise" ]
                           [ HE.text <<< DT.snd $ displayPraise praise ]
@@ -37,7 +37,7 @@ praised rows = map display counts
 praiseForm ∷ ImModel → User → Html ImMessage
 praiseForm model user =
       if not $ SP.hasPrivilege SendPraise model.user then
-            CCP.notEnoughKarma "send praises" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+            CP.notEnoughKarma "send praises" $ SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
       else if user.praiseStatus == HasPraised || not model.praise.freeToFetch then
             HE.div [] []
       else if user.praiseStatus == PraiseNotAccepted then
@@ -54,13 +54,13 @@ praiseForm model user =
       hasOtherPraise = isSelected $ Other ""
       form = HE.div [ HA.class' "praises-form" ]
             [ HE.label [ HA.class' "label-praise" ] [ HE.text $ "What best describes " <> user.name <> "?" ]
-            , HE.div_ $ map praiseOption praises
+            , HE.div [ HA.class' "lynx-inline" ] $ map praiseOption praises
             , HE.textarea'
                     [ HA.class' { "chat-input": true, hidden: not hasOtherPraise }
                     , HA.placeholder "Please specify"
                     , HA.maxlength maxPraiseCharacters
                     , HA.onInput' ResizeChatInput
-                    , SCN.onChange (SetOtherPraise <<< SCN.toMaybe)
+                    , SC.onChange $ SetOtherPraise <<< SC.toMaybe
                     , HA.autocomplete "off"
                     , HA.value $ DM.fromMaybe "" model.praise.other
                     ]

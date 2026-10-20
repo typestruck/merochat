@@ -3,20 +3,18 @@ module Server.App.Template where
 import Prelude
 
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
-import Shared.Element (ElementId(..))
+import Shared.Extra as SE
 import Shared.Html (Html(..))
-import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
 import Shared.Routes (routesSpec)
-import Shared.Extra as SE
+
+-- import Flame.Renderer.String as FRS
 
 template ∷ Effect Html
 template = do
@@ -25,7 +23,8 @@ template = do
             , javascript = javascript
             , title = "MeroChat - App"
             }
-      Html <$> FRS.render contents
+      -- Html <$> FRS.render contents
+      pure $ Html ""
       where
       javascript =
             [ SE.script [ HA.type' "text/javascript" ]
@@ -41,7 +40,7 @@ template = do
             [ HE.div [ HA.class' "pastel-area" ]
                     [ HE.div [ HA.id "other", HA.class' "sign-up-form form-up" ]
                             [ HE.h2 [] [ HE.text "iOS" ]
-                            , HE.div []
+                            , HE.div [ HA.class' "lynx-inline" ]
                                     [ HE.text "Apple charges 400 usd per year so MeroChat isn't on the App Store yet. "
                                     , SE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Wink, wink, donate" ]
                                     ]

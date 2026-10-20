@@ -20,11 +20,7 @@ package:
     - either
     - enums
     - exceptions
-<<<<<<< HEAD
-    - flame
-=======
     - flame-lynx
->>>>>>> cfa3b0e3 (bb)
     - foldable-traversable
     - foreign
     - foreign-object
@@ -34,10 +30,7 @@ package:
     - js-timers
     - lists
     - maybe
-<<<<<<< HEAD
-=======
     - newtype
->>>>>>> cfa3b0e3 (bb)
     - node-buffer
     - node-fs-aff
     - node-http
@@ -46,10 +39,7 @@ package:
     - nullable
     - numbers
     - ordered-collections
-<<<<<<< HEAD
-=======
     - partial
->>>>>>> cfa3b0e3 (bb)
     - payload
     - prelude
     - random
@@ -76,19 +66,9 @@ package:
     - web-uievents
   name: merochat
 workspace:
-<<<<<<< HEAD
-  backend:
-     cmd: "purs-backend-es"
-     args:
-       - build
-       - --directives
-       - build-directives
-  extraPackages:
-=======
   extraPackages:
     flame-lynx:
       path: ../purescript-flame-lynx
->>>>>>> cfa3b0e3 (bb)
     browser-cookies:
       dependencies:
         - arrays
@@ -156,42 +136,6 @@ workspace:
         - unsafe-coerce
       git: https://github.com/easafe/purescript-droplet.git
       ref: ce2541c6d0db343a8c6168ce7ed79f5c0bb2c860
-<<<<<<< HEAD
-    flame:
-      dependencies:
-        - aff
-        - argonaut-codecs
-        - argonaut-core
-        - argonaut-generic
-        - arrays
-        - bifunctors
-        - console
-        - effect
-        - either
-        - exceptions
-        - foldable-traversable
-        - foreign
-        - foreign-object
-        - maybe
-        - newtype
-        - nullable
-        - partial
-        - prelude
-        - random
-        - refs
-        - spec
-        - strings
-        - tuples
-        - typelevel-prelude
-        - unsafe-coerce
-        - web-dom
-        - web-events
-        - web-html
-        - web-uievents
-      git: https://github.com/easafe/purescript-flame.git
-      ref: b7d7c47a78e7677234ca74b2640c6292d87a7e02
-=======
->>>>>>> cfa3b0e3 (bb)
     payload:
       dependencies:
         - aff
