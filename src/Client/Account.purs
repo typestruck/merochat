@@ -2,7 +2,9 @@ module Client.Account where
 
 import Prelude
 
-import Client.Dom as CCD
+import Client.Ui.Document as CUD
+import Client.Ui.Element as CUE
+import Client.Ui.Event as CUEV
 import Client.Network as CNN
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
@@ -42,8 +44,8 @@ validateEmailPassword = do
 
 validateEmail ∷ Effect (Maybe String)
 validateEmail = do
-      emailElement ← CCD.unsafeGetElementById EmailInput
-      email ← CCD.value emailElement
+      emailElement ← CUD.unsafeGetElementById EmailInput
+      email ← CUE.value emailElement
       WDE.setClassName "input" emailElement
 
       if DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email) then do
@@ -54,8 +56,8 @@ validateEmail = do
 
 validatePassword ∷ Effect (Maybe String)
 validatePassword = do
-      passwordElement ← CCD.unsafeGetElementById PasswordInput
-      password ← CCD.value passwordElement
+      passwordElement ← CUD.unsafeGetElementById PasswordInput
+      password ← CUE.value passwordElement
       WDE.setClassName "input" passwordElement
 
       if DS.length password < passwordMinCharacters then do
@@ -66,14 +68,14 @@ validatePassword = do
 
 listenValidatePasswordConfirmation ∷ Effect (Maybe String)
 listenValidatePasswordConfirmation = do
-      passwordElement ← CCD.unsafeGetElementById PasswordInput
-      password ← CCD.value passwordElement
+      passwordElement ← CUD.unsafeGetElementById PasswordInput
+      password ← CUE.value passwordElement
       validatePasswordConfirmation $ Just password
 
 validatePasswordConfirmation ∷ Maybe String → Effect (Maybe String)
 validatePasswordConfirmation password = do
-      passwordConfirmationElement ← CCD.unsafeGetElementById PasswordConfirmationInput
-      passwordConfirmation ← CCD.value passwordConfirmationElement
+      passwordConfirmationElement ← CUD.unsafeGetElementById PasswordConfirmationInput
+      passwordConfirmation ← CUE.value passwordConfirmationElement
       WDE.setClassName "input" passwordConfirmationElement
 
       if Just passwordConfirmation /= password then do
@@ -84,16 +86,16 @@ validatePasswordConfirmation password = do
 
 registerEvents ∷ Effect Unit → Effect Unit
 registerEvents callback = do
-      formDiv ← CCD.unsafeQuerySelector formSelector
-      button ← CCD.unsafeQuerySelector buttonSelector
-      emailElement ← CCD.getElementById EmailInput
-      passwordElement ← CCD.getElementById PasswordInput
-      confirmPasswordElement ← CCD.getElementById PasswordConfirmationInput
+      formDiv ← CUD.unsafeQuerySelector formSelector
+      button ← CUD.unsafeQuerySelector buttonSelector
+      emailElement ← CUD.getElementById EmailInput
+      passwordElement ← CUD.getElementById PasswordInput
+      confirmPasswordElement ← CUD.getElementById PasswordConfirmationInput
       listenIfExists emailElement validateEmail
       listenIfExists passwordElement validatePassword
       listenIfExists confirmPasswordElement listenValidatePasswordConfirmation
-      CCD.addEventListener formDiv keyup onEnter
-      CCD.addEventListener button click (const callback)
+      CUEV.addEventListener formDiv keyup onEnter
+      CUEV.addEventListener button click (const callback)
       where
       onEnter event = do
             let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
@@ -102,7 +104,7 @@ registerEvents callback = do
       listenIfExists ∷ ∀ a. Maybe Element → Effect a → Effect Unit
       listenIfExists maybeElement handler = case maybeElement of
             Nothing → pure unit
-            Just element → CCD.addEventListener element change (const handler)
+            Just element → CUEV.addEventListener element change (const handler)
 
 formRequest ∷ ∀ a. Aff (ClientResponse a) → Aff RequestStatus
 formRequest = CNN.formRequest formSelector

@@ -3,7 +3,8 @@ module Client.Help.Main where
 import Prelude
 import Shared.Im.Types
 
-import Client.Dom as CCD
+import Client.Ui.Document as CUD
+import Client.Ui.Event as CUEV
 import Client.Location as CCL
 import Data.Traversable as DT
 import Effect (Effect)
@@ -19,12 +20,12 @@ import Web.HTML.Window as WHW
 main ∷ Effect Unit
 main = do
       hash ← CCL.hash
-      faqLink ← CCD.unsafeGetElementById FaqLink
-      termsLink ← CCD.unsafeGetElementById TermsLink
-      privacyLink ← CCD.unsafeGetElementById PrivacyLink
-      faq ← CCD.unsafeGetElementById Faq
-      terms ← CCD.unsafeGetElementById TermsSection
-      privacy ← CCD.unsafeGetElementById PrivacySection
+      faqLink ← CUD.unsafeGetElementById FaqLink
+      termsLink ← CUD.unsafeGetElementById TermsLink
+      privacyLink ← CUD.unsafeGetElementById PrivacyLink
+      faq ← CUD.unsafeGetElementById Faq
+      terms ← CUD.unsafeGetElementById TermsSection
+      privacy ← CUD.unsafeGetElementById PrivacySection
 
       let
             unselectAll = do
@@ -40,9 +41,9 @@ main = do
                         "#privacy" → select privacyLink privacy
                         _ → select faqLink faq
 
-      CCD.addEventListener faqLink click (const (CCL.setHash Faq))
-      CCD.addEventListener termsLink click (const (CCL.setHash TermsSection))
-      CCD.addEventListener privacyLink click (const (CCL.setHash PrivacySection))
+      CUEV.addEventListener faqLink click (const (CCL.setHash Faq))
+      CUEV.addEventListener termsLink click (const (CCL.setHash TermsSection))
+      CUEV.addEventListener privacyLink click (const (CCL.setHash PrivacySection))
 
       hashListener ← WET.eventListener $ const (CCL.hash >>= showTab)
       window ← WH.window

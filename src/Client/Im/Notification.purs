@@ -3,7 +3,7 @@ module Client.Im.Notification where
 import Prelude
 
 import Client.AppId (imAppId)
-import Client.Dom as CD
+import Client.Ui.Document as CUD
 import Client.Im.Flame (NextMessage)
 import Data.Array as DA
 import Data.Either (Either(..))
@@ -63,9 +63,9 @@ notify' model userIds = do
 
 updateTabCount ∷ ImModel → Array Contact → Effect Unit
 updateTabCount model contacts = do
-      CD.setTitle $ SIU.title unreadChats
+      CUD.setTitle $ SIU.title unreadChats
       unless model.smallScreen do
-            faviconElement ← CD.unsafeGetElementById SE.Favicon
+            faviconElement ← CUD.unsafeGetElementById SE.Favicon
             WHH.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHH.fromElement faviconElement
       where
       unreadChats = SIU.countUnreadChats model.user.id contacts

@@ -20,7 +20,7 @@ import Record as R
 import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
 import Shared.File as SF
-import Shared.Lynx as SL
+import Shared.Extra as SE
 import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (maxImageSizeKB)
@@ -54,10 +54,10 @@ privacySection ∷ SettingsModel → Html SettingsMessage
 privacySection model = HE.div [ HA.id $ show PrivacySettings ]
       [ HE.label_ [ HE.text "Profile visibility" ]
       , HE.div [ HA.class' "modal-input" ]
-              [ SL.choice (model.profileVisibility == Everyone) (SetSField $ _ { profileVisibility = Everyone }) "Show profile (default)"
-              , SL.choice (model.profileVisibility == NoTemporaryUsers) (SetSField $ _ { profileVisibility = NoTemporaryUsers }) "Show profile only to registered users"
-              , SL.choice (model.profileVisibility == Contacts) (SetSField $ _ { profileVisibility = Contacts }) "Show profile only to contacts"
-              , SL.choice (model.profileVisibility == Nobody) (SetSField $ _ { profileVisibility = Nobody }) "Do not show profile"
+              [ SE.choice (model.profileVisibility == Everyone) (SetSField $ _ { profileVisibility = Everyone }) "Show profile (default)"
+              , SE.choice (model.profileVisibility == NoTemporaryUsers) (SetSField $ _ { profileVisibility = NoTemporaryUsers }) "Show profile only to registered users"
+              , SE.choice (model.profileVisibility == Contacts) (SetSField $ _ { profileVisibility = Contacts }) "Show profile only to contacts"
+              , SE.choice (model.profileVisibility == Nobody) (SetSField $ _ { profileVisibility = Nobody }) "Do not show profile"
               ]
 
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= Everyone } ] [ HE.text "All users can see your profile and send you messages" ]
@@ -75,10 +75,10 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
 
       , HE.label_ [ HE.text "Posts visibility" ]
       , HE.div [ HA.class' "modal-input" ]
-              [ SL.choice (model.postsVisibility == Everyone) (SetSField $ _ { postsVisibility = Everyone }) "Show posts (default)"
-              , SL.choice (model.postsVisibility == NoTemporaryUsers) (SetSField $ _ { postsVisibility = NoTemporaryUsers }) "Show posts only to registered users"
-              , SL.choice (model.postsVisibility == Contacts) (SetSField $ _ { postsVisibility = Contacts }) "Show posts only to contacts"
-              , SL.choice (model.postsVisibility == Nobody) (SetSField $ _ { postsVisibility = Nobody }) "Do not show posts"
+              [ SE.choice (model.postsVisibility == Everyone) (SetSField $ _ { postsVisibility = Everyone }) "Show posts (default)"
+              , SE.choice (model.postsVisibility == NoTemporaryUsers) (SetSField $ _ { postsVisibility = NoTemporaryUsers }) "Show posts only to registered users"
+              , SE.choice (model.postsVisibility == Contacts) (SetSField $ _ { postsVisibility = Contacts }) "Show posts only to contacts"
+              , SE.choice (model.postsVisibility == Nobody) (SetSField $ _ { postsVisibility = Nobody }) "Do not show posts"
               ]
       , HE.div [ HA.class' "duller" ] $ case model.postsVisibility of
               Everyone → [ HE.text "All users can see your posts" ]
@@ -89,10 +89,10 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
 
       , HE.label_ [ HE.text "Asks" ]
       , HE.div [ HA.class' "modal-input" ]
-              [ SL.choice (model.asksVisibility == Everyone) (SetSField $ _ { asksVisibility = Everyone }) "Allow asks from everyone"
-              , SL.choice (model.asksVisibility == NoTemporaryUsers) (SetSField $ _ { asksVisibility = NoTemporaryUsers }) "Allow asks only from registered users (default)"
-              , SL.choice (model.asksVisibility == Contacts) (SetSField $ _ { asksVisibility = Contacts }) "Allow asks only from contacts"
-              , SL.choice (model.asksVisibility == Nobody) (SetSField $ _ { asksVisibility = Nobody }) "Do not allow asks"
+              [ SE.choice (model.asksVisibility == Everyone) (SetSField $ _ { asksVisibility = Everyone }) "Allow asks from everyone"
+              , SE.choice (model.asksVisibility == NoTemporaryUsers) (SetSField $ _ { asksVisibility = NoTemporaryUsers }) "Allow asks only from registered users (default)"
+              , SE.choice (model.asksVisibility == Contacts) (SetSField $ _ { asksVisibility = Contacts }) "Allow asks only from contacts"
+              , SE.choice (model.asksVisibility == Nobody) (SetSField $ _ { asksVisibility = Nobody }) "Do not allow asks"
               ]
       , HE.div [ HA.class' "duller" ] $ case model.asksVisibility of
               Everyone → [ HE.text "All users can send you asks" ]
@@ -167,10 +167,10 @@ chatsSection ∷ SettingsModel → Html SettingsMessage
 chatsSection model = HE.div [ HA.id $ show ChatSettings ]
       [ HE.label_ [ HE.text "Initial suggestions screen" ]
       , HE.div [ HA.class' "modal-input" ]
-              [ SL.choice (model.suggestionsFrom == ThisWeek) (SetSField $ _ { suggestionsFrom = ThisWeek }) "New suggestions"
-              , SL.choice (model.suggestionsFrom == OnlineOnly) (SetSField $ _ { suggestionsFrom = OnlineOnly }) "Online users"
-              , SL.choice (model.suggestionsFrom == ContactsOnly) (SetSField $ _ { suggestionsFrom = ContactsOnly }) "Contacts"
-              , SL.choice (model.suggestionsFrom == FavoritesOnly) (SetSField $ _ { suggestionsFrom = FavoritesOnly }) "Favorites"
+              [ SE.choice (model.suggestionsFrom == ThisWeek) (SetSField $ _ { suggestionsFrom = ThisWeek }) "New suggestions"
+              , SE.choice (model.suggestionsFrom == OnlineOnly) (SetSField $ _ { suggestionsFrom = OnlineOnly }) "Online users"
+              , SE.choice (model.suggestionsFrom == ContactsOnly) (SetSField $ _ { suggestionsFrom = ContactsOnly }) "Contacts"
+              , SE.choice (model.suggestionsFrom == FavoritesOnly) (SetSField $ _ { suggestionsFrom = FavoritesOnly }) "Favorites"
               ]
       , HE.div [ HA.class' "duller" ]
               [ HE.text $ case model.suggestionsFrom of

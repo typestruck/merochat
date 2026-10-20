@@ -3,7 +3,7 @@ module Client.Profile.Update where
 import Prelude
 
 import Client.AppId (imAppId, profileAppId)
-import Client.Dom as CD
+import Client.Ui.Document as CUD
 import Client.File as CF
 import Client.Network (routes)
 import Client.Network as CN
@@ -289,7 +289,7 @@ selectAvatar ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessa
 selectAvatar model = model /\ [ selectIt ]
       where
       selectIt = EC.liftEffect do
-            input ← CD.unsafeGetElementById AvatarFileInput
+            input ← CUD.unsafeGetElementById AvatarFileInput
             CF.triggerFileSelect input
             pure Nothing
 

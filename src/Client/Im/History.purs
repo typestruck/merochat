@@ -2,12 +2,13 @@ module Client.Im.History where
 
 import Prelude
 
-import Client.Dom as CD
+import Client.Ui.Document as CUD
+import Client.Ui.Element as CUE
 import Client.Im.Flame (MoreMessages, NoMessages)
 import Client.Im.Scroll as CIS
 import Client.Network (routes)
 import Client.Network as CN
-import Client.UIEvent as CU
+import Client.Ui.Event as CUEV
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -77,8 +78,8 @@ setReacWithText ∷ String → Event → ImModel → NoMessages
 setReacWithText id event model = model { react = WithText } /\ [ stop ]
       where
       stop = EC.liftEffect do
-            CU.stopPropagation event
-            element ← CD.unsafeQuerySelector $ "#" <> id
+            CUEV.stopPropagation event
+            element ← CUD.unsafeQuerySelector $ "#" <> id
             WHHE.focus $ UC.unsafeCoerce element
             pure Nothing
 
@@ -86,10 +87,10 @@ react ∷ Int → Int → Either String String → Event → ImModel → NoMessa
 react userId messageId value event model = model /\ [ save ]
       where
       save = do
-            EC.liftEffect $ CU.stopPropagation event
+            EC.liftEffect $ CUEV.stopPropagation event
             reaction ← EC.liftEffect case value of
                   Right text → pure text
-                  Left id → CD.unsafeQuerySelector ("#" <> id) >>= CD.value >>= (pure <<< DS.toUpper)
+                  Left id → CUD.unsafeQuerySelector ("#" <> id) >>= CUE.value >>= (pure <<< DS.toUpper)
             void <<< CN.silentRequest $ routes.im.react { body: { id: messageId, reaction } }
             pure <<< Just $ DisplayReaction userId messageId reaction
 

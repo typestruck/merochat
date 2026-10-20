@@ -9,7 +9,8 @@ module Client.Network
 import Prelude
 import Shared.Im.Types (ImMessage(..), RetryableRequest)
 
-import Client.Dom as CCD
+import Client.Ui.Document as CUD
+import Client.Ui.Element as CUE
 import Control.Monad.Error.Class as CMEC
 import Data.Array as DA
 import Data.Either (Either(..))
@@ -39,8 +40,8 @@ routes = PC.mkGuardedClient (defaultOpts { baseUrl = "/" }) spec
 formRequest ∷ ∀ a. Warn (Text "Deprecated") ⇒ String → Aff (ClientResponse a) → Aff RequestStatus
 formRequest formSelector aff = do
       previousLabel ← liftEffect do
-            button ← CCD.unsafeQuerySelector buttonSelector
-            CCD.value button
+            button ← CUD.unsafeQuerySelector buttonSelector
+            CUE.value button
       setLoading (loadingMessage previousLabel) ""
       result ← aff
       case result of
@@ -74,14 +75,14 @@ formRequest formSelector aff = do
       isVowel letter = DA.elem letter [ "a", "e", "i", "o", "u" ]
 
       setLoading buttonText errorText = liftEffect do
-            button ← liftEffect $ CCD.unsafeQuerySelector buttonSelector
-            errorElement ← liftEffect $ CCD.unsafeQuerySelector errorMessageSelector
-            CCD.toggleDisabled button
-            CCD.setValue button buttonText
-            CCD.setInnerHTML errorElement errorText
+            button ← liftEffect $ CUD.unsafeQuerySelector buttonSelector
+            errorElement ← liftEffect $ CUD.unsafeQuerySelector errorMessageSelector
+            CUE.toggleDisabled button
+            CUE.setValue button buttonText
+            CUE.setInnerHTML errorElement errorText
 
       notifySuccess = liftEffect do
-            formDiv ← CCD.unsafeQuerySelector formSelectorId
+            formDiv ← CUD.unsafeQuerySelector formSelectorId
             existingClasses ← WDE.className formDiv
             WDE.setClassName (existingClasses <> " input success") formDiv
 

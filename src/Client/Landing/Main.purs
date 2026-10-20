@@ -3,7 +3,8 @@ module Client.Landing.Main where
 import Prelude
 
 import Client.Account as CCA
-import Client.Dom as CCD
+import Client.Ui.Document as CUD
+import Client.Ui.Event as CUEV
 import Client.Location as CCL
 import Client.Network (routes)
 import Data.Maybe (Maybe(..))
@@ -39,8 +40,8 @@ registerTemporaryUser = EA.launchAff_ do
 
 registerTemporaryUserEvents ∷ Effect Unit
 registerTemporaryUserEvents = do
-      temporaryUserElement ← CCD.getElementById TemporaryUserSignUp
-      CCD.addEventListener (SU.fromJust temporaryUserElement) click (const registerTemporaryUser)
+      temporaryUserElement ← CUD.getElementById TemporaryUserSignUp
+      CUEV.addEventListener (SU.fromJust temporaryUserElement) click (const registerTemporaryUser)
 
 main ∷ Effect Unit
 main = do

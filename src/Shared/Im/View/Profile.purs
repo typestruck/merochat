@@ -3,7 +3,7 @@ module Shared.Im.View.Profile (suggestionProfile, signUpCall, badges, profileCon
 import Prelude
 
 import Client.Privilege as CP
-import Client.UIEvent as CU
+import Client.Ui.Event as CUEV
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
@@ -351,7 +351,7 @@ onPostsScroll userId posts model = HA.createRawEvent scrollEventName handler
       where
       handler ∷ Event → Effect (Maybe ImMessage)
       handler event = do
-            let target = CU.target event >>= WDE.fromEventTarget
+            let target = CUEV.target event >>= WDE.fromEventTarget
             case target of
                   Nothing → pure Nothing
                   Just element → do

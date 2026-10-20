@@ -3,7 +3,8 @@ module Client.Im.Main (main, application) where
 import Prelude
 
 import Client.AppId (imAppId, profileAppId)
-import Client.Dom as CD
+import Client.Ui.Document as CUD
+import Client.Ui.Window as CUW
 import Client.Im.Asks as CIA
 import Client.Im.Changelog as CIC
 import Client.Im.Chat as CIC
@@ -23,7 +24,7 @@ import Client.Im.WebSocket.Events as CIWE
 import Client.Location as CL
 import Client.Network (routes)
 import Client.Network as CN
-import Client.UIEvent as CU
+import Client.Ui.Event as CUEV
 import Data.Array ((:))
 import Data.Array as DA
 import Data.DateTime (DateTime)
@@ -457,14 +458,14 @@ refocus focusEvent lastActiveRef webSocket model =
       where
       whenActive action = EC.liftEffect do
             active ← case focusEvent of
-                  VisibilityChange → CD.documentIsNotHidden
-                  FocusBlur → CD.documentHasFocus
+                  VisibilityChange → CUD.documentIsNotHidden
+                  FocusBlur → CUD.documentHasFocus
             if active then action else pure Nothing
 
       updateLastSeen = EC.liftEffect do
             active ← case focusEvent of
-                  VisibilityChange → CD.documentIsNotHidden
-                  FocusBlur → CD.documentHasFocus
+                  VisibilityChange → CUD.documentIsNotHidden
+                  FocusBlur → CUD.documentHasFocus
             lastActive ← ER.read lastActiveRef
             when (active /= lastActive) do
                   CIW.sendPayload webSocket $ UpdateAvailability { online: active }
@@ -632,7 +633,7 @@ toggleUserContextMenu event model
                       EC.liftEffect do
                             let
                                   element = SU.fromJust $ do
-                                        target ← CU.target event
+                                        target ← CUEV.target event
                                         WDE.fromEventTarget target
                             id ← WDE.id element
                             parent ← WDN.parentElement $ WDE.toNode element
@@ -653,7 +654,7 @@ toggleUserContextMenu event model
 focusInput ∷ ElementId → ImModel → NextMessage
 focusInput elementId model = model /\
       [ EC.liftEffect do
-              element ← CD.getElementById elementId
+              element ← CUD.getElementById elementId
               WHHE.focus $ SU.fromJust do
                     e ← element
                     WHHE.fromElement e
@@ -734,7 +735,7 @@ setAvatar base64 model = F.noMessages model
       }
 
 preventStop ∷ Event → ImModel → NoMessages
-preventStop event model = model /\ [ EC.liftEffect $ CU.preventStop event *> pure Nothing ]
+preventStop event model = model /\ [ EC.liftEffect $ CUEV.preventStop event *> pure Nothing ]
 
 --refactor use popstate subscription
 historyChange ∷ Boolean → Effect Unit
@@ -744,7 +745,7 @@ historyChange smallScreen = do
       WEE.addEventListener popstate popStateListener false $ WHW.toEventTarget window
       where
       handler = do
-            CD.pushState $ routesSpec.im.get {}
+            CUW.pushState $ routesSpec.im.get {}
             when smallScreen <<< FS.send imAppId $ ToggleInitialScreen true
 
 hideBuildProfile ∷ ImModel → NoMessages

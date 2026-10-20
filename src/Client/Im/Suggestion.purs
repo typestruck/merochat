@@ -4,7 +4,8 @@ import Prelude
 import Shared.Im.Types
 
 import Client.AppId (imAppId)
-import Client.Dom as CCD
+import Client.Ui.Document as CUD
+import Client.Ui.Element as CUE
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.WebSocket as CIW
 import Client.Network (routes)
@@ -89,7 +90,7 @@ fetchMoreSuggestions webSocket model =
       where
       more
             | model.user.suggestionsFrom == OnlineOnly = EC.liftEffect do
-                    focused ← CCD.documentHasFocus
+                    focused ← CUD.documentHasFocus
                     when focused $ CIW.sendPayload webSocket OnlineSuggestions
                     void <<< ET.setTimeout 1500 $ FS.send imAppId RefreshOnlineSuggestions
                     pure Nothing
@@ -132,7 +133,7 @@ displayMoreSuggestions webSocket suggestions model =
             | otherwise = [ scrollToTop, track ]
       scrollToTop = do
             EC.liftEffect do
-                  element ← CCD.getElementById Cards
+                  element ← CUD.getElementById Cards
                   case element of
                         Nothing → pure unit
                         Just cards → WDE.setScrollTop 0.0 cards
@@ -178,9 +179,9 @@ resumeSuggesting model =
             } /\ [ updateDraft ]
       where
       updateDraft = EC.liftEffect do
-            input ← CCD.unsafeGetElementById ChatInput
-            draft ← CCD.value input
-            CCD.setValue input ""
+            input ← CUD.unsafeGetElementById ChatInput
+            draft ← CUE.value input
+            CUE.setValue input ""
             if DM.isNothing model.chatting then
                   pure Nothing
             else

@@ -1,0 +1,63 @@
+/* Loaded only by the Lynx entry point. Browser inline flow stays unchanged. */
+#im {
+    height: 100vh;
+
+}
+
+.contact-box.current-mobile-screen {
+    height: 100%;
+}
+
+.suggestions-call text {
+    color: var(--light-color);
+}
+
+.welcome-suggestions-call text {
+    font-weight: 600;
+}
+
+.lynx-inline {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+}
+
+.message-status {
+    justify-content: flex-end;
+}
+
+.inline-control {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.inline-control > image,
+.inline-control > svg,
+.inline-control > input {
+    flex-shrink: 0;
+}
+
+.center > .lynx-inline {
+    justify-content: center;
+}
+
+.forgot-sign-up {
+    justify-content: center;
+}
+
+.forgot-sign-up .or {
+    width: 100%;
+    text-align: center;
+}
+
+.suggestion-mobile-label {
+    color: var(--im-text-color);
+    margin-right: 10px;
+    font-style: italic;
+}
+
+.suggestion-mobile-label text {
+    color: var(--im-text-color);
+}

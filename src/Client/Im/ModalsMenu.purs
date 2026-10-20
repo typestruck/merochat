@@ -3,7 +3,8 @@ module Client.Im.ModalsMenu where
 import Prelude
 
 import Client.AppId (loginAppId)
-import Client.Dom as CD
+import Client.Ui.Document as CUD
+import Client.Ui.Element as CUE
 import Client.EventTypes (modalVisible)
 import Client.Im.Chat as CIC
 import Client.Im.Flame (MoreMessages, NextMessage)
@@ -45,9 +46,9 @@ toggleInitialScreen toggle model =
       where
       updateDraft
             | toggle = EC.liftEffect do
-                    input ← CD.unsafeGetElementById ChatInput
-                    draft ← CD.value input
-                    CD.setValue input ""
+                    input ← CUD.unsafeGetElementById ChatInput
+                    draft ← CUE.value input
+                    CUE.setValue input ""
                     if DM.isNothing model.chatting then
                           pure Nothing
                     else
@@ -123,8 +124,8 @@ setModalContents ∷ Bundle → ElementId → String → ImModel → NextMessage
 setModalContents resource root html model = model /\ [ loadModal ]
       where
       loadModal = EC.liftEffect do
-            element ← CD.unsafeGetElementById root
-            CD.setInnerHTML element html
+            element ← CUD.unsafeGetElementById root
+            CUE.setInnerHTML element html
             --scripts don't load when inserted via innerHTML and dynamic module import is a whole can of worms
-            CD.loadScript resource
+            CUD.loadScript resource
             pure Nothing

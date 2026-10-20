@@ -37,3 +37,11 @@ style = HE.div
 -- | Placeholder until native rich-text rendering is implemented. Ignores the HTML.
 innerHtml ∷ ∀ message. String → NodeData message
 innerHtml _ = HA.createAttribute "data-inner-html-placeholder" ""
+
+-- | A selectable row using Lynx text and tap events.
+choice ∷ ∀ message. Boolean → message → String → Html message
+choice selected message label = HE.createElement "text"
+      [ HA.class' { "lynx-choice": true, "lynx-choice-selected": selected }
+      , HA.onClick message
+      ]
+      [ HE.text $ (if selected then "● " else "○ ") <> label ]

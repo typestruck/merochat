@@ -7,7 +7,7 @@ module Shared.Im.View.ChatInput
 
 import Prelude
 
-import Client.Dom as CD
+import Client.Ui.Event as CUEV
 import Client.Im.Swipe as CIS
 import Client.Privilege as CP
 import Data.Array as DA
@@ -197,5 +197,5 @@ emojiClickEvent ∷ (Event → ImMessage) → NodeData ImMessage
 emojiClickEvent message = HA.createRawEvent "click" handler
       where
       handler event
-            | CD.tagNameFromTarget event == "SPAN" = pure <<< Just $ message event
+            | CUEV.tagNameFromTarget event == "SPAN" = pure <<< Just $ message event
             | otherwise = pure Nothing

@@ -2,7 +2,7 @@ module Shared.Keydown where
 
 import Prelude
 
-import Client.UIEvent as CU
+import Client.Ui.Event as CUEV
 import Data.Maybe (Maybe(..))
 import Flame (Key)
 import Flame.Html.Event (Event)
@@ -11,7 +11,7 @@ import Flame.Types (NodeData)
 
 keyHandler ∷ ∀ m. Key → (Event → m) → Event → Maybe m
 keyHandler keyName message event =
-      if CU.key event == keyName && not (CU.shiftKey event) then
+      if CUEV.key event == keyName && not (CUEV.shiftKey event) then
             Just $ message event
       else
             Nothing

@@ -2,7 +2,7 @@ module Shared.Experiments.Doppelganger where
 
 import Prelude
 
-import Client.Dom as CD
+import Client.Ui.Document as CUD
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -58,7 +58,7 @@ view model = HE.div [ HA.class' "word-chain duller" ]
                   ]
 
       createOption _ = do
-            element ← SU.fromJust <<< WHHI.fromElement <$> CD.createElement "input"
+            element ← SU.fromJust <<< WHHI.fromElement <$> CUD.createElement "input"
             WHHI.setType "radio" element
             pure $ WHHI.toNode element
 

@@ -3,7 +3,7 @@ module Client.Im.WebSocket.Events (createWebSocketState, startWebSocket, updateW
 import Prelude
 
 import Client.AppId (experimentsAppId, imAppId, profileAppId)
-import Client.Dom as CD
+import Client.Ui.Document as CUD
 import Client.Im.Contacts as CIC
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.Im.Notification as CIN
@@ -133,7 +133,7 @@ handleOpen webSocketStateRef _ = do
       ping webSocket = CIW.sendPayload webSocket Ping
 
       setOnline webSocket = do
-            focused ← CD.documentHasFocus
+            focused ← CUD.documentHasFocus
             when focused <<< CIW.sendPayload webSocket $ UpdateAvailability { online: true }
 
 -- | Handle an incoming (json encoded) message from the server
@@ -145,7 +145,7 @@ handleMessage event = do
             Pong → pure unit
             CloseConnection cc → FS.send imAppId $ Logout cc --user has been banned or server is on fire
             Content c → do
-                  focused ← CD.documentHasFocus
+                  focused ← CUD.documentHasFocus
                   FS.send imAppId $ ReceiveMessage c focused --actual site events, like new messages or status updates
 
 -- | Clear intervals and set up new web socket connection after a random timeout
@@ -471,8 +471,8 @@ updateWebSocketStatus status model =
             --for mobile, we only try to reconnect if the page is active as the browser will kill the connection anyway
             -- the focus event for the document also checks if the connection is open
             if model.smallScreen then do
-                  focused ← EC.liftEffect CD.documentHasFocus
-                  visible ← EC.liftEffect CD.documentIsNotHidden
+                  focused ← EC.liftEffect CUD.documentHasFocus
+                  visible ← EC.liftEffect CUD.documentIsNotHidden
                   pure $ if focused || visible then Just ReconnectWebSocket else Nothing
             else
                   pure $ Just ReconnectWebSocket

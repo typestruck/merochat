@@ -2,7 +2,8 @@ module Client.Im.Contacts where
 
 import Prelude
 
-import Client.Dom as CD
+import Client.Ui.Document as CUD
+import Client.Ui.Element as CUE
 import Client.Im.Flame (NoMessages, MoreMessages)
 import Client.Im.History as CIH
 import Client.Im.Notification as CIN
@@ -59,9 +60,9 @@ resumeChat userId model =
                         )
       where
       loadDraft currentDraft = EC.liftEffect do
-            input ← CD.unsafeGetElementById ChatInput
-            previousDraft ← CD.value input
-            CD.setValue input currentDraft
+            input ← CUD.unsafeGetElementById ChatInput
+            previousDraft ← CUE.value input
+            CUE.setValue input currentDraft
             if DM.isNothing model.chatting then
                   pure Nothing
             else

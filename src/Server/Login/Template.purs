@@ -31,7 +31,6 @@ template = do
 
 content ∷ Array (F.Html Unit)
 content =
-      [ SLV.view
-              { setEmail: const unit, setPassword: const unit, submit: unit, keyPressed: const unit }
+      [ void $ SLV.view
               { email: "", password: "", loading: false, error: "" }
       ]

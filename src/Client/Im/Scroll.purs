@@ -2,8 +2,9 @@ module Client.Im.Scroll where
 
 import Prelude
 
-import Client.Dom as CD
-import Client.UIEvent as CU
+import Client.Ui.Document as CUD
+import Client.Ui.Scroll as CUS
+import Client.Ui.Event as CUEV
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -19,8 +20,8 @@ import Web.HTML.HTMLElement as WHHE
 -- | When jumping into a chat history the last message should be visible
 scrollLastMessage ∷ Effect Unit
 scrollLastMessage = do
-      node ← CD.unsafeGetElementById MessageHistory
-      CD.scrollDown node
+      node ← CUD.unsafeGetElementById MessageHistory
+      CUS.scrollDown node
 
 scrollLastMessageAff ∷ Aff (Maybe ImMessage)
 scrollLastMessageAff = do
@@ -29,12 +30,12 @@ scrollLastMessageAff = do
 
 scrollIntoView ∷ ∀ r. { id ∷ Int | r } → Effect Unit
 scrollIntoView message = do
-      element ← CD.unsafeQuerySelector $ "#" <> SE.messageElementId message.id
-      CD.scrollIntoView element
+      element ← CUD.unsafeQuerySelector $ "#" <> SE.messageElementId message.id
+      CUS.scrollIntoView element
 
 isScrolledDown ∷ Event → Effect Boolean
 isScrolledDown event = do
-      let element = SU.fromJust $ CU.target event >>= WDE.fromEventTarget
+      let element = SU.fromJust $ CUEV.target event >>= WDE.fromEventTarget
       top ← WDE.scrollTop element
       height ← WDE.scrollHeight element
       offset ← WHHE.offsetHeight <<< SU.fromJust $ WHHE.fromElement element

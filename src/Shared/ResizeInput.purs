@@ -2,7 +2,7 @@ module Shared.ResizeInput where
 
 import Prelude
 
-import Client.UIEvent as CU
+import Client.Ui.Event as CUEV
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
@@ -21,6 +21,6 @@ resizeInputFrom event model = model /\ [ resize ]
       where
       resize = do
             EC.liftEffect <<< resizeInput <<< SU.fromJust $ do
-                  target ← CU.target event
+                  target ← CUEV.target event
                   WDE.fromEventTarget target
             pure Nothing

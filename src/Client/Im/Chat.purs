@@ -3,7 +3,10 @@ module Client.Im.Chat where
 import Prelude
 
 import Client.AppId (imAppId)
-import Client.Dom as CD
+import Client.Ui.Document as CUD
+import Client.Ui.Element as CUE
+import Client.Ui.Event as CUEV
+import Client.Ui.Media as CUM
 import Client.File as CF
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Record as CIR
@@ -13,7 +16,6 @@ import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Connection (WebSocket)
 import Client.Network (routes)
 import Client.Network as CN
-import Client.UIEvent as CU
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
@@ -64,7 +66,7 @@ enterSendMessage elementId event model =
       model /\ [ prevent, messageContent elementId model ]
       where
       prevent = EC.liftEffect do
-            CU.preventDefault event
+            CUEV.preventDefault event
             pure Nothing
 
 -- | Send a message on button click
@@ -77,8 +79,8 @@ forceSendMessage elementId model =
 -- | Is the message to be sent an audio, text or image?
 messageContent ∷ ElementId → ImModel → Aff (Maybe ImMessage)
 messageContent elementId model = do
-      input ← EC.liftEffect $ CD.unsafeGetElementById elementId
-      value ← EC.liftEffect $ CD.value input
+      input ← EC.liftEffect $ CUD.unsafeGetElementById elementId
+      value ← EC.liftEffect $ CUE.value input
       date ← EC.liftEffect $ map DateTimeWrapper EN.nowDateTime
       cleanUp input
       pure <<< Just $ SendMessage elementId (DM.maybe (Text value) toImage model.selectedImage) date
@@ -87,7 +89,7 @@ messageContent elementId model = do
 
       cleanUp input = EC.liftEffect do
             WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
-            CD.setValue input ""
+            CUE.setValue input ""
             SR.resizeInput input
 
 -- | Prepare and send a message via web socket
@@ -292,8 +294,8 @@ catchFile ∷ Event → ImModel → NoMessages
 catchFile event model = model /\ [ catchIt ]
       where
       catchIt = EC.liftEffect do
-            CF.compressImageFromFileList (CU.files event) imAppId false $ \width height base64 → SetSelectedImage $ Just { width, height, base64 }
-            CU.preventStop event
+            CF.compressImageFromFileList (CUEV.files event) imAppId false $ \width height base64 → SetSelectedImage $ Just { width, height, base64 }
+            CUEV.preventStop event
             pure Nothing
 
 -- | Handle file input selection
@@ -316,8 +318,8 @@ setEmoji ∷ ElementId → Event → ImModel → NextMessage
 setEmoji elementId event model = model /\ [ setIt, hideModal ]
       where
       setIt = EC.liftEffect do
-            emoji ← CD.innerTextFromTarget event
-            input ← CD.unsafeGetElementById elementId
+            emoji ← CUEV.innerTextFromTarget event
+            input ← CUD.unsafeGetElementById elementId
             setAtCursor input emoji
       hideModal = pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
 
@@ -365,7 +367,7 @@ modal toggle model =
             _ → []
       where
       pickImage = EC.liftEffect do
-            fileInput ← CD.unsafeGetElementById ImageFileInput
+            fileInput ← CUD.unsafeGetElementById ImageFileInput
             CF.triggerFileSelect fileInput
             pure Nothing
 
@@ -381,7 +383,7 @@ beforeAudioMessage ∷ ImModel → MoreMessages
 beforeAudioMessage model = model /\ [ record ]
       where
       record = EC.liftEffect do
-            mimeType ← CD.acceptedAudioCodec
+            mimeType ← CUM.acceptedAudioCodec
             CIR.start { audio: true } { mimeType } SendAudioMessage
             pure Nothing
 
@@ -425,7 +427,7 @@ quoteMessage messageId contents touchEvent model =
 
       fromDoubleClick event = do
             classes ← EC.liftEffect <<< WDE.className <<< SU.fromJust $ do
-                  target ← CU.target event
+                  target ← CUEV.target event
                   WDE.fromEventTarget target
             if DS.contains (Pattern "message") classes then
                   quoteIt
@@ -437,7 +439,7 @@ quoteMessage messageId contents touchEvent model =
             | otherwise = pure Nothing
 
       quoteIt = EC.liftEffect do
-            input ← CD.unsafeGetElementById ChatInput
+            input ← CUD.unsafeGetElementById ChatInput
             let markup = sanitized <> "\n\n"
             value ← WHHT.value <<< SU.fromJust $ WHHT.fromElement input
             setAtCursor input $ if DS.null value then markup else "\n" <> markup
@@ -450,8 +452,8 @@ editMessage message id model =
             } /\ [ setIt *> pure Nothing ]
       where
       setIt = EC.liftEffect do
-            input ← CD.unsafeGetElementById ChatInput
-            CD.setValue input message
+            input ← CUD.unsafeGetElementById ChatInput
+            CUE.setValue input message
             WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
 
 deleteMessage ∷ Int → WebSocket → ImModel → NoMessages

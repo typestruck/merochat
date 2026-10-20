@@ -3,7 +3,7 @@ module Client.File (compressImageFromFileList, compressImage, triggerFileSelect,
 import Prelude
 
 import Client.AppId (ClientAppId)
-import Client.UIEvent as CU
+import Client.Ui.Event as CUEV
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -26,7 +26,7 @@ foreign import fileSize ∷ String → Int
 -- | Compress an image so file sizes are manageable on the server
 compressImage ∷ ∀ message. AppId ClientAppId message → Event → Boolean → (Int → Int → String → message) → Aff Unit
 compressImage appId event preserveSize message = EC.liftEffect $
-      compressImageFromFileList (CU.files event) appId preserveSize message
+      compressImageFromFileList (CUEV.files event) appId preserveSize message
 
 foreign import compressImage_ ∷ EffectFn3 File Boolean (Int → Int → String → Effect Unit) Unit
 
