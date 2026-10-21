@@ -16,11 +16,10 @@ import Server.Landing.Template (content)
 main ∷ Effect Unit
 main = do
       CLS.initialize
-      im ← CIM.application
       F.mountRoutes
-            [ F.makeGuardedRoute loginAppId (CLM.application $ F.navigate imAppId) $ redirectLogged imAppId
-            , F.makeGuardedRoute imAppId im <<< redirectAnonymous $ loginAppId
-            , F.makeGuardedRoute landingAppId (other content) $ redirectLogged imAppId
+            [ F.makeGuardedRoute loginAppId (pure $ CLM.application CLM.authenticateNative) $ redirectLogged imAppId
+            , F.makeGuardedRoute imAppId CIM.application <<< redirectAnonymous $ loginAppId
+            , F.makeGuardedRoute landingAppId (pure $ other content) $ redirectLogged imAppId
             ]
 
       CLS.onSessionEnded $ F.navigate loginAppId

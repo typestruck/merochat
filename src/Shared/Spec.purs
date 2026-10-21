@@ -14,6 +14,7 @@ import Shared.Changelog (Changelog)
 import Shared.Experiments.Types (Match, PaperPlane, PaperPlaneStatus, Question)
 import Shared.Html (Html)
 import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion)
+import Shared.Login.Types (LoginResponse)
 import Shared.SuggestionsFrom (SuggestionsFrom)
 import Shared.Post (PostPayload, Post)
 import Shared.Praise (Praise, PraisedFor, PraiseDisplay)
@@ -68,9 +69,10 @@ spec ∷
                                   ,
                                     --the query parameter next is only used client side
                                     post ∷
-                                          POST "/"
+                                          POST "/?boot=<boot>"
                                                 { body ∷ EmailPassword
-                                                , response ∷ Empty
+                                                , query ∷ { boot ∷ Boolean }
+                                                , response ∷ LoginResponse
                                                 }
                                   }
                     , posts ∷

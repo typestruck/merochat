@@ -26,9 +26,9 @@ start = s.index('      <activity\n        android:name="com.tiktok.sparkling.')
 s = s[:start] + s[s.index('    </application>', start):]
 p.write_text(s)
 p = target / 'java/com/lynx/explorer/ExplorerApplication.java'
-s = p.read_text().replace('import com.lynx.service.http.LynxHttpService;', 'import com.merochat.explorer.SessionHttpService;\nimport com.merochat.explorer.SessionModule;')
+s = p.read_text().replace('import com.lynx.service.http.LynxHttpService;', 'import com.merochat.explorer.SessionHttpService;\nimport com.merochat.explorer.SessionModule;\nimport com.merochat.explorer.RoomModule;')
 s = s.replace('LynxHttpService.INSTANCE', 'new SessionHttpService(this)')
-s = s.replace('LynxModuleAdapter.getInstance().Init(this);', 'LynxModuleAdapter.getInstance().Init(this);\n    LynxEnv.inst().registerModule("MeroChatSession", SessionModule.class);')
+s = s.replace('LynxModuleAdapter.getInstance().Init(this);', 'LynxModuleAdapter.getInstance().Init(this);\n    LynxEnv.inst().registerModule("MeroChatSession", SessionModule.class);\n    LynxEnv.inst().registerModule("MeroChatRoom", RoomModule.class);')
 p.write_text(s)
 print('Prepared Explorer 4.0.3')
 

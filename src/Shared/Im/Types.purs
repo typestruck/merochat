@@ -40,6 +40,7 @@ import Shared.Unsafe as SU
 import Shared.User (ProfileTab, User)
 import Unsafe.Coerce as UC
 
+
 type Report =
       { reason ∷ ReportReason
       , comment ∷ Maybe String

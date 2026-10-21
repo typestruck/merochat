@@ -2,6 +2,7 @@ module Server.Login.Template where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame as F
 import Flame.Html.Attribute as HA
@@ -32,5 +33,5 @@ template = do
 content ∷ Array (F.Html Unit)
 content =
       [ void $ SLV.view
-              { email: "", password: "", loading: false, error: "" }
+              { email: Nothing, password: Nothing, loading: false, error: Nothing }
       ]

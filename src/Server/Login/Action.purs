@@ -14,7 +14,7 @@ import Shared.Account (EmailPassword)
 invalidLogin ∷ String
 invalidLogin = "Email not registered or incorrect password"
 
-login ∷ EmailPassword → ServerEffect String
+login ∷ EmailPassword → ServerEffect { token ∷ String, userId ∷ Int }
 login ep = do
       email ← SA.validateEmail ep.email
       hash ← SA.validatePassword ep.password
@@ -23,4 +23,5 @@ login ep = do
             Nothing → SR.throwBadRequest invalidLogin
             Just user → do
                   when (Just hash /= user.password) $ SR.throwBadRequest invalidLogin
-                  ST.createToken user.id
+                  token ← ST.createToken user.id
+                  pure { token, userId: user.id }

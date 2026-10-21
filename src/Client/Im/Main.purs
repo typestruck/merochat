@@ -6,22 +6,23 @@ import Client.AppId (imAppId, profileAppId)
 import Client.Ui.Document as CUD
 import Client.Ui.Window as CUW
 import Client.Im.Asks as CIA
-import Client.Im.Changelog as CIC
-import Client.Im.Chat as CIC
-import Client.Im.Contacts as CIC
+import Client.Im.Changelog as CICL
+import Client.Im.Chat as CICH
+import Client.Im.Contacts as CICO
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.History as CIH
 import Client.Im.ModalsMenu as CIM
 import Client.Im.Posts as CIP
 import Client.Im.Praise as CIPR
-import Client.Im.Scroll as CIS
-import Client.Im.SmallScreen as CIS
-import Client.Im.Suggestion as CIS
+import Client.Im.Scroll as CISC
+import Client.Im.SmallScreen as CISS
+import Client.Im.Suggestion as CISU
 import Client.Im.Theme as CIT
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Connection (WebSocket)
 import Client.Im.WebSocket.Events as CIWE
 import Client.Location as CL
+import Client.Lynx.Room as CLR
 import Client.Network (routes)
 import Client.Network as CN
 import Client.Ui.Event as CUEV
@@ -35,12 +36,14 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
-import Data.Symbol as DS
+import Data.Symbol as DSY
 import Data.Time.Duration (Days(..), Milliseconds(..), Minutes(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class as EC
+import Effect.Exception as EE
 import Effect.Now as EN
 import Effect.Ref (Ref)
 import Effect.Ref as ER
@@ -50,7 +53,6 @@ import Flame as F
 import Flame.Html.Event (Event)
 import Flame.Subscription as FS
 import Safe.Coerce as SC
-import Shared.Availability (Availability(..))
 import Shared.Backer.Contact (backerId)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
@@ -66,10 +68,9 @@ import Shared.ProfileColumn (ProfileColumn)
 import Shared.ResizeInput as SR
 import Shared.Routes (routesSpec)
 import Shared.Settings.Types (PrivacySettings)
-import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.Unsafe as SU
-import Shared.User (PraiseStatus(..), ProfileTab(..), ProfileVisibility(..))
-import Shared.User as SU
+import Shared.User (ProfileTab(..))
+import Shared.User as SUS
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
@@ -80,16 +81,22 @@ import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window as WHW
 
 main ∷ Effect Unit
-main = do
+main = EA.launchAff_ do
       --can create websocket here too
       app ← application
-      F.mount imAppId app
-      FS.send imAppId ConnectWebSocket
+      EC.liftEffect do
+            F.mount imAppId app
+            FS.send imAppId ConnectWebSocket
 
-application ∷ Effect (Application ImModel ImMessage)
+application ∷ Aff (Application ImModel ImMessage)
 application = do
-      webSocketRef ← CIWE.createWebSocketState
-      lastActiveRef ← ER.new true
+      --this will need to handle updates too
+      user ← CLR.select >>= case _ of
+            Nothing → EA.throwError $ EE.error "Merochat cache is invalid. Please report a bug"
+            Just user → pure user
+      contacts ← DM.fromMaybe [] <$> CLR.select
+      webSocketRef ← EC.liftEffect CIWE.createWebSocketState
+      lastActiveRef ← EC.liftEffect $ ER.new true
 
       let
             model ∷ ImModel
@@ -98,8 +105,7 @@ application = do
                   , freeToFetchSuggestions: true
                   , temporaryId: 0
                   , loadingContact: Nothing
-                  , suggesting:
-                          Nothing
+                  , suggesting:      Nothing
                   , freeToFetchChatHistory: true
                   , react: WithEmoji
                   , suggestionsPage: 1
@@ -162,54 +168,9 @@ application = do
                   , failedRequests: []
                   , modalsLoaded: []
                   , hash: ""
-                  , contacts: []
+                  , contacts
                   , suggestions: []
-                  , user:
-                          { id: 4
-                          , name: "Eduardo"
-                          , headline: "Hey"
-                          , posts: []
-                          , asks: []
-                          , praise: []
-                          , praiseStatus: HasNotPraised
-                          , unseenPosts: 0
-                          , postsVisibility: Everyone
-                          , ownBackground: false
-                          , chatBackground: Nothing
-                          , isContact: false
-                          , showing: ShowInfo
-                          , totalPosts: 0
-                          , totalAsks: 0
-                          , bin: 1
-                          , asksVisibility: Everyone
-                          , favorite: false
-                          , backer: true
-                          , profileVisibility: Everyone
-                          , readReceipts: false
-                          , messageTimestamps: false
-                          , typingStatus: false
-                          , lastMessageOnContactList: true
-                          , privateNote: Nothing
-                          , suggestionsFrom: ThisWeek
-                          , onlineStatus: false
-                          , completedTutorial: true
-                          , description: "sdfsdf"
-                          , privileges: []
-                          , badges: []
-                          , temporary: false
-                          , joined: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
-                          , completedFields: []
-                          , avatar: Just "856907bb-0a42-473e-8cf1-9c2ea8eecb09.jpg"
-                          , tags: []
-                          , karma: 333
-                          , availability: Online
-                          , karmaPosition: 1
-                          , gender: Just "Female"
-                          , country: Just "Brazil"
-                          , languages: []
-                          , age: Just 33
-                          }
-
+                  , user
                   }
 
       pure
@@ -233,42 +194,42 @@ update ∷ _ → Update ImModel ImMessage
 update st model =
       case _ of
             --chat
-            DropFile event → CIC.catchFile event model
+            DropFile event → CICH.catchFile event model
             ResizeChatInput event → SR.resizeInputFrom event model
-            PrepareSelectedImage event → CIC.prepareSelectedImage event model
-            EnterSendMessage elementId event → CIC.enterSendMessage elementId event model
-            ForceSendMessage elementId → CIC.forceSendMessage elementId model
-            SendMessage elementId content dt → CIC.prepareSendMessage elementId content dt webSocket model
-            SetSelectedImage selected → CIC.setSelectedImage selected model
-            SetEmoji elementId event → CIC.setEmoji elementId event model
-            ToggleMessageEnter → CIC.toggleMessageEnter model
-            BeforeAudioMessage → CIC.beforeAudioMessage model
-            AudioMessage touch → CIC.audioMessage touch model
+            PrepareSelectedImage event → CICH.prepareSelectedImage event model
+            EnterSendMessage elementId event → CICH.enterSendMessage elementId event model
+            ForceSendMessage elementId → CICH.forceSendMessage elementId model
+            SendMessage elementId content dt → CICH.prepareSendMessage elementId content dt webSocket model
+            SetSelectedImage selected → CICH.setSelectedImage selected model
+            SetEmoji elementId event → CICH.setEmoji elementId event model
+            ToggleMessageEnter → CICH.toggleMessageEnter model
+            BeforeAudioMessage → CICH.beforeAudioMessage model
+            AudioMessage touch → CICH.audioMessage touch model
             ResumeWebSocketMessage payload → CIWE.resumeWebSocketMessage payload webSocket model
             ClearWebSocketMessages → CIWE.clearWebSocketMessages model
-            ToggleMiniChatInput → CIC.toggleMiniChatInput model
-            SendAudioMessage base64 → CIC.sendAudioMessage base64 model
+            ToggleMiniChatInput → CICH.toggleMiniChatInput model
+            SendAudioMessage base64 → CICH.sendAudioMessage base64 model
             FocusInput elementId → focusInput elementId model
-            QuoteMessage messageId message et → CIC.quoteMessage messageId message et model
-            EditMessage message id → CIC.editMessage message id model
-            ToggleSuggestionChatInput id → CIS.toggleSuggestionChatInput id model
-            DeleteMessage id → CIC.deleteMessage id webSocket model
-            SetTyping text → CIC.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
-            ToggleTyping userId tId → F.noMessages $ CIC.toggleTyping userId tId model
-            MessageFromExperiment userId message → CIC.messageFromExperiment userId message webSocket model
+            QuoteMessage messageId message et → CICH.quoteMessage messageId message et model
+            EditMessage message id → CICH.editMessage message id model
+            ToggleSuggestionChatInput id → CISU.toggleSuggestionChatInput id model
+            DeleteMessage id → CICH.deleteMessage id webSocket model
+            SetTyping text → CICH.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
+            ToggleTyping userId tId → F.noMessages $ CICH.toggleTyping userId tId model
+            MessageFromExperiment userId message → CICH.messageFromExperiment userId message webSocket model
 
             --contacts
-            ResumeChat userId → CIC.resumeChat userId model
-            SetDeliveredStatus → CIC.setDeliveredStatus webSocket model
-            SetReadStatus userId → CIC.setReadStatus userId webSocket model
-            CheckFetchContacts event → CIC.checkFetchContacts event model
-            UpdateDraft userId draft → CIC.updateDraft userId draft model
-            SpecialRequest (FetchContacts shouldFetch) → CIC.fetchContacts shouldFetch model
-            SpecialRequest (DeleteChat tupleId) → CIC.deleteChat tupleId model
-            DisplayContacts contacts → CIC.displayContacts contacts model
-            DisplayNewContacts contacts → CIC.displayNewContacts contacts model
-            DisplaySuggestionContact userId contacts → CIC.displaySuggestionContact userId contacts model
-            DisplayMissedContacts missed → CIC.displayMissedContacts missed model
+            ResumeChat userId → CICO.resumeChat userId model
+            SetDeliveredStatus → CICO.setDeliveredStatus webSocket model
+            SetReadStatus userId → CICO.setReadStatus userId webSocket model
+            CheckFetchContacts event → CICO.checkFetchContacts event model
+            UpdateDraft userId draft → CICO.updateDraft userId draft model
+            SpecialRequest (FetchContacts shouldFetch) → CICO.fetchContacts shouldFetch model
+            SpecialRequest (DeleteChat tupleId) → CICO.deleteChat tupleId model
+            DisplayContacts contacts → CICO.displayContacts contacts model
+            DisplayNewContacts contacts → CICO.displayNewContacts contacts model
+            DisplaySuggestionContact userId contacts → CICO.displaySuggestionContact userId contacts model
+            DisplayMissedContacts missed → CICO.displayMissedContacts missed model
 
             --history
             SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
@@ -309,19 +270,19 @@ update st model =
             ToggleShowing userId for ShowPosts → CIP.toggleShowing userId ShowPosts for model
 
             --suggestion
-            FetchMoreSuggestions → CIS.fetchMoreSuggestions webSocket model
-            ResumeSuggesting → CIS.resumeSuggesting model
-            ToggleContactProfile → CIS.toggleContactProfile model
-            ToggleLargeAvatar → CIS.toggleLargeAvatar model
-            ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
-            RefreshOnlineSuggestions → CIS.refreshOnlineSuggestions webSocket model
-            SpecialRequest (Favorite id) → CIS.favorite id model
-            SpecialRequest PreviousSuggestion → CIS.previousSuggestion webSocket model
-            SpecialRequest NextSuggestion → CIS.nextSuggestion webSocket model
+            FetchMoreSuggestions → CISU.fetchMoreSuggestions webSocket model
+            ResumeSuggesting → CISU.resumeSuggesting model
+            ToggleContactProfile → CISU.toggleContactProfile model
+            ToggleLargeAvatar → CISU.toggleLargeAvatar model
+            ToggleCollapsedMiniSuggestions → CISU.toggleCollapsedMiniSuggestions model
+            RefreshOnlineSuggestions → CISU.refreshOnlineSuggestions webSocket model
+            SpecialRequest (Favorite id) → CISU.favorite id model
+            SpecialRequest PreviousSuggestion → CISU.previousSuggestion webSocket model
+            SpecialRequest NextSuggestion → CISU.nextSuggestion webSocket model
             SpecialRequest (BlockUser id) → blockUser webSocket id model
-            DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions webSocket suggestions model
-            ToggleSuggestionsFrom from → CIS.toggleSuggestionsFrom webSocket from model
-            ResumeSuggestionChat userId → CIS.resumeSuggestionChat userId model
+            DisplayMoreSuggestions suggestions → CISU.displayMoreSuggestions webSocket suggestions model
+            ToggleSuggestionsFrom from → CISU.toggleSuggestionsFrom webSocket from model
+            ResumeSuggestionChat userId → CISU.resumeSuggestionChat userId model
 
             --user menu
             ToggleInitialScreen toggle → CIM.toggleInitialScreen toggle model
@@ -338,11 +299,11 @@ update st model =
             ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
 
             --changelogs
-            FetchChangelog → CIC.fetchChangelog model
-            DisplayChangelog changelogs → CIC.displayChangelog changelogs model
-            ToggleChangelog → CIC.toggleChangelog model
-            ToggleSidebar → CIC.toggleSidebar model
-            PerformChangelogAction action value → CIC.performChangelogAction action value model
+            FetchChangelog → CICL.fetchChangelog model
+            DisplayChangelog changelogs → CICL.displayChangelog changelogs model
+            ToggleChangelog → CICL.toggleChangelog model
+            ToggleSidebar → CICO.toggleSidebar model
+            PerformChangelogAction action value → CICL.performChangelogAction action value model
 
             --main
             SetContextMenuToggle toggle → toggleContextMenu toggle model
@@ -376,7 +337,7 @@ update st model =
             SpecialRequest (ReportUser userId) → report userId webSocket model
             SpecialRequest (SavePrivateNote target note) → savePrivateNote target note model
             AfterSavePrivateNote target note → afterSavePrivateNote target note model
-            SetSmallScreen → CIS.setSmallScreen model
+            SetSmallScreen → CISS.setSmallScreen model
             SetRegistered → setRegistered model
             SetPrivacySettings ps → setPrivacySettings ps model
             ToggleShowing userId for ShowInfo → toggleShowing userId ShowInfo for model
@@ -385,9 +346,9 @@ update st model =
 
 escapeFrom ∷ ImModel → MoreMessages
 escapeFrom model = case model.modal of
-      HideModal | model.showLargeAvatar → CIS.toggleLargeAvatar model
-      HideModal | model.fullContactProfileVisible → CIS.toggleContactProfile model
-      HideModal | DM.isJust model.chatting → CIS.resumeSuggesting model
+      HideModal | model.showLargeAvatar → CISU.toggleLargeAvatar model
+      HideModal | model.fullContactProfileVisible → CISU.toggleContactProfile model
+      HideModal | DM.isJust model.chatting → CISU.resumeSuggesting model
       _ → CIM.modal HideModal model
 
 toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
@@ -475,9 +436,9 @@ refocus focusEvent lastActiveRef webSocket model =
 registerUser ∷ ImModel → MoreMessages
 registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
       if invalidEmail then
-            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DS.reflectSymbol (Proxy ∷ _ "temporaryEmail") }
+            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DSY.reflectSymbol (Proxy ∷ _ "temporaryEmail") }
       else if invalidPassword then
-            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DS.reflectSymbol (Proxy ∷ _ "temporaryPassword") }
+            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DSY.reflectSymbol (Proxy ∷ _ "temporaryPassword") }
       else
             model { erroredFields = [] } /\
                   [ do
@@ -502,7 +463,7 @@ terminateAccount model = model /\
 
 checkUserExpiration ∷ ImModel → MoreMessages
 checkUserExpiration model@{ user: { temporary, joined } }
-      | temporary && SU.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit) ]
+      | temporary && SUS.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit) ]
       | otherwise = F.noMessages model
 
 setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
@@ -758,6 +719,6 @@ highlightMessage ∷ IntWrapper → ImModel → NoMessages
 highlightMessage w model = model { highlighted = Just w.id } /\ [ scroll ]
       where
       scroll = do
-            EC.liftEffect $ CIS.scrollIntoView { id: w.id }
+            EC.liftEffect $ CISC.scrollIntoView { id: w.id }
             EA.delay $ Milliseconds 500.0
             pure $ Just ClearHighlightedMessage
