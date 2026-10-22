@@ -1,7 +1,7 @@
 export function documentHasFocus() {
-      return document.hasFocus();
+      return typeof document === 'undefined' || document.hasFocus();
 }
 
 export function documentIsNotHidden() {
-      return !document.hidden;
+      return typeof document === 'undefined' || !document.hidden;
 }

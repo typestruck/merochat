@@ -13,13 +13,13 @@ export function clear() {
     authenticated = false;
 }
 
-export function initialize() {
+export function initialize_(apiUrl, websocketUrl) {
     'background only';
 
     if (nativeSession)
         return;
 
-    let api = parse(process.env.LYNX_API_URL);
+    let api = parse(apiUrl);
 
     if (!/^https?:$/.test(api.protocol) || !api.host || api.auth ||
         (api.pathname && api.pathname !== '/') || api.search || api.hash) {
@@ -33,6 +33,7 @@ export function initialize() {
         throw new Error('Cookie authentication requires MeroChat Explorer');
 
     host.configure(origin);
+    host.configureWebSocket(websocketUrl);
     nativeSession = host;
     authenticated = host.isAuthenticated();
     lynx.getJSModule('GlobalEventEmitter').addListener('merochatSessionChanged', state => {

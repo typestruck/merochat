@@ -2,18 +2,23 @@ module Test.Client.Im.Suggestion where
 
 import Prelude
 
-import Client.Im.Main as CIM
 import Client.Im.Suggestion as CIS
-import Data.Maybe (Maybe(..))
-import Data.Tuple as DT
-import Effect.Class as EC
-import Effect.Console as ECL
-import Test.Client.Model (anotherImUser, contact, imUser, model, webSocket)
+import Shared.Availability (Availability(..))
+import Shared.Backer.Contact (backerId, backerUser)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
-import Unsafe.Coerce as SU
 
 tests ∷ TestSuite
-tests = do
-      pure unit
+tests = TU.suite "Suggestion sorting" do
+      TU.test "Empty suggestions stay empty" do
+            TUA.equal [] $ map _.id $ CIS.byAvailability []
+      TU.test "Sorting does not introduce the support card" do
+            TUA.equal [ 1, 2 ] $ map _.id $ CIS.byAvailability [ offline, online ]
+      TU.test "An existing support card stays last" do
+            TUA.equal [ 1, 2, backerId ] $ map _.id $ CIS.byAvailability [ backerUser, offline, online ]
+      TU.test "Sorting preserves the existing support card data" do
+            TUA.equal [ "Updated support" ] $ map _.headline $ CIS.byAvailability [ backerUser { headline = "Updated support" } ]
+      where
+      online = backerUser { id = 1, availability = Online }
+      offline = backerUser { id = 2, availability = None }

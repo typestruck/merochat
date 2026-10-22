@@ -14,7 +14,7 @@ import Effect.Timer as ET
 import Payload.Server (defaultOpts)
 import Payload.Server as PS
 import Server.Database as SD
-import Server.Environment (port)
+import Server.Environment (port, websocketPort)
 import Server.Guard as SG
 import Server.Handler as SH
 import Server.Push as SP
@@ -22,7 +22,6 @@ import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
 import Server.WebSocket.Events (inactiveInterval)
 import Server.WebSocket.Events as SWE
-import Shared.Options.WebSocket (localPort)
 import Shared.Spec (spec)
 
 main ∷ Effect Unit
@@ -36,7 +35,7 @@ main = do
 startWebSocketServer ∷ Pool → Ref (HashMap Int (Array String)) → Effect Unit
 startWebSocketServer pool allUserSubscriptionsRef = do
       allUsersAvailabilityRef ← ER.new DH.empty
-      webSocketServer ← SW.createWebSocketServerWithPort (Port localPort) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show localPort)
+      webSocketServer ← SW.createWebSocketServerWithPort (Port websocketPort) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show websocketPort)
       SW.onServerError webSocketServer SWE.handleError
       SW.onConnection webSocketServer (SWE.handleConnection pool allUsersAvailabilityRef allUserSubscriptionsRef)
       inactiveIntervalId ← ET.setInterval inactiveInterval (SWE.terminateInactive pool allUsersAvailabilityRef)

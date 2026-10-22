@@ -389,6 +389,7 @@ data ImMessage
       | SpecialRequest RetryableRequest
       | RemoveChatBackground
       | AcknowledgeRules String
+      | StoreUser
       | ReconnectWebSocket
       | SetSmallScreen
       | ReceiveMessage WebSocketPayloadClient Boolean

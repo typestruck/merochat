@@ -7,6 +7,7 @@ if (!process.env.PRODUCTION) {
 }
 
 export let port = parseInt(process.env.PORT);
+export let websocketPort = parseInt(process.env.WEBSOCKET_PORT || 1339);
 export let captchaSecret = process.env.CAPTCHA_SECRET;
 export let tokenSecret = process.env.TOKEN_SECRET;
 export let salt = process.env.SALT;

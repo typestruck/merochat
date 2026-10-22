@@ -1,4 +1,14 @@
-let marked = { use: function() {}}
+let marked = {
+      use: function() {},
+      lexer: function() {
+
+            return [];
+      },
+      parse: function() {
+
+            return "";
+      }
+};
 
 let maxWidth = typeof document == "undefined" ? undefined :
       (window.matchMedia('(max-width:1279px)').matches ?

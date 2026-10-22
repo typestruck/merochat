@@ -36,7 +36,7 @@ import Shared.Im.Types (Contact, For(..), ImMessage(..), ImModel, RetryableReque
 import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Posts as SIVP
-import Shared.Im.View.Praise as SIVP
+import Shared.Im.View.Praise as SIVPR
 import Shared.Im.View.Retry as SIVR
 import Shared.Intl as SI
 import Shared.Markdown as SM
@@ -46,14 +46,14 @@ import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.Profile.Mode (ProfileMode(..))
 import Shared.ProfileColumn (ProfileColumn(..))
-import Shared.ProfileColumn as SP
+import Shared.ProfileColumn as SPC
 import Shared.Resource (ResourceType(..))
 import Shared.Resource as SR
 import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.Svg as SS
 import Shared.Unsafe as SU
 import Shared.User (ProfileTab(..), ProfileVisibility(..), User)
-import Shared.User as SU
+import Shared.User as SUS
 import Web.DOM.Element as WDE
 import Web.HTML.HTMLElement as WHHE
 
@@ -198,9 +198,9 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
 
                   , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
                           [ SIVR.retry "Failed to load praise" (FetchPraise user.id) model.failedRequests
-                          , SIVP.praiseForm model user
+                          , SIVPR.praiseForm model user
                           , if model.praise.freeToFetch then
-                                  HE.div [ HA.class' "ask-list" ] $ SIVP.praised user.praise
+                                  HE.div [ HA.class' "ask-list" ] $ SIVPR.praised user.praise
                             else
                                   HE.div' [ HA.class' "loading" ]
                           ]
@@ -300,9 +300,9 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
 
             , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
                     [ SIVR.retry "Failed to load asks" (FetchPraise suggestion.id) model.failedRequests
-                    , SIVP.praiseForm model suggestion
+                    , SIVPR.praiseForm model suggestion
                     , if model.praise.freeToFetch then
-                            HE.div [ HA.class' "ask-list" ] $ SIVP.praised suggestion.praise
+                            HE.div [ HA.class' "ask-list" ] $ SIVPR.praised suggestion.praise
                       else
                             HE.div' [ HA.class' "loading" ]
                     ]
@@ -374,7 +374,8 @@ suggestionCards ∷ ImModel → Html ImMessage
 suggestionCards model =
       HE.div [ HA.class' "suggestion-cards" ]
             [ if model.user.temporary then welcomeTemporary model else welcome model
-            , HE.div [ HA.class' "cards", HA.id $ show Cards ] allCards
+            , HE.createElement "scroll-view" [ HA.class' "suggestion-cards-scroll", HA.id $ show Cards, HA.createAttribute "scroll-orientation" "vertical" ]
+                    [ HE.div [ HA.class' "cards" ] allCards ]
             ]
       where
       allCards
@@ -408,7 +409,7 @@ suggestionCards model =
                                 , HE.input [ HA.type' "button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit), HA.class' "green-button bigger build", HA.value "Go to profile" ]
                                 ]
                         ]
-      check p = HE.div [ HA.class' "build-checked" ] [ SS.checked "", HE.text $ SP.displayColumn p ]
+      check p = HE.div [ HA.class' "build-checked" ] [ SS.checked "", HE.text $ SPC.displayColumn p ]
       uncheck p = HE.div_ [ HE.text $ "➡ " <> show p ]
 
       moreCards
@@ -564,7 +565,7 @@ signUpCall joined = HE.div [ HA.class' "sign-up-call lynx-inline" ]
       , HE.text " to keep your chats"
       ]
       where
-      remaining = case DI.floor <<< SC.coerce $ SU.temporaryUserExpiration joined of
+      remaining = case DI.floor <<< SC.coerce $ SUS.temporaryUserExpiration joined of
             0 → " today"
             1 → " until tomorrow"
             n → " in " <> show n <> " days"

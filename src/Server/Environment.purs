@@ -5,6 +5,7 @@ module Server.Environment
       , port
       , salt
       , tokenSecret
+      , websocketPort
       ) where
 
 import Prelude
@@ -14,6 +15,7 @@ import Data.Nullable (Nullable)
 import Data.Nullable as DN
 
 foreign import port ∷ Int
+foreign import websocketPort ∷ Int
 foreign import databaseHost_ ∷ Nullable String
 foreign import captchaSecret ∷ String
 foreign import tokenSecret ∷ String
