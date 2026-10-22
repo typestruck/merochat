@@ -425,7 +425,7 @@ suggestionCards model =
                             [ HE.div' [ HA.class' "loading" ] ]
                     ]
       card suggestion =
-            HE.div [ HA.class' { "card": true, "backing-card": suggestion.id == backerId } ]
+            HE.div [ HA.class' { "card": true, "backing-card": suggestion.id == backerId }, HA.createAttribute "flatten" "false" ]
                   [ HE.div [ HA.class' "avatar-info" ]
                           [ HE.div (HA.class' "mini-avatar-info" : showProfile suggestion.id)
                                   [ HE.img $ if suggestion.unseenPosts > 0 then [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar newly-posted", HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts ] else [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar" ]
@@ -462,20 +462,22 @@ suggestionCards model =
                                               ]
                                       ]
                           _ → HE.div [ HA.class' "see-profile-chat" ]
-                                [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
+                                [ HE.div [ HA.class' "see-profile-button see-profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ] [ HE.text "See full profile" ]
                                 , if model.loadingContact == Just suggestion.id then
                                         HE.div' [ HA.class' "loading" ]
                                   else
-                                        HE.input
-                                              ( [ HA.class' "see-profile-button see-chat", HA.type' "button" ] <>
-                                                      ( if suggestion.isContact then
-                                                              [ HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ]
-                                                        else if suggestion.id == backerId then
-                                                              [ HA.value "Donate", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ]
-                                                        else
-                                                              [ HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
-                                                      )
-                                              )
+                                        HE.div
+                                              [ HA.class' "see-profile-button see-chat"
+                                              , HA.onClick $
+                                                      if suggestion.isContact then ResumeSuggestionChat suggestion.id
+                                                      else if suggestion.id == backerId then SpecialRequest <<< ToggleModal $ Screen ShowBacker
+                                                      else ToggleSuggestionChatInput suggestion.id
+                                              ]
+                                              [ HE.text $
+                                                      if suggestion.isContact then "Open chat"
+                                                      else if suggestion.id == backerId then "Donate"
+                                                      else "Chat"
+                                              ]
                                 ]
                   ]
       hasNotes = case _ of

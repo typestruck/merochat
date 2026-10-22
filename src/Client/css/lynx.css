@@ -133,3 +133,69 @@
     margin-top: 16px;
     flex-shrink: 0;
 }
+
+.suggestion-cards .see-profile-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.suggestion-cards .see-profile-button text {
+    color: var(--light-color);
+}
+
+.suggestion-cards .see-profile text {
+    color: var(--merochat-green);
+}
+
+.suggestion-input,
+.suggestion-input .chat-composer,
+.suggestion-input .chat-composer-body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    flex-shrink: 0;
+}
+
+.suggestion-input .chat-input-options {
+    display: none;
+}
+
+.suggestion-input .chat-input-area {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.suggestion-input .chat-input {
+    box-sizing: border-box;
+    flex: 1;
+    width: 0;
+    min-width: 0;
+    height: 48px;
+    min-height: 48px;
+    padding: 12px;
+    color: var(--im-text-color);
+    background-color: var(--im-background-color);
+}
+
+.suggestion-input .chat-right-buttons {
+    position: relative;
+    width: auto;
+    height: 40px;
+    flex-shrink: 0;
+    margin-left: 8px;
+    margin-top: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.suggestion-input .chat-input-area,
+.suggestion-input .chat-right-buttons {
+    z-index: 0;
+}

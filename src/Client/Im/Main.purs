@@ -122,7 +122,7 @@ application = do
                   , showSuggestionsPostForm: user.totalPosts == 0
                   , temporaryPassword: Nothing
                   , enableNotificationsVisible: false
-                  , messageEnter: true
+                  , messageEnter: false
                   , editing: Nothing
                   , showLargeAvatar: false
                   , imageCaption: Nothing

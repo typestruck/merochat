@@ -87,9 +87,9 @@ audioModal model =
                   ]
 
 chatBarInput ∷ Either Int Int → ElementId → ImModel → Html ImMessage
-chatBarInput eid elementId model = SE.fragment
+chatBarInput eid elementId model = HE.div [ HA.class' "chat-composer" ]
       [ emojiModal elementId model
-      , HE.div [ HA.class' { hidden: not available || DM.isNothing model.chatting && DA.null model.suggestions } ]
+      , HE.div [ HA.class' { "chat-composer-body": true, hidden: not available || DM.isNothing model.chatting && DA.null model.suggestions } ]
               [ HE.div [ HA.class' "chat-input-options" ]
                       [ HE.div [ HA.class' "send-enter inline-control" ]
                               [ HE.input [ HA.type' "checkbox", HA.autocomplete "off", HA.checked model.messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter" ]
