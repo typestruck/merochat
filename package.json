@@ -17,6 +17,11 @@
   "author": "Eduardo Asafe<e@asafe.dev>",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
+    "@formatjs/intl-datetimeformat": "^6.18.2",
+    "@formatjs/intl-getcanonicallocales": "^2.5.6",
+    "@formatjs/intl-locale": "^4.2.13",
+    "@formatjs/intl-numberformat": "^8.15.6",
+    "@formatjs/intl-pluralrules": "^5.4.6",
     "@lynx-js/react": "0.126.2",
     "@lynx-js/websocket": "0.0.4",
     "@nsfwspy/node": "^1.2.0",

@@ -26,14 +26,15 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class as EC
-import Effect.Random as ER
+import Effect.Random as ERa
 import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Effect.Timer (IntervalId)
 import Effect.Timer as ET
-import Flame as F
+import Flame as FL
 import Flame.Subscription as FS
 import Foreign as F
+import Foreign.Index as FI
 import Safe.Coerce as SC
 import Shared.Availability (Availability(..))
 import Shared.Experiments.Types as SET
@@ -48,29 +49,31 @@ import Shared.Unsafe as SU
 import Unsafe.Coerce as UC
 import Web.Event.EventTarget as WEE
 import Web.Event.Internal.Types (Event)
-import Web.Socket.Event.EventTypes (onClose, onError, onMessage, onOpen)
-import Web.Socket.Event.MessageEvent as WSEM
+import Web.Socket.Event.EventTypes (onClose, onMessage, onOpen)
 import Web.Socket.ReadyState as WSR
 
 -- | Reconection, ping and privilege update are done with setInterval
 type WebSocketState =
-      { webSocket ∷ WebSocket
+      { started ∷ Boolean
+      , webSocket ∷ WebSocket
       , pingId ∷ Maybe IntervalId
       , privilegesId ∷ Maybe IntervalId
       }
 
 -- lynx ws needs to be done on the backgorund thread so we setup sockets as part of regular events
 createWebSocketState ∷ Effect (Ref WebSocketState)
-createWebSocketState = ER.new { webSocket: UC.unsafeCoerce 3, pingId: Nothing, privilegesId: Nothing }
+createWebSocketState = ER.new { started: false, webSocket: UC.unsafeCoerce 3, pingId: Nothing, privilegesId: Nothing }
 
 -- | Web socket state is kept in a ref since the connection can be closed and recreated by events any time
 startWebSocket ∷ Ref WebSocketState → ImModel → NoMessages
 startWebSocket webSocketStateRef model = model /\ [ start ]
       where
       start = EC.liftEffect do
-            webSocket ← CIW.createWebSocket
-            ER.modify_ (_ { webSocket = webSocket }) webSocketStateRef
-            setUpWebSocket webSocketStateRef
+            state ← ER.read webSocketStateRef
+            unless state.started do
+                  webSocket ← CIW.createWebSocket
+                  ER.modify_ (_ { started = true, webSocket = webSocket }) webSocketStateRef
+                  setUpWebSocket webSocketStateRef
             pure Nothing
 
 reconnectWebSocket ∷ Ref WebSocketState → ImModel → NoMessages
@@ -107,12 +110,10 @@ setUpWebSocket webSocketStateRef = do
       openListener ← WEE.eventListener <<< handleOpen $ webSocketStateRef
       messageListener ← WEE.eventListener handleMessage
       closeListener ← WEE.eventListener handleCloseError
-      errorListener ← WEE.eventListener handleCloseError
 
       WEE.addEventListener onMessage messageListener false webSocketTarget
       WEE.addEventListener onOpen openListener false webSocketTarget
       WEE.addEventListener onClose closeListener false webSocketTarget
-      WEE.addEventListener onError errorListener false webSocketTarget
 
 handleOpen ∷ Ref WebSocketState → Event → Effect Unit
 handleOpen webSocketStateRef _ = do
@@ -139,7 +140,7 @@ handleOpen webSocketStateRef _ = do
 -- | Handle an incoming (json encoded) message from the server
 handleMessage ∷ Event → Effect Unit
 handleMessage event = do
-      let payload = SU.fromRight <<< CME.runExcept <<< F.readString <<< WSEM.data_ <<< SU.fromJust $ WSEM.fromEvent event
+      let payload = SU.fromRight <<< CME.runExcept $ FI.readProp "data" (F.unsafeToForeign event) >>= F.readString
       let message = SU.fromRight $ SJ.fromJson payload
       case message of
             Pong → pure unit
@@ -247,7 +248,7 @@ receiveStatusChange received model =
 
 -- | Move status from 'sending' to 'sent' and update message id
 receiveAcknowledgement ∷ { id ∷ Int, previousId ∷ Int, userId ∷ Int } → ImModel → NoMessages
-receiveAcknowledgement received model = F.noMessages model
+receiveAcknowledgement received model = FL.noMessages model
       { contacts = updateHistory model.contacts received.userId updateIdStatus
       }
       where
@@ -257,7 +258,7 @@ receiveAcknowledgement received model = F.noMessages model
 
 -- | Remove a message from contact's history
 receiveDeletedMessage ∷ DeletedMessagePayload → ImModel → NoMessages
-receiveDeletedMessage deleted model = F.noMessages model
+receiveDeletedMessage deleted model = FL.noMessages model
       { contacts = rm <$> model.contacts
       }
       where
@@ -269,7 +270,7 @@ receiveDeletedMessage deleted model = F.noMessages model
 receiveIncomingMessage ∷ WebSocket → Boolean → ClientMessagePayload → ImModel → NextMessage
 receiveIncomingMessage webSocket isFocused payload model =
       if DA.elem userId model.blockedUsers then
-            F.noMessages model --prevents messages already in flight to deliver after block
+            FL.noMessages model --prevents messages already in flight to deliver after block
       else
             case fromIncomingMessage payload unsuggestedModel of
                   Left id →
@@ -301,7 +302,7 @@ receiveIncomingMessage webSocket isFocused payload model =
 receiveEditedMessage ∷ WebSocket → Boolean → EditedMessagePayload → ImModel → NextMessage
 receiveEditedMessage webSocket isFocused payload model =
       if DA.elem userId model.blockedUsers then
-            F.noMessages model
+            FL.noMessages model
       else if model.user.id == payload.senderId then
             updatedModel /\ [ EC.liftEffect (CIN.updateTabCount model updatedModel.contacts) *> pure Nothing ]
       else
@@ -345,7 +346,7 @@ receivePrivileges received model =
 
 -- | When the site updates the bundle file hashes change
 receiveHash ∷ String → ImModel → NoMessages
-receiveHash newHash model = F.noMessages model
+receiveHash newHash model = FL.noMessages model
       { imUpdated = newHash /= model.hash
       }
 
@@ -363,7 +364,7 @@ receiveUnavailable received model =
 
 -- | Message sent was unsanitary
 receiveBadMessage ∷ _ → ImModel → NoMessages
-receiveBadMessage received model = F.noMessages model
+receiveBadMessage received model = FL.noMessages model
       { contacts = case received.temporaryMessageId of
               Nothing → model.contacts
               Just id → markErroredMessage model.contacts received.userId id
@@ -371,7 +372,7 @@ receiveBadMessage received model = F.noMessages model
 
 receivePayloadError ∷ { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError } → ImModel → NoMessages
 receivePayloadError received model = case received.origin of
-      OutgoingMessage msg → F.noMessages model
+      OutgoingMessage msg → FL.noMessages model
             { contacts =
                     --assume that it is because the other user no longer exists
                     if received.context == Just MissingForeignKey then
@@ -379,7 +380,7 @@ receivePayloadError received model = case received.origin of
                     else
                           markErroredMessage model.contacts msg.userId msg.id
             }
-      _ → F.noMessages model
+      _ → FL.noMessages model
 
 -- | Block, ban or account termination
 setContactUnavailable ∷ Array Contact → Int → Array Contact
@@ -465,9 +466,8 @@ updateWebSocketStatus status model =
 
       missedContacts = pure <<< Just $ SpecialRequest FetchMissedContacts
       reconnect = do
-            when (model.webSocketStatus == Reconnect) do
-                  ms ← EC.liftEffect $ ER.randomRange 300.0 1000.0
-                  EA.delay $ Milliseconds ms
+            ms ← EC.liftEffect $ ERa.randomRange 300.0 1000.0
+            EA.delay $ Milliseconds ms
             --for mobile, we only try to reconnect if the page is active as the browser will kill the connection anyway
             -- the focus event for the document also checks if the connection is open
             if model.smallScreen then do

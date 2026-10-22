@@ -27,6 +27,7 @@ final class SessionStore {
   private final Set<Runnable> listeners = new HashSet<>();
   private final Runnable expire = this::expireCookies;
   private HttpUrl origin;
+  private HttpUrl websocket;
   private long generation;
 
   private SessionStore(Context context) {
@@ -42,12 +43,35 @@ final class SessionStore {
     if (url.equals(origin)) return;
     generation++;
     origin = url;
+    websocket = null;
     cookies.clear();
     for (String encoded : preferences.getStringSet(origin.toString(), Collections.emptySet())) {
       Cookie cookie = Cookie.parse(origin, encoded);
       if (cookie != null && cookie.expiresAt() > System.currentTimeMillis()) cookies.add(cookie);
     }
     scheduleExpiry();
+  }
+
+  synchronized void configureWebSocket(String value) {
+    HttpUrl url = new okhttp3.Request.Builder().url(value).build().url();
+
+    if (origin == null || !url.host().equals(origin.host()) || !url.scheme().equals(origin.scheme()) ||
+        !url.username().isEmpty() || !url.password().isEmpty()) {
+      throw new IllegalArgumentException("WebSocket must use the API host and security scheme");
+    }
+    websocket = url;
+  }
+
+  synchronized String websocketCookies(HttpUrl url) {
+    if (!url.equals(websocket)) throw new IllegalArgumentException("Unexpected WebSocket endpoint");
+
+    List<String> values = new ArrayList<>();
+
+    for (Cookie cookie : jar(generation).loadForRequest(origin)) {
+      if (cookie.matches(url)) values.add(cookie.name() + "=" + cookie.value());
+    }
+
+    return String.join("; ", values);
   }
 
   synchronized boolean owns(HttpUrl url) {

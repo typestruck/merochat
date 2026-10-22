@@ -3,9 +3,9 @@ export function create(url) {
         return function () {
             "background only";
             //lynxjs can only load this module in the background thread
-            let WebSocket = require("@lynx-js/websocket").default;
+            let { WebSocketImpl } = require("@lynx-js/websocket/impl");
 
-            return new WebSocket(url, protocols);
+            return new WebSocketImpl(NativeModules.MeroChatWebSocket, url, protocols);
         };
     };
 }

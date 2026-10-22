@@ -6,11 +6,11 @@ import Shared.Im.Types
 import Client.AppId (imAppId)
 import Client.Ui.Document as CUD
 import Client.Ui.Element as CUE
+import Client.Ui.Scroll as CUS
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.WebSocket as CIW
 import Client.Network (routes)
 import Client.Network as CCN
-import Client.Network as CCNT
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.Enum as DE
@@ -22,7 +22,7 @@ import Effect.Timer as ET
 import Flame as F
 import Flame.Subscription as FS
 import Shared.Availability (Availability(..))
-import Shared.Backer.Contact (backerId, backerUser)
+import Shared.Backer.Contact (backerId)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
@@ -30,7 +30,6 @@ import Shared.Modal (Modal(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.SuggestionsFrom (SuggestionsFrom(..))
 import Shared.Unsafe as SU
-import Web.DOM.Element as WDE
 import Client.Im.WebSocket.Connection (WebSocket)
 
 -- | Display next suggestion card
@@ -132,11 +131,7 @@ displayMoreSuggestions webSocket suggestions model =
             | model.user.suggestionsFrom == OnlineOnly = [ track ]
             | otherwise = [ scrollToTop, track ]
       scrollToTop = do
-            EC.liftEffect do
-                  element ← CUD.getElementById Cards
-                  case element of
-                        Nothing → pure unit
-                        Just cards → WDE.setScrollTop 0.0 cards
+            EC.liftEffect $ CUS.scrollToTop Cards
             pure Nothing
       track = pure $ Just TrackAvailability
 
@@ -189,12 +184,16 @@ resumeSuggesting model =
 
 --sort the suggestion when the user is not looking
 byAvailability ∷ Array Suggestion → Array Suggestion
-byAvailability suggestions = DA.snoc (DA.filter ((backerId /= _) <<< _.id) $ DA.sortBy available suggestions) backerUser
+byAvailability suggestions = DA.sortBy available suggestions
       where
       available suggestion anotherSuggestion =
-            case suggestion.availability, anotherSuggestion.availability of
-                  LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) → anotherDt `compare` dt
-                  a, s → s `compare` a
+            case suggestion.id == backerId, anotherSuggestion.id == backerId of
+                  true, true → EQ
+                  true, false → GT
+                  false, true → LT
+                  false, false → case suggestion.availability, anotherSuggestion.availability of
+                        LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) → anotherDt `compare` dt
+                        a, s → s `compare` a
 
 toggleSuggestionsFrom ∷ WebSocket → SuggestionsFrom → ImModel → MoreMessages
 toggleSuggestionsFrom webSocket from model = fetchMoreSuggestions webSocket model
@@ -210,14 +209,14 @@ resumeSuggestionChat userId model =
       where
       existing = SIC.findContact userId model.contacts
       resume = case existing of
-            Nothing → CCNT.retryableRequest (FetchContacts true) (DisplaySuggestionContact userId) $ routes.im.contact { query: { id: userId } }
+            Nothing → CCN.retryableRequest (FetchContacts true) (DisplaySuggestionContact userId) $ routes.im.contact { query: { id: userId } }
             _ → pure <<< Just $ ResumeChat userId
 
 favorite ∷ Int → ImModel → NoMessages
 favorite userId model = model { modal = HideModal, contacts = map toggleContact model.contacts, suggestions = map toggleSuggestion model.suggestions } /\ [ fav ]
       where
       fav = do
-            void <<< CCNT.silentRequest $ routes.im.favorite { body: { userId } }
+            void <<< CCN.silentRequest $ routes.im.favorite { body: { userId } }
             pure Nothing
 
       toggleSuggestion suggestion

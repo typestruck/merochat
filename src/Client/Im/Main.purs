@@ -84,9 +84,7 @@ main ∷ Effect Unit
 main = EA.launchAff_ do
       --can create websocket here too
       app ← application
-      EC.liftEffect do
-            F.mount imAppId app
-            FS.send imAppId ConnectWebSocket
+      EC.liftEffect $ F.mount imAppId app
 
 application ∷ Aff (Application ImModel ImMessage)
 application = do
@@ -320,6 +318,7 @@ update st model =
             ToggleAskNotification → toggleAskNotification model
             CreateUserFromTemporary → registerUser model
             AcknowledgeRules inputted → acknowledgeRules inputted model
+            StoreUser → storeUser model
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
             Refocus e → refocus e st.lastActiveRef webSocket model
@@ -391,13 +390,6 @@ removeChatBackground model = model { toggleContextMenu = HideContextMenu, user {
 
 setChatBackgroundFromProfile ∷ Boolean → Maybe String → ImModel → NoMessages
 setChatBackgroundFromProfile toggle url model = model { user { ownBackground = toggle, chatBackground = url } } /\ []
-
-resumeFromNotification ∷ Effect Unit
-resumeFromNotification = do
-      raw ← CL.queryParameter "resume"
-      case raw >>= DI.fromString of
-            Just userId → FS.send imAppId $ ResumeChat userId
-            _ → pure unit
 
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
 toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
@@ -485,7 +477,7 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
 acknowledgeRules ∷ String → ImModel → NextMessage
 acknowledgeRules inputted model =
       if not model.user.completedTutorial && DS.contains (Pattern "i understand") cleaned then
-            model { user { completedTutorial = true }, suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ hide, greet ]
+            model { user { completedTutorial = true }, suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ hide, completeTutorial, greet ]
       else
             model /\ []
       where
@@ -495,13 +487,23 @@ acknowledgeRules inputted model =
             EA.delay $ Milliseconds 400.0
             pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
 
+      completeTutorial = do
+            void <<< CN.silentRequest $ routes.im.tutorial {}
+            pure $ Just StoreUser
+
       sender = 4
       greet = do
-            void <<< CN.silentRequest $ routes.im.tutorial {}
             EA.delay $ Milliseconds 2000.0
             void <<< CN.silentRequest $ routes.im.greeting {}
             contact ← CN.silentRequest $ routes.im.contact { query: { id: sender } }
             pure <<< Just $ DisplayNewContacts contact
+
+storeUser ∷ ImModel → NoMessages
+storeUser model = model /\ [ store ]
+      where
+      store = do
+            CLR.insert model.user
+            pure Nothing
 
 blockUser ∷ WebSocket → Int → ImModel → NextMessage
 blockUser webSocket id model = updateAfterBlock id model /\ [ block, track ]

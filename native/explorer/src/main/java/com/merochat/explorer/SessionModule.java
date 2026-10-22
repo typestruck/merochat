@@ -30,6 +30,7 @@ public final class SessionModule extends LynxContextModule {
   }
 
   @LynxMethod public void configure(String origin) { store.configure(origin); }
+  @LynxMethod public void configureWebSocket(String url) { store.configureWebSocket(url); }
   @LynxMethod public boolean isAuthenticated() { return store.authenticated(); }
   @LynxMethod public void clear() { store.clear(store.generation()); }
 
