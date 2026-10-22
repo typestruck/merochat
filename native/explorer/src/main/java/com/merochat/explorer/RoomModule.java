@@ -39,6 +39,21 @@ public final class RoomModule extends LynxContextModule {
   public void insert(String entity, String json, Callback callback) {
     execute(callback, () -> {
       switch (entity) {
+        case "suggestions":
+          JSONArray suggestionsValues = new JSONArray(json);
+          List<RoomStore.SuggestionEntity> suggestions = new ArrayList<>();
+
+          for (int i = 0; i < suggestionsValues.length(); i++) {
+            JSONObject row = suggestionsValues.getJSONObject(i);
+            RoomStore.SuggestionEntity suggestion = new RoomStore.SuggestionEntity();
+
+            suggestion.id = row.getInt("id");
+            suggestion.position = i;
+            suggestion.json = row.toString();
+            suggestions.add(suggestion);
+          }
+          store.im().insertSuggestions(suggestions);
+          break;
         case "user":
           JSONObject value = new JSONObject(json);
           RoomStore.UserEntity user = new RoomStore.UserEntity();
@@ -69,6 +84,14 @@ public final class RoomModule extends LynxContextModule {
   public void select(String entity, Callback callback) {
     execute(callback, () -> {
       switch (entity) {
+        case "suggestions":
+          JSONArray suggestions = new JSONArray();
+
+          for (RoomStore.SuggestionEntity row : store.im().selectSuggestions()) {
+            suggestions.put(new JSONObject(row.json));
+          }
+
+          return suggestions.toString();
         case "user":
           RoomStore.UserEntity user = store.im().selectUser();
           return user == null ? "null" : user.json;

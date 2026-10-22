@@ -6,6 +6,13 @@ let nativeSession,
 
 function sessionEnded() {}
 
+export function clear() {
+    'background only';
+
+    nativeSession.clear();
+    authenticated = false;
+}
+
 export function initialize() {
     'background only';
 

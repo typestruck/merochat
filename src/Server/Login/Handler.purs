@@ -23,8 +23,9 @@ logon ∷ { guards ∷ { checkAnonymous ∷ Unit }, body ∷ EmailPassword, quer
 logon { body, query: { boot } } = do
       { token, userId } ← SLA.login body
       payload ←
-            if boot then
-                  SIA.bootstrap userId <#> \{ user, contacts } → { user: Just user, contacts }
-            else pure { user: Nothing, contacts: [] }
+            if boot then do
+                  { user, contacts, suggestions } ← SIA.im userId
+                  pure { user: Just user, contacts, suggestions }
+            else pure { user: Nothing, contacts: [], suggestions: [] }
       cookieHeader ← SC.makeCookieHeader token
       pure <<< PSR.setHeaders (PH.fromFoldable [ cookieHeader ]) $ PSR.ok payload

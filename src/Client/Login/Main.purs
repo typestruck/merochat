@@ -101,8 +101,9 @@ authenticateNative credentials = do
       case payload.user of
             Nothing → EA.throwError $ EE.error "Login response is missing the current user"
             Just user → do
-                  CLR.insert user
                   CLR.insert payload.contacts
+                  CLR.insert payload.suggestions
+                  CLR.insert user
                   EC.liftEffect $ F.navigate imAppId
 
 main ∷ Effect Unit

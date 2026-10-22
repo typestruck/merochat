@@ -1,6 +1,7 @@
 package com.merochat.explorer;
 
 import android.content.Context;
+import android.database.Cursor;
 import androidx.annotation.NonNull;
 import androidx.room.Dao;
 import androidx.room.Database;
@@ -12,13 +13,18 @@ import androidx.room.Query;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.Transaction;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /** Stores the Argonaut representation of ImModel.user and ImModel.contacts. */
-@Database(entities = {RoomStore.UserEntity.class, RoomStore.ContactEntity.class},
-    version = 1, exportSchema = true)
+@Database(entities = {RoomStore.UserEntity.class, RoomStore.ContactEntity.class, RoomStore.SuggestionEntity.class},
+    version = 4, exportSchema = true)
 public abstract class RoomStore extends RoomDatabase {
   private static RoomStore instance;
   static final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -26,7 +32,39 @@ public abstract class RoomStore extends RoomDatabase {
   static synchronized RoomStore get(Context context) {
     if (instance == null) {
       instance = Room.databaseBuilder(context.getApplicationContext(), RoomStore.class,
-          "merochat-im.db").build();
+          "merochat-im.db").addMigrations(new Migration(1, 2) {
+            @Override public void migrate(@NonNull SupportSQLiteDatabase database) {
+              database.execSQL("CREATE TABLE IF NOT EXISTS bootstrap (id INTEGER NOT NULL, json TEXT NOT NULL, PRIMARY KEY(id))");
+            }
+          }, new Migration(2, 3) {
+            @Override public void migrate(@NonNull SupportSQLiteDatabase database) {
+              database.execSQL("CREATE TABLE IF NOT EXISTS suggestions (id INTEGER NOT NULL, position INTEGER NOT NULL, json TEXT NOT NULL, PRIMARY KEY(id))");
+              database.execSQL("CREATE TABLE IF NOT EXISTS changelogs (id INTEGER NOT NULL, position INTEGER NOT NULL, json TEXT NOT NULL, PRIMARY KEY(id))");
+              try (Cursor cursor = database.query("SELECT json FROM bootstrap WHERE id = 0")) {
+                if (cursor.moveToFirst()) {
+                  JSONObject bootstrap = new JSONObject(cursor.getString(0));
+
+                  for (String table : new String[] {"suggestions", "changelogs"}) {
+                    JSONArray rows = bootstrap.getJSONArray(table);
+
+                    for (int i = 0; i < rows.length(); i++) {
+                      JSONObject row = rows.getJSONObject(i);
+
+                      database.execSQL("INSERT OR REPLACE INTO " + table + " (id, position, json) VALUES (?, ?, ?)",
+                          new Object[] {row.getInt("id"), i, row.toString()});
+                    }
+                  }
+                }
+              } catch (JSONException error) {
+                throw new IllegalStateException("Invalid Room bootstrap data", error);
+              }
+              database.execSQL("DROP TABLE bootstrap");
+            }
+          }, new Migration(3, 4) {
+            @Override public void migrate(@NonNull SupportSQLiteDatabase database) {
+              database.execSQL("DROP TABLE changelogs");
+            }
+          }).build();
     }
     return instance;
   }
@@ -45,6 +83,13 @@ public abstract class RoomStore extends RoomDatabase {
     @NonNull public String json = "";
   }
 
+  @Entity(tableName = "suggestions")
+  public static class SuggestionEntity {
+    @PrimaryKey public int id;
+    public int position;
+    @NonNull public String json = "";
+  }
+
   @Dao
   public interface ImDao {
     @Transaction
@@ -56,6 +101,16 @@ public abstract class RoomStore extends RoomDatabase {
     @Query("DELETE FROM users") void clearUsers();
     @Insert(onConflict = OnConflictStrategy.REPLACE) void insertUserRow(UserEntity user);
     @Insert(onConflict = OnConflictStrategy.REPLACE) void insertContacts(List<ContactEntity> contacts);
+    @Transaction
+    default void insertSuggestions(List<SuggestionEntity> rows) {
+      clearSuggestions();
+      insertSuggestionsRows(rows);
+    }
+
+    @Query("DELETE FROM suggestions") void clearSuggestions();
+    @Insert(onConflict = OnConflictStrategy.REPLACE) void insertSuggestionsRows(List<SuggestionEntity> rows);
+    @Query("SELECT * FROM suggestions ORDER BY position") List<SuggestionEntity> selectSuggestions();
+
     @Query("SELECT * FROM users LIMIT 1") UserEntity selectUser();
     @Query("SELECT * FROM contacts ORDER BY userId") List<ContactEntity> selectContacts();
   }

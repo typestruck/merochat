@@ -95,6 +95,7 @@ application = do
             Nothing → EA.throwError $ EE.error "Merochat cache is invalid. Please report a bug"
             Just user → pure user
       contacts ← DM.fromMaybe [] <$> CLR.select
+      suggestions ← DM.fromMaybe [] <$> CLR.select
       webSocketRef ← EC.liftEffect CIWE.createWebSocketState
       lastActiveRef ← EC.liftEffect $ ER.new true
 
@@ -105,14 +106,14 @@ application = do
                   , freeToFetchSuggestions: true
                   , temporaryId: 0
                   , loadingContact: Nothing
-                  , suggesting:      Nothing
+                  , suggesting: _.id <$> DA.head suggestions
                   , freeToFetchChatHistory: true
                   , react: WithEmoji
                   , suggestionsPage: 1
                   , errorMessage: ""
                   , showSuggestionChatInput: Nothing
                   , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
-                  , showBuildProfile: false
+                  , showBuildProfile: DA.length user.completedFields < 3
                   , smallScreen: true
                   , showMiniChatInput: false
                   , initialScreen: true
@@ -120,7 +121,7 @@ application = do
                   , changelogs: []
                   , showChangelogs: false
                   , showCollapsedMiniSuggestions: false
-                  , showSuggestionsPostForm: false
+                  , showSuggestionsPostForm: user.totalPosts == 0
                   , temporaryPassword: Nothing
                   , enableNotificationsVisible: false
                   , messageEnter: true
@@ -134,7 +135,7 @@ application = do
                   , erroredFields: []
                   , fortune: Nothing
                   , toggleContextMenu: HideContextMenu
-                  , modal: HideModal
+                  , modal: if user.completedTutorial then HideModal else Special ShowRules
                   , blockedUsers: []
                   , reportReason: Nothing
                   , collapsedSidebar: false
@@ -169,7 +170,7 @@ application = do
                   , modalsLoaded: []
                   , hash: ""
                   , contacts
-                  , suggestions: []
+                  , suggestions
                   , user
                   }
 

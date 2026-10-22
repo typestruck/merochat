@@ -62,31 +62,23 @@ import Shared.Unsafe as SU
 
 im ∷ Int → ServerEffect _
 im loggedUserId = do
-      payload ← bootstrap loggedUserId
-      suggestions ← normalizeSuggestions payload.user.suggestionsFrom <$> suggest loggedUserId 0 payload.user.suggestionsFrom
-      let shouldDonate = not payload.user.backer && SD.daysDiff (SC.coerce payload.user.joined) > 3
-      pure
-            { user: payload.user
-            , contacts: payload.contacts
-            , suggestions: if shouldDonate then DA.snoc suggestions backerUser else suggestions
-            }
+      maybeUser ← SIDP.presentUser loggedUserId
+      case maybeUser of
+            Nothing → RE.throw ExpiredSession
+            Just flatUser → do
+                  let user = SIF.fromFlatUser flatUser
+                  contacts ← listContacts loggedUserId 0
+                  suggestions ← normalizeSuggestions user.suggestionsFrom <$> suggest loggedUserId 0 user.suggestionsFrom
+                  let shouldDonate = not user.backer && SD.daysDiff (SC.coerce user.joined) > 3
+                  pure
+                        { contacts: if shouldDonate then SBC.backerContact user.id : contacts else contacts
+                        , user
+                        , suggestions: if shouldDonate then DA.snoc suggestions backerUser else suggestions
+                        }
       where
       normalizeSuggestions from suggestions = case from of
             OnlineOnly → map SA.ensureStatus suggestions
             _ → suggestions
-
-bootstrap ∷ Int → ServerEffect _
-bootstrap loggedUserId = do
-      maybeUser ← SIDP.presentUser loggedUserId
-      case maybeUser of
-            Nothing → RE.throw ExpiredSession
-            Just user → do
-                  contacts ← listContacts loggedUserId 0
-                  let shouldDonate = not (SC.coerce user.backer) && SD.daysDiff user.joined > 3
-                  pure
-                        { contacts: if shouldDonate then SBC.backerContact user.id : contacts else contacts
-                        , user: SIF.fromFlatUser user
-                        }
 
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array Suggestion)
 suggest loggedUserId skip sg = map SIF.fromFlatUser <$> SIDS.suggest loggedUserId skip [] sg

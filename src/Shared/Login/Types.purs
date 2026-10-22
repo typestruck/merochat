@@ -1,10 +1,10 @@
 module Shared.Login.Types where
 
 import Data.Maybe (Maybe)
-import Shared.Im.Types (Contact)
+import Shared.Im.Types (Contact, Suggestion)
 import Shared.User (User)
 
-type LoginResponse = { user ∷ Maybe User, contacts ∷ Array Contact }
+type LoginResponse = { user ∷ Maybe User, contacts ∷ Array Contact, suggestions ∷ Array Suggestion }
 
 type LoginModel =
       { email ∷ Maybe String

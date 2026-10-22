@@ -1,6 +1,8 @@
 module Client.Lynx.Room
       ( UserEntity
       , ContactEntity
+      , SuggestionEntity
+      , class ArrayEntity
       , class Selectable
       , class Insertable
       , class Entity
@@ -28,7 +30,8 @@ import Effect.Aff as EA
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
-import Shared.Im.Types (Contact)
+import Prim.RowList (class RowToList, Cons, RowList)
+import Shared.Im.Types (Contact, Suggestion)
 import Shared.User (User)
 import Type.Equality (class TypeEquals)
 import Type.Proxy (Proxy(..))
@@ -42,12 +45,19 @@ foreign import select_ ∷ EffectFn1 String (Promise String)
 
 foreign import data UserEntity ∷ Type
 foreign import data ContactEntity ∷ Type
+foreign import data SuggestionEntity ∷ Type
+
+class ArrayEntity (fields ∷ RowList Type) (entity ∷ Type) | fields → entity
+
+instance ArrayEntity (Cons "availability" value tail) SuggestionEntity
+else instance ArrayEntity (Cons "user" value tail) ContactEntity
+else instance ArrayEntity tail entity ⇒ ArrayEntity (Cons name value tail) entity
 
 class Selectable (row ∷ Type) (entity ∷ Type) | row → entity
 
 instance TypeEquals (Record fields) User ⇒ Selectable (Record fields) UserEntity
 
-instance TypeEquals (Record fields) Contact ⇒ Selectable (Array (Record fields)) ContactEntity
+instance (RowToList fields list, ArrayEntity list entity) ⇒ Selectable (Array (Record fields)) entity
 
 class (EncodeJson row, DecodeJson row) ⇐ Entity (entity ∷ Type) row | entity → row where
       entityName ∷ Proxy entity → String
@@ -64,11 +74,16 @@ instance Entity ContactEntity (Array Contact) where
       prepareRows _ = map resetTyping
       prepareResult _ = map resetTyping
 
+instance Entity SuggestionEntity (Array Suggestion) where
+      entityName _ = "suggestions"
+      prepareRows _ = identity
+      prepareResult _ = identity
+
 class Insertable (row ∷ Type) (entity ∷ Type) | row → entity
 
 instance TypeEquals (Record fields) User ⇒ Insertable (Record fields) UserEntity
 
-instance TypeEquals (Record fields) Contact ⇒ Insertable (Array (Record fields)) ContactEntity
+instance (RowToList fields list, ArrayEntity list entity) ⇒ Insertable (Array (Record fields)) entity
 
 insert ∷ ∀ entity row. Insertable row entity ⇒ Entity entity row ⇒ row → Aff Unit
 insert rows = insertJson (entityName entity) $ prepareRows entity rows

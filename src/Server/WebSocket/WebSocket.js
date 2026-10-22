@@ -1,8 +1,9 @@
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 
 /* Server methods */
 export function createWebSocketServer_(options, callback) {
-      return new WebSocket.Server(options, callback);
+
+      return new WebSocketServer(options, callback);
 }
 
 export function onConnection_(wss, handleConnection) {
