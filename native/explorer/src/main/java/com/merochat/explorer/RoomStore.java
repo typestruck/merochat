@@ -23,8 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /** Stores the Argonaut representation of ImModel.user and ImModel.contacts. */
-@Database(entities = {RoomStore.UserEntity.class, RoomStore.ContactEntity.class, RoomStore.SuggestionEntity.class, RoomStore.PostEntity.class, RoomStore.AskEntity.class, RoomStore.PraiseEntity.class},
-    version = 7, exportSchema = true)
+@Database(entities = {RoomStore.UserEntity.class, RoomStore.ContactEntity.class, RoomStore.SuggestionEntity.class, RoomStore.PostEntity.class, RoomStore.AskEntity.class, RoomStore.PraiseEntity.class, RoomStore.ThemeEntity.class},
+    version = 8, exportSchema = true)
 public abstract class RoomStore extends RoomDatabase {
   private static RoomStore instance;
   static final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -100,6 +100,10 @@ public abstract class RoomStore extends RoomDatabase {
               }
               database.execSQL("DROP TABLE profile");
             }
+          }, new Migration(7, 8) {
+            @Override public void migrate(@NonNull SupportSQLiteDatabase database) {
+              database.execSQL("CREATE TABLE IF NOT EXISTS theme (id INTEGER NOT NULL, json TEXT NOT NULL, PRIMARY KEY(id))");
+            }
           }).build();
     }
     return instance;
@@ -147,8 +151,17 @@ public abstract class RoomStore extends RoomDatabase {
     @NonNull public String json = "";
   }
 
+  @Entity(tableName = "theme")
+  public static class ThemeEntity {
+    @PrimaryKey public int id;
+    @NonNull public String json = "";
+  }
+
   @Dao
   public interface ImDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE) void insertTheme(ThemeEntity theme);
+    @Query("SELECT * FROM theme WHERE id = 0") ThemeEntity selectTheme();
+
     @Transaction
     default void insertPosts(List<PostEntity> rows) {
       clearPosts();

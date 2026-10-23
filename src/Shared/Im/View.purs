@@ -2,7 +2,8 @@ module Shared.Im.View where
 
 import Prelude
 
-import Client.Im.Theme as CIT
+import Shared.Theme as ST
+
 import Control.Alt ((<|>))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -27,7 +28,7 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
 
 view ∷ Boolean → ImModel → Html ImMessage
-view isClientRender model = HE.div [ HA.id "im", HA.createEvent "bindlayoutchange" ConnectWebSocket, HA.class' { collapsed: model.collapsedSidebar }, HA.style $ CIT.getTheme unit ]
+view isClientRender model = HE.div [ HA.id "im", ST.event "im" "bindlayoutchange", HA.class' { collapsed: model.collapsedSidebar } ]
       [ HE.div [ HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen } ]
               [ banner
               , SIVU.userMenu model

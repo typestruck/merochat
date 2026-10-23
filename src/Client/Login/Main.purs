@@ -1,8 +1,8 @@
--- this needs the header and footer of external pages
-
 module Client.Login.Main where
 
 import Prelude
+
+import Shared.Theme as ST
 
 import Client.AppId (imAppId, loginAppId)
 import Client.Location as CL
@@ -22,11 +22,14 @@ import Effect.Class as EC
 import Effect.Exception as EE
 import Flame (Application, Update)
 import Flame as F
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Payload.Client (ClientError(..))
 import Shared.Account (EmailPassword)
 import Shared.Login.Types (LoginModel, LoginMessage(..), LoginResponse)
 import Shared.Login.View as SLV
 import Shared.Network as SN
+import Shared.External as SPL
 import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Routes (routesSpec)
 
@@ -39,6 +42,15 @@ application authenticate =
       , view: SLV.view
       , update: update authenticate
       , subscribe: []
+      }
+
+nativeApplication ∷ Application LoginModel LoginMessage
+nativeApplication = (application authenticateNative)
+      { view = \model → HE.scrollView [ HA.id "login", ST.event "login" "bindlayoutchange", HA.class' "public-route", HA.scrollOrientation "vertical" ]
+              [ SPL.header "login"
+              , SLV.view model
+              , SPL.footer
+              ]
       }
 
 update ∷ (EmailPassword → Aff Unit) → Update LoginModel LoginMessage

@@ -18,7 +18,6 @@ import Client.Im.Praise as CIPR
 import Client.Im.Scroll as CISC
 import Client.Im.SmallScreen as CISS
 import Client.Im.Suggestion as CISU
-import Client.Im.Theme as CIT
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Connection (WebSocket)
 import Client.Im.WebSocket.Events as CIWE
@@ -83,7 +82,6 @@ import Web.HTML.Window as WHW
 
 main ∷ Effect Unit
 main = EA.launchAff_ do
-      --can create websocket here too
       app ← application
       EC.liftEffect $ F.mount imAppId app
 
@@ -325,7 +323,6 @@ update st model =
             CheckUserExpiration → checkUserExpiration model
             Refocus e → refocus e st.lastActiveRef webSocket model
             SetChatBackgroundFromProfile toggle url → setChatBackgroundFromProfile toggle url model
-            SetTheme theme → CIT.setTheme theme model
             HighlightMessage id → highlightMessage id model
             ClearHighlightedMessage → F.noMessages $ model { highlighted = Nothing }
             TerminateTemporaryUser → terminateAccount model

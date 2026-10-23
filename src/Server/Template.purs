@@ -12,9 +12,7 @@ import Shared.App.Banner (banner)
 import Shared.Extra as SE
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SR
-import Shared.Routes (routesSpec)
-import Shared.Svg (logo)
-import Shared.Svg as SS
+import Shared.External as SPL
 
 type Parameters a =
       { title ∷ String
@@ -50,28 +48,7 @@ externalDefaultParameters =
       , css: []
       , header:
               [ banner
-              , HE.div [ HA.class' "header" ]
-                      [ HE.div [ HA.id "header", HA.class' "big-logo" ]
-                              [ logo
-
-                              ]
-                      , HE.div [ HA.class' "menu-merochat" ]
-                              [ HE.div [ HA.class' "menu" ]
-                                      [ SE.a [ HA.href $ routesSpec.landing {} ] [ HE.text "Home" ]
-                                      , SE.a [ HA.href $ routesSpec.help {} <> "#faq" ] [ HE.text "FAQ" ]
-                                      , SE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Support us" ]
-                                      , SE.a [ HA.href $ routesSpec.login.get {}, HA.class' "login-link" ] [ HE.text "Login" ]
-                                      , HE.div [ HA.class' "theme-switcher" ]
-                                              [ SS.sun []
-                                              , SS.moon []
-                                              ]
-                                      ]
-                              , HE.div [ HA.class' "merochat" ]
-                                      [ HE.h1 [ HA.class' "name" ] [ HE.text "MeroChat" ]
-                                      , HE.div [ HA.class' "tagline" ] [ HE.text "The friendliest place to chat on the internet" ]
-                                      ]
-                              ]
-                      ]
+              , SPL.header ""
               ,
                 --, if production then SE.script' [ HA.type' "text/javascript", SE.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
                 --else
@@ -79,13 +56,7 @@ externalDefaultParameters =
               ]
       , content: []
       , footer:
-              [ HE.div [ HA.class' "footer" ]
-                      [ SE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "Terms and conditions" ]
-                      , SE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "Privacy policy" ]
-                      , SE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "Source code" ]
-                      , SE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Donate" ]
-                      ]
-              ]
+              [ SPL.footer ]
       }
 
 template ∷ ∀ a. Parameters a → Effect (Html a)

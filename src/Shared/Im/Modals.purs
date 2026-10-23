@@ -2,6 +2,8 @@ module Shared.Im.View.Modal where
 
 import Prelude
 
+import Shared.Theme as ST
+
 import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Int as DI
@@ -19,7 +21,7 @@ import Shared.Extra (br)
 import Shared.Extra as SE
 import Shared.Im.Contact as SIC
 import Shared.Im.Svg as SIS
-import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, ReportReason(..), RetryableRequest(..), Theme(..))
+import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, ReportReason(..), RetryableRequest(..))
 import Shared.Im.View.Posts as SIVP
 import Shared.Im.View.Profile as SIVP
 import Shared.Modal (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
@@ -204,9 +206,7 @@ modalMenu model =
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowHelp, HA.class' { entry: true, selected: model.modal == Screen ShowHelp } ] [ HE.text $ show ShowHelp ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowFeedback, HA.class' { entry: true, selected: model.modal == Screen ShowFeedback } ] [ HE.text $ show ShowFeedback ]
                       , HE.div [ HA.class' "entry theme-modal" ]
-                              [ SS.sun [ HA.onClick $ SetTheme Light ]
-                              , SS.moon [ HA.onClick $ SetTheme Dark ]
-                              ]
+                              [ SS.sun [ ST.event "im" "bindtap" ], SS.moon [ ST.event "im" "bindtap" ] ]
                       , if model.user.temporary then
                               HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmTerminationTemporaryUser ] [ HE.text "Delete my data" ]
                         else

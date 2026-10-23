@@ -17,6 +17,7 @@ data LoginMessage
       = SetEmail (Maybe String)
       | SetPassword (Maybe String)
       | Submit
+      --this event is shit
       | KeyPressed String
       | Failed String
       | Reset

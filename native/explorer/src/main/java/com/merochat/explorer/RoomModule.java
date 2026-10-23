@@ -39,6 +39,13 @@ public final class RoomModule extends LynxContextModule {
   public void insert(String entity, String json, Callback callback) {
     execute(callback, () -> {
       switch (entity) {
+        case "theme":
+          RoomStore.ThemeEntity theme = new RoomStore.ThemeEntity();
+
+          theme.id = 0;
+          theme.json = json;
+          store.im().insertTheme(theme);
+          break;
         case "posts":
           JSONArray postsValues = new JSONArray(json);
           List<RoomStore.PostEntity> posts = new ArrayList<>();
@@ -129,6 +136,10 @@ public final class RoomModule extends LynxContextModule {
   public void select(String entity, Callback callback) {
     execute(callback, () -> {
       switch (entity) {
+        case "theme":
+          RoomStore.ThemeEntity theme = store.im().selectTheme();
+
+          return theme == null ? "null" : theme.json;
         case "posts":
           JSONArray posts = new JSONArray();
 

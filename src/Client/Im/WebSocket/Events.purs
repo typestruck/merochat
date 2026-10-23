@@ -54,26 +54,22 @@ import Web.Socket.ReadyState as WSR
 
 -- | Reconection, ping and privilege update are done with setInterval
 type WebSocketState =
-      { started ∷ Boolean
-      , webSocket ∷ WebSocket
+      { webSocket ∷ WebSocket
       , pingId ∷ Maybe IntervalId
       , privilegesId ∷ Maybe IntervalId
       }
 
--- lynx ws needs to be done on the backgorund thread so we setup sockets as part of regular events
 createWebSocketState ∷ Effect (Ref WebSocketState)
-createWebSocketState = ER.new { started: false, webSocket: UC.unsafeCoerce 3, pingId: Nothing, privilegesId: Nothing }
+createWebSocketState = ER.new { webSocket: UC.unsafeCoerce 3, pingId: Nothing, privilegesId: Nothing }
 
 -- | Web socket state is kept in a ref since the connection can be closed and recreated by events any time
 startWebSocket ∷ Ref WebSocketState → ImModel → NoMessages
 startWebSocket webSocketStateRef model = model /\ [ start ]
       where
       start = EC.liftEffect do
-            state ← ER.read webSocketStateRef
-            unless state.started do
-                  webSocket ← CIW.createWebSocket
-                  ER.modify_ (_ { started = true, webSocket = webSocket }) webSocketStateRef
-                  setUpWebSocket webSocketStateRef
+            webSocket ← CIW.createWebSocket
+            ER.modify_ (_ { webSocket = webSocket }) webSocketStateRef
+            setUpWebSocket webSocketStateRef
             pure Nothing
 
 reconnectWebSocket ∷ Ref WebSocketState → ImModel → NoMessages

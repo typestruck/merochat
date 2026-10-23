@@ -1,44 +1,57 @@
+//likely we can move this into shared/Theme.purs
 let key = 'merochat-theme',
     light = 'light',
     dark = 'dark',
-    //lynx does not have these
-    hasDocument = typeof document !== 'undefined',
-    hasLocalStorage = typeof localStorage !== 'undefined';
+    isWeb = typeof document !== 'undefined';
 
-globalThis.switchTheme = (theme, fromEvent = false) => {
+function switchTheme(selectedTheme, root, fromEvent = true) {
     let properties = {
-        '--background-color': theme === light ? '#FBFEFB' : '#1D2B35',
-        '--text-color': theme === light ? '#1B1F3B' : '#FBFEFB',
-        '--external-accent': theme === light ? '#EFE5DC' : '#274958',
-        '--other-heading-color': theme === light ? '#42858C' : '#64FCD9',
-        '--light-link-color': theme === light ? '#FBFEFB' : '#327B4F',
-        '--im-background-color': theme === light ? '#F0E8DD' : '#393E41',
-        '--im-second-background-color': theme === light ? '#B8574F' : '#26292C',
-        '--im-chat-background-image': theme === light ? 'url(/file/default/chat-background-light.svg)' : 'url(/file/default/chat-background-dark.svg)',
+        '--background-color': selectedTheme === light ? '#FBFEFB' : '#1D2B35',
+        '--text-color': selectedTheme === light ? '#1B1F3B' : '#FBFEFB',
+        '--external-accent': selectedTheme === light ? '#EFE5DC' : '#274958',
+        '--other-heading-color': selectedTheme === light ? '#42858C' : '#64FCD9',
+        '--light-link-color': selectedTheme === light ? '#FBFEFB' : '#327B4F',
+        '--im-background-color': selectedTheme === light ? '#F0E8DD' : '#393E41',
+        '--im-second-background-color': selectedTheme === light ? '#B8574F' : '#26292C',
+        '--im-chat-background-image': selectedTheme === light ? 'url(/file/default/chat-background-light.svg)' : 'url(/file/default/chat-background-dark.svg)',
     };
 
-    if (hasDocument) {
+    if (isWeb) {
         for (let [name, value] of Object.entries(properties))
-            document.documentElement.style.setProperty(name, value);
+            root.style.setProperty(name, value);
     }
-    else
-        globalThis.themeProperties = properties;
+    else if (root) {
+        lynx.getElementById(root).setProperty(properties);
+    }
 
-    if (fromEvent && hasLocalStorage)
-        localStorage.setItem(key, theme);
+    if (fromEvent) {
+        if (isWeb)
+            localStorage.setItem(key, selectedTheme);
+        else
+            globalThis.persistTheme(selectedTheme)();
+    }
 }
 
-let theme = dark;
+function themeEvent(root, event) {
+    let target = event.currentTarget;
 
-if (hasLocalStorage && localStorage.getItem(key))
-    theme = localStorage.getItem(key);
-else if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)
-    theme = light;
+    if (isWeb)
+        root = document.documentElement;
+    if (event.type === 'layoutchange')
+        globalThis.loadTheme(selectedTheme => () => switchTheme(selectedTheme, root, false))();
+    else if (target.id === 'light-theme-switch')
+        switchTheme(light, root);
+    else if (target.id === 'dark-theme-switch')
+        switchTheme(dark, root);
+}
 
-globalThis.switchTheme(theme);
+globalThis.switchTheme = switchTheme;
+globalThis.themeEvent = themeEvent;
 
-if (hasDocument)
+if (isWeb) {
+    switchTheme(localStorage.getItem(key) || (window.matchMedia?.('(prefers-color-scheme: light)').matches ? light : dark), document.documentElement, false);
     document.addEventListener('DOMContentLoaded', () => {
-        document.querySelector('#light-theme-switch')?.addEventListener('click', () => globalThis.switchTheme(light, true));
-        document.querySelector('#dark-theme-switch')?.addEventListener('click', () => globalThis.switchTheme(dark, true));
+        document.querySelector('#light-theme-switch')?.addEventListener('click', () => switchTheme(light, document.documentElement));
+        document.querySelector('#dark-theme-switch')?.addEventListener('click', () => switchTheme(dark, document.documentElement));
     }, { once: true });
+}

@@ -1,5 +1,6 @@
 module Client.Lynx.Room
-      ( PostEntity
+      ( ThemeEntity
+      , PostEntity
       , AskEntity
       , PraiseEntity
       , UserEntity
@@ -49,6 +50,8 @@ import Type.Proxy (Proxy(..))
 foreign import insert_ ∷ EffectFn2 String String (Promise Unit)
 foreign import select_ ∷ EffectFn1 String (Promise String)
 
+foreign import data ThemeEntity ∷ Type
+
 foreign import data PostEntity ∷ Type
 foreign import data AskEntity ∷ Type
 foreign import data PraiseEntity ∷ Type
@@ -68,7 +71,8 @@ else instance ArrayEntity tail entity ⇒ ArrayEntity (Cons name value tail) ent
 
 class RecordEntity (fields ∷ RowList Type) (entity ∷ Type) | fields → entity
 
-instance RecordEntity (Cons "id" value tail) UserEntity
+instance RecordEntity (Cons "theme" String tail) ThemeEntity
+else instance RecordEntity (Cons "id" value tail) UserEntity
 else instance RecordEntity tail entity ⇒ RecordEntity (Cons name value tail) entity
 
 class Selectable (row ∷ Type) (entity ∷ Type) | row → entity
@@ -81,6 +85,11 @@ class (EncodeJson row, DecodeJson row) ⇐ Entity (entity ∷ Type) row | entity
       entityName ∷ Proxy entity → String
       prepareRows ∷ Proxy entity → row → row
       prepareResult ∷ Proxy entity → row → row
+
+instance Entity ThemeEntity { theme ∷ String } where
+      entityName _ = "theme"
+      prepareRows _ = identity
+      prepareResult _ = identity
 
 instance Entity PostEntity (Array Post) where
       entityName _ = "posts"

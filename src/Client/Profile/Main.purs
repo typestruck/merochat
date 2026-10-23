@@ -2,7 +2,8 @@ module Client.Profile.Main where
 
 import Prelude
 
-import Client.Im.Theme as CIT
+import Shared.Theme as ST
+
 import Client.AppId (profileAppId)
 import Client.Lynx.Room as CLR
 import Client.Network (routes)
@@ -70,7 +71,7 @@ application = do
                   }
       pure
             { model
-            , view: \current → HE.scrollView [ HA.class' "profile-route", HA.style $ CIT.getTheme unit, HA.scrollOrientation "vertical" ]
+            , view: \current → HE.scrollView [ HA.id "profile", ST.event "profile" "bindlayoutchange", HA.class' "profile-route", HA.scrollOrientation "vertical" ]
                     [ SPV.view current
                     ]
             , update: CPU.update

@@ -385,7 +385,6 @@ data ImMessage
       | ToggleUserContextMenu Event
       | Refocus FocusEvent
       | ToggleScrollChatDown Boolean Int
-      | SetTheme Theme
       | SpecialRequest RetryableRequest
       | RemoveChatBackground
       | AcknowledgeRules String
@@ -421,8 +420,6 @@ data ImMessage
 data For = ForSuggestions | ForContacts
 
 data PostMode = TextOnly | LinkOnly | ImageOnly
-
-data Theme = Light | Dark
 
 data When = Always | Desktop
 
