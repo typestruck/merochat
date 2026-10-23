@@ -20,4 +20,6 @@ keyDownOn ∷ ∀ m. Key → (Event → m) → NodeData m
 keyDownOn keyName message = FHE.createRawEvent "bindkeydown" $ pure <<< keyHandler keyName message
 
 onEnter ∷ ∀ m. (String → m) → NodeData m
-onEnter = FHE.onConfirm
+onEnter message = FHE.createRawEvent "bindconfirm" handler
+      where
+      handler event = Just <<< message <$> CUEV.takeInputValue event

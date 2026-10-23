@@ -21,7 +21,7 @@ import Shared.Change as SC
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Extra as SE
-import Shared.Im.Svg (contextMenuElements)
+import Shared.Im.Svg (contextMenuElements, closeElements)
 import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Posts as SIVP
@@ -120,9 +120,8 @@ edit model =
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Avatar" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your profile picture" ]
-              , HE.div [ HA.class' "fit", HA.onClick SelectAvatar ]
-                      [ HE.img [ HA.class' "avatar-profile-edition", HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed ]
-                      , HE.input [ HA.id "avatar-file-input", HA.type' "file", HA.onChange' PrepareAvatar, HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
+              , HE.div [ HA.class' "fit" ]
+                      [ HE.img [ HA.onClick SelectAvatar, HA.class' "avatar-profile-edition", HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed ]
                       , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
                               [ HE.title [ HE.text "Reset profile picture" ]
                               , HE.path' [ HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.5A7.5,7.5,0,1,1,15.5,8,7.5,7.5,0,0,1,8,15.5Z" ]
@@ -134,7 +133,11 @@ edit model =
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Basic info" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "All fields are optional" ]
               , HE.div [ HA.class' "profile-section-wedge" ]
-                      [ HE.input [ SC.onChange SetAge, HA.class' "modal-input margined", HA.type' "text", HA.placeholder "Birthday (YYYY-MM-DD)", HA.value <<< DM.fromMaybe "" $ map SD.formatIsoDate model.ageInputed, HA.createAttribute "default-value" <<< DM.fromMaybe "" $ map SD.formatIsoDate model.ageInputed ]
+                      [ HE.div [ HA.class' "margined" ]
+                              [ HE.button [ HA.class' "modal-input", HA.onClick SelectAge ]
+                                      [ HE.text $ DM.maybe "Choose birthday" SD.formatIsoDate model.ageInputed ]
+                              , HE.button [ HA.class' { hidden: DM.isNothing model.ageInputed }, HA.onClick $ SetAge "" ] [ HE.text "Clear birthday" ]
+                              ]
                       , dropdown model "gender" (DM.maybe "Do not show my gender" show model.genderInputed) SetGender
                               ({ value: "", name: "Do not show my gender" } : map (\gender → { value: show gender, name: show gender }) [ Female, Male, NonBinary, Other ])
                       ]
@@ -157,7 +160,7 @@ edit model =
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Tags" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your interests, labels, things to talk about, etc" ]
-              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength tagMaxCharacters, HA.placeholder "Enter to add", SK.onEnter SetTag, enterKeyHint "enter" ]
+              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength tagMaxCharacters, HA.placeholder "Enter to add", SK.onEnter SetTag, HA.createAttribute "confirm-type" "done" ]
               , HE.div [ HA.class' { hidden: DA.null model.tagsInputed } ] $ map tagEntry model.tagsInputed
               ]
       , HE.div [ HA.class' "profile-section" ]
@@ -179,13 +182,16 @@ edit model =
       languages = SL.languages
       languageEntry id = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick <<< SetLanguage $ show id ] [ HE.text $ DM.fromMaybe "" (DH.lookup id languages) <> " x " ]
 
-      tagEntry tag = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick $ SetTag tag ] [ HE.text $ tag <> " x " ]
+      tagEntry tag = HE.div [ HA.class' "profile-selected-item lynx-inline" ]
+            [ HE.text tag
+            , HE.button [ HA.class' "profile-remove-tag", HA.title "Remove tag", HA.onClick $ SetTag tag ]
+                    [ HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16" ] closeElements ]
+            ]
 
       unwrapFailure = case _ of
             Failure s → s
             _ → ""
 
-      enterKeyHint = HA.createAttribute "enterkeyhint"
 
 preview ∷ ProfileModel → Array (Html ProfileMessage)
 preview model =

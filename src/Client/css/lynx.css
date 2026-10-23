@@ -330,3 +330,12 @@
     position: relative;
     bottom: auto;
 }
+
+.profile-remove-tag {
+    padding: 8px;
+    margin-left: 4px;
+}
+
+.profile-remove-tag svg {
+    fill: var(--text-color);
+}

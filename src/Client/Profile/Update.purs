@@ -2,9 +2,9 @@ module Client.Profile.Update where
 
 import Prelude
 
-import Client.AppId (imAppId, profileAppId)
-import Client.Ui.Document as CUD
-import Client.File as CF
+import Client.AppId (imAppId)
+import Client.Lynx.DatePicker as CLD
+import Client.Lynx.Image as CLI
 import Client.Lynx.Room as CLR
 import Client.Network (routes)
 import Client.Network as CN
@@ -18,10 +18,10 @@ import Data.String as DS
 import Data.Symbol (class IsSymbol)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff)
+import Effect.Aff as EA
+import Effect.Exception as EE
 import Effect.Class as EC
 import Flame (Update)
-import Flame as F
-import Flame.Html.Event (Event)
 import Flame.Subscription as FS
 import Payload.ResponseTypes (Response(..))
 import Prim.Row (class Cons)
@@ -29,7 +29,6 @@ import Record as R
 import Shared.Ask (Ask)
 import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SD
-import Shared.Element (ElementId(..))
 import Shared.Im.Types as SIT
 import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Network (RequestStatus(..))
@@ -46,8 +45,8 @@ import Type.Proxy (Proxy(..))
 update ∷ Update ProfileModel ProfileMessage
 update model = case _ of
       SetPField upd → setField model upd
+      SelectAge → selectAge model
       SelectAvatar → selectAvatar model
-      PrepareAvatar event → prepareAvatar event model
       RefreshPosts → refreshPosts model
       RefreshAsks → refreshAsks model
       RefreshPraise → refreshPraise model
@@ -225,6 +224,16 @@ save model = model { loading = true, fromTemporary = false } /\ [ saveIt ]
 setFromTemporary ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 setFromTemporary model = model { fromTemporary = true } /\ []
 
+selectAge ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+selectAge model = model { loading = true, updateRequestStatus = Nothing } /\ [ selectIt ]
+      where
+      selectIt = do
+            result ← EA.attempt $ CLD.pick model.ageInputed
+            pure <<< Just <<< SetPField $ \current → case result of
+                  Right Nothing → current { loading = false }
+                  Right (Just age) → current { loading = false, ageInputed = Just age }
+                  Left error → current { loading = false, updateRequestStatus = Just <<< Failure $ EE.message error }
+
 setAge ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 setAge value model = model { ageInputed = DateWrapper <$> SD.unformatIsoDate value } /\ []
 
@@ -243,16 +252,14 @@ setGender value model = model { genderInputed = parsed, choice = Nothing } /\ []
                   _ → Nothing
 
 setTag ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-setTag tag model =
-      model
-            { tagsInputed =
-                    if DA.elem tag model.tagsInputed then
-                          DA.filter (tag /= _) model.tagsInputed
-                    else if DA.length model.tagsInputed < maxTags then
-                          DA.snoc model.tagsInputed tag
-                    else
-                          model.tagsInputed
-            } /\ []
+setTag value model =
+      let tag = DS.trim value in
+      if DA.elem tag model.tagsInputed then
+            model { tagsInputed = DA.filter (tag /= _) model.tagsInputed } /\ []
+      else if tag == "" || DA.length model.tagsInputed >= maxTags then
+            model /\ []
+      else
+            model { tagsInputed = DA.snoc model.tagsInputed tag } /\ []
       where
       maxTags
             | DA.elem MoreTags model.user.privileges = maxFinalTags
@@ -312,16 +319,11 @@ setField ∷ ProfileModel → (ProfileModel → ProfileModel) → ProfileModel /
 setField model upd = upd model { loading = false } /\ []
 
 selectAvatar ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-selectAvatar model = model /\ [ selectIt ]
+selectAvatar model = model { loading = true, updateRequestStatus = Nothing } /\ [ selectIt ]
       where
-      selectIt = EC.liftEffect do
-            input ← CUD.unsafeGetElementById AvatarFileInput
-            CF.triggerFileSelect input
-            pure Nothing
-
-prepareAvatar ∷ Event → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-prepareAvatar event model = model /\ [ before ]
-      where
-      before = do
-            CF.compressImage profileAppId event false $ \_ _ b → SetPField $ _ { avatarInputed = Just b }
-            pure Nothing
+      selectIt = do
+            result ← EA.attempt CLI.pick
+            pure <<< Just <<< SetPField $ \current → case result of
+                  Right Nothing → current { loading = false }
+                  Right (Just avatar) → current { loading = false, avatarInputed = Just avatar }
+                  Left error → current { loading = false, updateRequestStatus = Just <<< Failure $ EE.message error }

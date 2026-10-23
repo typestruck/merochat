@@ -23,8 +23,8 @@ data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
       | SetLanguage String
       | SetAge String
+      | SelectAge
       | SelectAvatar
-      | PrepareAvatar Event
       | Clear
       | SetGender String
       | SetCountry String

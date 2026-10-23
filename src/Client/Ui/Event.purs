@@ -22,6 +22,11 @@ import Web.File.FileList (FileList)
 
 foreign import innerText_ ∷ EffectFn1 Element String
 
+foreign import takeInputValue_ ∷ EffectFn1 Foreign String
+
+takeInputValue ∷ Foreign → Effect String
+takeInputValue = EU.runEffectFn1 takeInputValue_
+
 foreign import createCustomEvent_ ∷ ∀ value. Fn2 String value CustomEvent
 
 foreign import customEventDetail_ ∷ ∀ value. Fn1 CustomEvent value

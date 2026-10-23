@@ -194,11 +194,6 @@ modalMenu model =
       HE.div [ HA.class' { "modal-placeholder": true, hidden: not screenModal } ]
             ( [ HE.div [ HA.class' "modal-menu-mobile" ]
                       [ SIS.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
-                      , HE.strong_
-                              [ HE.text $ case model.modal of
-                                      Screen m → show m
-                                      _ → ""
-                              ]
                       ]
               , HE.div [ HA.class' { "modal-menu": true, hidden: model.smallScreen && model.modal /= Screen ShowMenu } ]
                       [ HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit), HA.class' { entry: true, selected: model.modal == Screen (ShowProfile Edit) } ] [ HE.text $ show (ShowProfile Edit) ]

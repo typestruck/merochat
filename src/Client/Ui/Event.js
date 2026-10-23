@@ -2,6 +2,21 @@ export function innerText_(element) {
       return element.innerText;
 }
 
+export function takeInputValue_(event) {
+      let target = event.currentTarget ?? event.target;
+      let value = event.detail?.value ?? target.value ?? '';
+
+      if (typeof lynx !== 'undefined')
+            lynx.createSelectorQuery()
+                  .selectUniqueID(target.uid)
+                  .invoke({ method: 'setValue', params: { value: '' } })
+                  .exec();
+      else
+            target.value = '';
+
+      return value;
+}
+
 export function createCustomEvent_(name, value) {
       return new CustomEvent(name, {
             detail: {
