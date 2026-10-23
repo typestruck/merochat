@@ -98,17 +98,19 @@ chatBarInput eid elementId model = HE.div [ HA.class' "chat-composer" ]
                       ]
               , HE.div [ HA.class' "chat-input-area" ]
                       [ emojiButton model
-                      , HE.textarea'
-                              ( typingStatus
-                                      <> filterEnterKeydown
-                                      <>
-                                            [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
-                                            , HA.id $ show elementId
-                                            , HA.placeholder ("Type here to message " <> recipientName)
-                                            , HA.onInput' ResizeChatInput
-                                            , HA.autocomplete "off"
-                                            ]
-                              )
+                      , HE.div [ HA.class' "chat-input-frame", HA.createAttribute "flatten" "false" ]
+                              [ HE.textarea'
+                                      ( typingStatus
+                                              <> filterEnterKeydown
+                                              <>
+                                                    [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
+                                                    , HA.id $ show elementId
+                                                    , HA.placeholder ("Type here to message " <> recipientName)
+                                                    , HA.onInput' ResizeChatInput
+                                                    , HA.autocomplete "off"
+                                                    ]
+                                      )
+                              ]
                       , HE.div [ HA.class' "chat-right-buttons" ]
                               ( [ imageButton
                                 , audioButton [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Chat ShowAudioPrompt ]

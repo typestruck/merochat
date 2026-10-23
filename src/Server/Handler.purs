@@ -89,6 +89,7 @@ handlers reading =
               }
       , profile:
               { get: runJson reading SPH.profile
+              , initialize: runJson reading SPH.initialize
               , generated: runJson reading SPH.generated
               , save: runJson reading SPH.save
               , posts: runJson reading SPH.posts

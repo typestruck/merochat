@@ -25,7 +25,7 @@ import Shared.Ask (Ask)
 import Shared.Availability (Availability)
 import Shared.Changelog (Changelog, ChangelogAction)
 import Shared.Content (Content)
-import Shared.DateTime (DateTimeWrapper)
+import Shared.DateTime (DateTimeWrapper, DateWrapper)
 import Shared.Element (ElementId)
 import Shared.Modal (Modal, ScreenModal)
 import Shared.Post (Post)
@@ -37,7 +37,7 @@ import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.SuggestionsFrom (SuggestionsFrom)
 import Shared.Unsafe as SU
-import Shared.User (ProfileTab, User)
+import Shared.User (Gender, ProfileTab, User)
 import Unsafe.Coerce as UC
 
 
@@ -245,10 +245,10 @@ type UpdatedProfile =
       , description ∷ String
       , headline ∷ String
       , tags ∷ Array String
-      , country ∷ Maybe String
-      , languages ∷ Array String
-      , gender ∷ Maybe String
-      , age ∷ Maybe Int
+      , country ∷ Maybe Int
+      , languages ∷ Array Int
+      , gender ∷ Maybe Gender
+      , age ∷ Maybe DateWrapper
       }
 
 data RetryableRequest
@@ -401,6 +401,7 @@ data ImMessage
       | HighlightMessage IntWrapper
       | ClearHighlightedMessage
       | ConnectWebSocket
+      | SetUserFromProfile User
       | SetNameFromProfile String
       | SendUpdatedProfile
       | SetChatBackgroundFromProfile Boolean (Maybe String)

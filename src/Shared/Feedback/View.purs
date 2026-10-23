@@ -3,6 +3,8 @@ module Shared.Feedback.View where
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Shared.Modal (Modal(..))
+import Shared.Modal as SM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -15,7 +17,8 @@ import Shared.Network (RequestStatus(..))
 view ∷ FeedbackModel → Html FeedbackMessage
 view model =
       HE.div [ HA.id $ show FeedbackForm, HA.class' { hidden: not model.visible } ]
-            [ HE.div [ HA.class' "center duller" ]
+            [ SM.header "Send feedback" $ ToggleVisibility HideModal
+            , HE.div [ HA.class' "center duller" ]
                     [ HE.span_ [ HE.text "Use the form bellow to report any issues," ]
                     , br
                     , HE.span_ [ HE.text "send suggestions or shoot any questions you might have" ]

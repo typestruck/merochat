@@ -22,6 +22,9 @@ profile { guards: { loggedUserId }, query } = do
       payload ← SPA.profile loggedUserId
       R.liftEffect $ SPT.template payload query.mode
 
+initialize ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect ProfileData
+initialize { guards: { loggedUserId } } = SPA.initialize loggedUserId
+
 generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What } } → ServerEffect String
 generated { body } = SPA.generateField body.field
 

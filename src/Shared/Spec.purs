@@ -19,7 +19,7 @@ import Shared.SuggestionsFrom (SuggestionsFrom)
 import Shared.Post (PostPayload, Post)
 import Shared.Praise (Praise, PraisedFor, PraiseDisplay)
 import Shared.Profile.Mode (ProfileMode)
-import Shared.Profile.Types (GeneratedInput, SavedFields)
+import Shared.Profile.Types (GeneratedInput, ProfileData, SavedFields)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.User (ProfileTab)
 
@@ -232,6 +232,7 @@ spec ∷
                                                 { query ∷ { mode ∷ ProfileMode }
                                                 , response ∷ Html
                                                 }
+                                  , initialize ∷ GET "/initialize" { response ∷ ProfileData }
                                   , ignore ∷
                                           POST "/ignore"
                                                 { body ∷ { id ∷ Int }

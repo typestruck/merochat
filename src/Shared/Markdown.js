@@ -1,3 +1,5 @@
+import { lexer as markdownLexer } from "marked";
+
 let marked = {
       use: function() {},
       lexer: function() {
@@ -121,4 +123,10 @@ export function parseRestricted(plainMarkdown) {
             gfm: true,
             breaks: true
       });
+}
+
+export function previewLexer(value) {
+      "background only";
+
+      return markdownLexer(value, { gfm: true, breaks: true });
 }

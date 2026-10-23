@@ -4,6 +4,8 @@ import Prelude
 
 import Data.Array as DA
 import Data.Tuple (Tuple(..))
+import Shared.Modal (Modal(..))
+import Shared.Modal as SM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -15,7 +17,8 @@ import Shared.Svg as SS
 view ∷ KarmaPrivilegesModel → Html KarmaPrivilegesMessage
 view model@{ top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent, started, karma, total } } =
       HE.div [ HA.id "karma-leaderboard", HA.class' { hidden: not model.visible } ]
-            [ HE.div [ HA.class' "modal-section leaderboard " ]
+            [ SM.header "Karma" $ ToggleVisibility HideModal
+              , HE.div [ HA.class' "modal-section leaderboard " ]
                     [ HE.div [ HA.class' "modal-part" ]
                             [ HE.div [ HA.class' "section-label" ]
                                     [ HE.div [ HA.class' "bold" ] [ HE.text "Karma leaderboard" ]

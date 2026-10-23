@@ -2,7 +2,7 @@ module Client.Feedback.Update (update) where
 
 import Prelude
 
-import Client.AppId (feedbackAppId)
+import Client.AppId (imAppId, feedbackAppId)
 import Client.File as CF
 import Client.Network (routes)
 import Data.Either (Either(..))
@@ -11,25 +11,35 @@ import Data.String as DS
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
+import Effect.Class as EC
 import Flame (Update)
 import Flame.Html.Event (Event)
+import Flame.Subscription as FS
 import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
-import Shared.Modal (ScreenModal(..))
+import Shared.Im.Types as SIT
+import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 
 update ∷ Update FeedbackModel FeedbackMessage
 update model =
       case _ of
-            ToggleVisibility modal → toggleVisibility modal model
+            ToggleVisibility modal → toggleVisibility model modal
             SetComments input → setComments input model
             BeforeSetScreenshot event → beforeSetScreenshot event model
             SetScreenshot base64 → setScreenshot base64 model
             SendFeedback → sendFeedback model
             AfterSendFeedback status → afterSendFeedback status model
 
-toggleVisibility ∷ ScreenModal → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
-toggleVisibility modal model = model { visible = modal == ShowFeedback } /\ []
+toggleVisibility ∷ FeedbackModel → Modal → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+toggleVisibility model = case _ of
+      HideModal → model /\ [ hide ]
+      Screen modal → model { visible = modal == ShowFeedback } /\ []
+      _ → model /\ []
+      where
+      hide = EC.liftEffect do
+            FS.send imAppId <<< SIT.SpecialRequest $ SIT.ToggleModal HideModal
+            pure Nothing
 
 setComments ∷ String → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
 setComments input model =

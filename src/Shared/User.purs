@@ -32,7 +32,7 @@ import Payload.Server.DecodeBody (class DecodeBody)
 import Shared.Ask (Ask)
 import Shared.Availability (Availability)
 import Shared.Badge (Badge)
-import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime (DateTimeWrapper(..), DateWrapper)
 import Shared.Post (Post)
 import Shared.Praise (Praise, PraisedFor)
 import Shared.Privilege (Privilege)
@@ -56,11 +56,11 @@ type BasicUser fields =
 
 type User = Record
       ( BasicUser
-              ( gender ∷ Maybe String
-              , country ∷ Maybe String
-              , languages ∷ Array String
+              ( gender ∷ Maybe Gender
+              , country ∷ Maybe Int
+              , languages ∷ Array Int
               , completedFields ∷ Array ProfileColumn
-              , age ∷ Maybe Int
+              , age ∷ Maybe DateWrapper
               , readReceipts ∷ Boolean
               , unseenPosts ∷ Int
               , typingStatus ∷ Boolean

@@ -25,12 +25,11 @@ import Effect.Class as EC
 import Effect.Now as EN
 import Server.Database as SD
 import Server.Database.Blocks (_blocked, _blocker, blocks)
-import Server.Database.Countries (countries)
 import Server.Database.Functions (date_part_age, datetime_part_age, insert_history, utc_now)
 import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories, _favorite, _last_message_date)
 import Server.Database.KarmaHistories (_amount, karma_histories)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
-import Server.Database.Languages (_languages, languages)
+
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.LastSeen (_who, last_seen)
 import Server.Database.Messages (_content, _edited, _status, messages)

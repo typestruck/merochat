@@ -88,9 +88,9 @@ react userId messageId value event model = model /\ [ save ]
       where
       save = do
             EC.liftEffect $ CUEV.stopPropagation event
-            reaction ← EC.liftEffect case value of
+            reaction ← case value of
                   Right text → pure text
-                  Left id → CUD.unsafeQuerySelector ("#" <> id) >>= CUE.value >>= (pure <<< DS.toUpper)
+                  Left id → EC.liftEffect (CUD.unsafeQuerySelector $ "#" <> id) >>= CUE.value >>= (pure <<< DS.toUpper)
             void <<< CN.silentRequest $ routes.im.react { body: { id: messageId, reaction } }
             pure <<< Just $ DisplayReaction userId messageId reaction
 

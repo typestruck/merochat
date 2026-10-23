@@ -3,6 +3,7 @@ import './file/default/theme-switcher.js'
 
 import './src/Client/css/base.css';
 import './src/Client/css/im.css';
+import './src/Client/css/profile.css';
 import './src/Client/css/landing.css';
 import './src/Client/css/lynx.css';
 

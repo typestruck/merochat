@@ -6,7 +6,7 @@ import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
-import Shared.Modal (ScreenModal)
+import Shared.Modal (Modal)
 
 type InternalHelpModel =
       { toggleHelp ∷ DisplayHelpSection
@@ -14,7 +14,7 @@ type InternalHelpModel =
       }
 
 data InternalHelpMessage
-      = ToggleVisibility ScreenModal
+      = ToggleVisibility Modal
       | ToggleHelpSection DisplayHelpSection
 
 data DisplayHelpSection

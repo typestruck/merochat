@@ -8,6 +8,10 @@ import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Int as DI
+import Data.HashMap as DH
+import Shared.Countries as SCO
+import Shared.Languages as SL
+import Shared.DateTime as SD
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
@@ -27,7 +31,6 @@ import Shared.Badge (Badge)
 import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
-import Shared.Extra as SE
 import Shared.Im.Contact as SIC
 import Shared.Im.Scroll (scrollEventName)
 import Shared.Im.Svg (backArrow, home, nextArrow)
@@ -193,7 +196,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                           )
                   , HE.div [ HA.class' { "card-description": true, hidden: user.showing /= ShowInfo }, HA.title "See full profile" ]
                           [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                          , HE.div' [ SE.innerHtml $ SM.parse user.description { id: _ } ]
+                          , SM.markdown [] user.description
                           ]
 
                   , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
@@ -295,7 +298,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                     )
             , HE.div [ HA.class' { "card-description": true, hidden: suggestion.showing /= ShowInfo } ]
                     [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                    , HE.div' [ SE.innerHtml $ SM.parse suggestion.description { id: _ } ]
+                    , SM.markdown [] suggestion.description
                     ]
 
             , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
@@ -374,7 +377,7 @@ suggestionCards ∷ ImModel → Html ImMessage
 suggestionCards model =
       HE.div [ HA.class' "suggestion-cards" ]
             [ if model.user.temporary then welcomeTemporary model else welcome model
-            , HE.createElement "scroll-view" [ HA.class' "suggestion-cards-scroll", HA.id $ show Cards, HA.createAttribute "scroll-orientation" "vertical" ]
+            , HE.scrollView [ HA.class' "suggestion-cards-scroll", HA.id $ show Cards, HA.scrollOrientation "vertical" ]
                     [ HE.div [ HA.class' "cards" ] allCards ]
             ]
       where
@@ -451,7 +454,7 @@ suggestionCards model =
                           , HE.div_ $ [ HE.span [ HA.class' "lynx-inline" ] $ map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags ] <> [ HE.div' [ HA.class' "tag-ruler" ] ]
                           , HE.div (HA.class' "card-description" : showProfile suggestion.id)
                                   [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-                                  , HE.div' [ SE.innerHtml $ SM.parse suggestion.description { id: _ } ]
+                                  , SM.markdown [] suggestion.description
                                   ]
                           ]
                   , case model.showSuggestionChatInput of
@@ -491,7 +494,7 @@ arrow svg freeTo extraClasses message = HE.div (HA.class' ("suggestion-arrow" : 
 
 genderAge ∷ Suggestion → Array (Html ImMessage)
 genderAge suggestion =
-      case DM.maybe [] (\c → [ HE.span_ [ HE.text c ] ]) suggestion.gender <> DM.maybe [] (\c → [ HE.span_ [ HE.text $ show c ] ]) suggestion.age of
+      case DM.maybe [] (\c → [ HE.span_ [ HE.text $ show c ] ]) suggestion.gender <> DM.maybe [] (\c → [ HE.span_ [ HE.text <<< show $ SD.ageFrom c ] ]) suggestion.age of
             [ g, a ] → [ HE.span [ HA.class' "lynx-inline" ] [ g, separator, a ] ]
             ga → ga
 
@@ -526,12 +529,12 @@ temporary =
       ]
 
 from ∷ Suggestion → Array (Html ImMessage)
-from suggestion = DM.maybe [] (\c → [ HE.span [ HA.class' "lynx-inline" ] [ HE.span [ HA.class' "duller" ] [ HE.text "from " ], HE.span_ [ HE.text c ] ] ]) suggestion.country
+from suggestion = DM.maybe [] (\c → [ HE.span [ HA.class' "lynx-inline" ] [ HE.span [ HA.class' "duller" ] [ HE.text "from " ], HE.span_ [ HE.text c ] ] ]) (suggestion.country >>= flip DH.lookup SCO.countries)
 
 speaks ∷ Suggestion → Array (Html ImMessage)
 speaks suggestion
       | DA.null suggestion.languages = []
-      | otherwise = [ HE.div [ HA.class' "lynx-inline" ] $ HE.span [ HA.class' "duller" ] [ HE.text "speaks " ] : (DA.intersperse separator $ map (\c → HE.span_ [ HE.text c ]) suggestion.languages) ]
+      | otherwise = [ HE.div [ HA.class' "lynx-inline" ] $ HE.span [ HA.class' "duller" ] [ HE.text "speaks " ] : (DA.intersperse separator $ map (\c → HE.span_ [ HE.text c ]) (DA.mapMaybe (flip DH.lookup SL.languages) suggestion.languages)) ]
 
 badges ∷ ∀ message. Array Badge → Array (Html message)
 badges source = map (it <<< SB.badgeFor) source

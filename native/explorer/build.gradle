@@ -31,6 +31,8 @@ android {
 
 dependencies {
     implementation platform("org.jetbrains.kotlin:kotlin-bom:1.8.22")
+    implementation 'org.lynxsdk.lynx:serval_markdown:0.1.1'
+    implementation 'org.lynxsdk.lynx:lynxtextra:0.1.1'
     ['lynx', 'lynx-base', 'lynx-devtool', 'lynx-service-log', 'lynx-service-image',
      'lynx-service-devtool', 'lynx-service-http', 'xelement', 'xelement-input',
      'xelement-overlay', 'xelement-viewpager', 'xelement-scroll-coordinator',

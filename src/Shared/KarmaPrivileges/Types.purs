@@ -9,7 +9,7 @@ import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
-import Shared.Modal (ScreenModal)
+import Shared.Modal (Modal)
 
 type LeaderboardUser =
       { id ∷ Int
@@ -45,7 +45,7 @@ type PrivilegeUser =
 
 data KarmaPrivilegesMessage
       = ToggleBoardDisplay ToggleBoard
-      | ToggleVisibility ScreenModal
+      | ToggleVisibility Modal
 
 data ToggleBoard
       = InBetween10

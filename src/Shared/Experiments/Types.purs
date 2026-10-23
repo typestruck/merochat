@@ -15,7 +15,7 @@ import Droplet.Language as DL
 import Flame.Html.Event (Event)
 import Foreign as F
 import Shared.Experiment (Experiment(..))
-import Shared.Modal (ScreenModal)
+import Shared.Modal (Modal)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 
@@ -29,7 +29,7 @@ type ChatExperiment =
 type ChatExperimentUser = { id ∷ Int, privileges ∷ Array Privilege }
 
 data ExperimentsMessage
-      = ToggleVisibility ScreenModal
+      = ToggleVisibility Modal
       | RedirectKarma
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
       | SetCurrentExperiment Experiment

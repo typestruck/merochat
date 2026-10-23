@@ -2,7 +2,7 @@ module Client.Im.ModalsMenu where
 
 import Prelude
 
-import Client.AppId (loginAppId)
+import Client.AppId (imAppId, loginAppId, profileAppId)
 import Client.Ui.Document as CUD
 import Client.Ui.Element as CUE
 import Client.EventTypes (modalVisible)
@@ -45,8 +45,8 @@ toggleInitialScreen toggle model =
             } /\ [ updateDraft ]
       where
       updateDraft
-            | toggle = EC.liftEffect do
-                    input ← CUD.unsafeGetElementById ChatInput
+            | toggle = do
+                    input ← EC.liftEffect $ CUD.unsafeGetElementById ChatInput
                     draft ← CUE.value input
                     CUE.setValue input ""
                     if DM.isNothing model.chatting then
@@ -71,7 +71,7 @@ logout after model = model /\ [ out ]
 modal ∷ Modal → ImModel → NextMessage
 modal toggled model =
       case toggled of
-            Screen (ShowProfile mode) → showModal routes.profile.get { query: { mode } } (ShowProfile mode) Profile ProfileEditionRoot
+            Screen (ShowProfile _) → model /\ [ EC.liftEffect (F.navigate profileAppId) $> Nothing ]
             Screen ShowSettings → showModal routes.settings.get {} ShowSettings Settings SettingsEditionRoot
             Screen ShowKarmaPrivileges → showModal routes.leaderboard {} ShowKarmaPrivileges KarmaPrivileges KarmaPrivilegesRoot
             Screen ShowHelp → showModal routes.internalHelp {} ShowHelp InternalHelp HelpRoot
@@ -95,7 +95,9 @@ modal toggled model =
                         } /\ [ visible ShowMenu ]
       where
       visible toggle = do
-            EC.liftEffect $ FSUC.broadcast modalVisible toggle
+            EC.liftEffect do
+                  FSUC.broadcast modalVisible $ Screen toggle
+                  when (toggle == ShowMenu) $ F.navigate imAppId
             pure Nothing
 
       showModal ∷ ∀ query response. Coercible response String ⇒ (query → Aff (ClientResponse response)) → query → ScreenModal → Bundle → ElementId → NextMessage

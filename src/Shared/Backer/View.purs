@@ -2,16 +2,19 @@ module Shared.Backer.View where
 
 import Prelude
 
+import Shared.Modal (Modal(..))
+import Shared.Modal as SM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Backer.Types (BackerMessage, BackerModel)
+import Shared.Backer.Types (BackerMessage(..), BackerModel)
 import Shared.Extra as SE
 
 view ∷ BackerModel → Html BackerMessage
 view model = HE.div [ HA.id "backer" ]
       [ HE.div [ HA.class' { "backer": true, hidden: not model.visible } ]
-              [ HE.h3 [ HA.class' "bottom initial" ] [ HE.text "MeroChat depends on people like you to keep running" ]
+              [ SM.header "Support us" $ ToggleVisibility HideModal
+              , HE.h3 [ HA.class' "bottom initial" ] [ HE.text "MeroChat depends on people like you to keep running" ]
               , HE.p_ [ HE.text "We will never show ads, charge for subscriptions, sell cosmetics or anything that would stand in the way of being the best place ever to chat" ]
               , HE.p_ [ HE.text "At the same time: apps have costs. Servers, domains, marketing campaigns, design and development time, etc. quickly become expensive. All the more for a passion project like MeroChat that is not tied to any big corporations or VC money" ]
               , HE.p_ [ HE.text "So why not pitch in if you can? All proceeds go straight into making this place even better :)" ]

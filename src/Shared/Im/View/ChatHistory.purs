@@ -90,7 +90,7 @@ chatHistory model =
                           [ HE.div
                                   [ HA.class' "message-content", HA.id $ SE.messageElementId entry.id ]
                                   [ HE.div [ HA.class' "message-content-in" ]
-                                          [ HE.div' [ SE.innerHtml $ SM.parse entry.content { id: _ } ]
+                                          [ SM.markdown [] entry.content
                                           ]
                                   , HE.div [ HA.class' "message-status error-message lynx-inline" ]
                                           [ HE.span [ HA.class' { hidden: not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.agoWithTime $ SC.coerce entry.date ]
@@ -142,7 +142,7 @@ chatHistory model =
                                                                         ]
 
                                                           ]
-                                                  , HE.div' [ SE.innerHtml $ SM.parse entry.content { id: _ } ]
+                                                  , SM.markdown [] entry.content
                                                   , HE.div [ HA.class' "message-context-options" ]
                                                           [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
                                                                   [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]

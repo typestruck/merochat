@@ -5,12 +5,11 @@ import Droplet.Language
 import Data.Tuple.Nested (type (/\))
 import Server.Database.Users (UsersTable)
 import Type.Proxy (Proxy(..))
-import Server.Database.Languages (LanguagesTable)
 
 type LanguagesUsers =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
       , speaker ∷ Column Int (ForeignKey "id" UsersTable)
-      , language ∷ Column Int (ForeignKey "id" LanguagesTable)
+      , language ∷ Int
       )
 
 languages_users ∷ Table "languages_users" LanguagesUsers

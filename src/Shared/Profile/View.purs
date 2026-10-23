@@ -7,9 +7,13 @@ import Data.Array as DA
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Shared.Modal (Modal(..))
+import Shared.Modal as SM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Countries as SCO
+import Shared.Languages as SL
 import Shared.Availability (Availability(..))
 import Shared.Avatar (defaultAvatar)
 import Shared.Avatar as SA
@@ -38,7 +42,8 @@ import Shared.User (Gender(..))
 view ∷ ProfileModel → Html ProfileMessage
 view model = HE.div [ HA.id $ show ProfileEditionForm ]
       [ HE.div [ HA.onClick $ ToggleAskMenu Nothing, HA.class' { "profile-edition": true, hidden: not model.visible } ]
-              ( [ HE.div [ HA.class' "green-tab lynx-inline" ]
+              ( [ SM.header "Profile" $ ToggleVisibility HideModal
+                  , HE.div [ HA.class' "green-tab lynx-inline" ]
                         [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [ HE.text "Edit" ]
                         , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview } ] [ HE.text "Preview" ]
                         , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Praise }, HA.onClick RefreshPraise ] [ HE.text "Praise" ]
@@ -111,8 +116,7 @@ praises model = case model.praise of
 
 edit ∷ ProfileModel → Array (Html ProfileMessage)
 edit model =
-      [ --likely a rendering bug on flame as it wont work with regular div
-        HE.createElement "vid" [ HA.class' { "profile-section created-account": true, hidden: not model.fromTemporary } ] [ HE.text "Your account has been created" ]
+      [ HE.div [ HA.class' { "profile-section created-account": true, hidden: not model.fromTemporary } ] [ HE.text "Your account has been created" ]
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Avatar" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your profile picture" ]
@@ -130,38 +134,25 @@ edit model =
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Basic info" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "All fields are optional" ]
               , HE.div [ HA.class' "profile-section-wedge" ]
-                      [ HE.input [ SC.onChange SetAge, HA.class' "modal-input margined", HA.type' "date", HA.placeholder "Your age", HA.value <<< DM.fromMaybe "" $ map SD.formatIsoDate model.ageInputed ]
-                      , SE.select [ HA.class' "modal-select", HA.onInput SetGender ]
-                              [ SE.option [ HA.value "", HA.selected $ model.genderInputed == Nothing ] [ HE.text "Do not show my gender" ]
-                              , SE.option [ HA.value $ show Female, HA.selected $ model.genderInputed == Just Female ] [ HE.text $ show Female ]
-                              , SE.option [ HA.value $ show Male, HA.selected $ model.genderInputed == Just Male ] [ HE.text $ show Male ]
-                              , SE.option [ HA.value $ show NonBinary, HA.selected $ model.genderInputed == Just NonBinary ] [ HE.text $ show NonBinary ]
-                              , SE.option [ HA.value $ show Other, HA.selected $ model.genderInputed == Just Other ] [ HE.text $ show Other ]
-                              ]
+                      [ HE.input [ SC.onChange SetAge, HA.class' "modal-input margined", HA.type' "text", HA.placeholder "Birthday (YYYY-MM-DD)", HA.value <<< DM.fromMaybe "" $ map SD.formatIsoDate model.ageInputed, HA.createAttribute "default-value" <<< DM.fromMaybe "" $ map SD.formatIsoDate model.ageInputed ]
+                      , dropdown model "gender" (DM.maybe "Do not show my gender" show model.genderInputed) SetGender
+                              ({ value: "", name: "Do not show my gender" } : map (\gender → { value: show gender, name: show gender }) [ Female, Male, NonBinary, Other ])
                       ]
-              , HE.div [ HA.class' "profile-section-wedge" ]
-                      [ SE.select [ HA.class' "modal-select margined", HA.onInput SetCountry ]
-                              ( SE.option [ HA.value "", HA.selected $ model.countryInputed == Nothing ] [ HE.text "Do not show my country" ]
-                                      : map (\c → SE.option [ HA.value $ show c.id, HA.selected $ model.countryInputed == Just c.id ] [ HE.text c.name ]) model.countries
-                              )
-                      , HE.div [ HA.class' "profile-languages" ]
-                              [ SE.select [ HA.class' "modal-select", HA.onInput SetLanguage ]
-                                      ( SE.option [ HA.value "", HA.selected $ DA.null model.languagesInputed ] [ HE.text "Do not show my languages" ]
-                                              : map (\c → SE.option [ HA.value $ show c.id, HA.selected $ Just c.id == firstLanguage ] [ HE.text c.name ]) model.languages
-                                      )
-                              , HE.div [ HA.class' { hidden: DA.null model.languagesInputed } ] $ map languageEntry model.languagesInputed
-                              ]
-                      ]
+              , dropdown model "country" (DM.fromMaybe "Do not show my country" $ model.countryInputed >>= flip DH.lookup SCO.countries) SetCountry
+                      ({ value: "", name: "Do not show my country" } : map (\country → { value: show country.id, name: country.name }) SCO.options)
+              , dropdown model "language" "Choose a language" SetLanguage
+                      ({ value: "", name: "Do not show my languages" } : map (\language → { value: show language.id, name: language.name }) SL.options)
+              , HE.div [ HA.class' { hidden: DA.null model.languagesInputed } ] $ map languageEntry model.languagesInputed
               ]
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Display name" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Leave it blank for a new auto generated name" ]
-              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength nameMaxCharacters, HA.value $ DM.fromMaybe "" model.nameInputed, SC.onChange <<< SetAutoGenerated $ Name ]
+              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength nameMaxCharacters, HA.value $ DM.fromMaybe "" model.nameInputed, HA.createAttribute "default-value" $ DM.fromMaybe "" model.nameInputed, SC.onChange <<< SetAutoGenerated $ Name ]
               ]
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Headline" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "An one liner to grab attention. Leave blank for autogenerated" ]
-              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength headlineMaxCharacters, HA.value $ DM.fromMaybe "" model.headlineInputed, SC.onChange <<< SetAutoGenerated $ Headline ]
+              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength headlineMaxCharacters, HA.value $ DM.fromMaybe "" model.headlineInputed, HA.createAttribute "default-value" $ DM.fromMaybe "" model.headlineInputed, SC.onChange <<< SetAutoGenerated $ Headline ]
               ]
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Tags" ]
@@ -172,22 +163,21 @@ edit model =
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "About" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Whatever you feel like saying. Leave blank for autogenerated" ]
-              , HE.textarea [ HA.class' "modal-input", HA.maxlength descriptionMaxCharacters, HA.rows 7, HA.value $ DM.fromMaybe "" model.descriptionInputed, SC.onChange <<< SetAutoGenerated $ Description ] [ HE.text $ DM.fromMaybe "" model.descriptionInputed ]
+              , HE.textarea' [ HA.class' "modal-input", HA.maxlength descriptionMaxCharacters, HA.rows 7, HA.value $ DM.fromMaybe "" model.descriptionInputed, HA.createAttribute "default-value" $ DM.fromMaybe "" model.descriptionInputed, SC.onChange <<< SetAutoGenerated $ Description ]
               ]
       , HE.div [ HA.class' "profile-section profile-buttons" ]
-              [ HE.input [ HA.type' "button", HA.class' "cancel", HA.value "Discard", HA.onClick Clear ]
+              [ HE.button [ HA.class' "cancel", HA.onClick Clear ] [ HE.text "Discard" ]
               , if model.loading then HE.div [ HA.class' "loading-over" ]
                       [ HE.div' [ HA.class' "loading" ]
                       ]
                 else
-                      HE.input [ HA.type' "button", HA.onClick Save, HA.class' "green-button bigger", HA.value "Save" ]
+                      HE.button [ HA.onClick Save, HA.class' "green-button bigger" ] [ HE.text "Save" ]
               , HE.span [ HA.class' { "request-error-message": true, hidden: model.updateRequestStatus == Nothing } ] [ HE.text $ DM.maybe "" unwrapFailure model.updateRequestStatus ]
               ]
       ]
       where
-      firstLanguage = DA.head model.languagesInputed
-      languages = DH.fromArrayBy _.id _.name model.languages
-      languageEntry id = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick <<< SetLanguage $ show id ] [ HE.text $ SU.fromJust (DH.lookup id languages) <> " x " ]
+      languages = SL.languages
+      languageEntry id = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick <<< SetLanguage $ show id ] [ HE.text $ DM.fromMaybe "" (DH.lookup id languages) <> " x " ]
 
       tagEntry tag = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick $ SetTag tag ] [ HE.text $ tag <> " x " ]
 
@@ -226,7 +216,7 @@ preview model =
               )
       , HE.div [ HA.class' "card-description", HA.title "See full profile" ]
               [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-              , HE.div' [ SE.innerHtml $ SM.parse (DM.fromMaybe "" model.descriptionInputed) { id: _ } ]
+              , SM.markdown [] $ DM.fromMaybe "" model.descriptionInputed
               ]
       ]
       where
@@ -237,9 +227,19 @@ preview model =
             case DM.maybe [] (\c → [ HE.span_ [ HE.text $ show c ] ]) model.genderInputed <> DM.maybe [] (\c → [ HE.span_ [ HE.text <<< show $ SD.ageFrom c ] ]) model.ageInputed of
                   [ g, a ] → [ HE.div [ HA.class' "lynx-inline" ] [ g, separator, a ] ]
                   ga → ga
-      from = DM.maybe [] (\c → [ HE.div [ HA.class' "lynx-inline" ] [ HE.span [ HA.class' "duller" ] [ HE.text "from " ], HE.span_ [ HE.text <<< _.name <<< SU.fromJust $ DA.find ((c == _) <<< _.id) model.countries ] ] ]) model.countryInputed
+      from = DM.maybe [] (\c → [ HE.div [ HA.class' "lynx-inline" ] [ HE.span [ HA.class' "duller" ] [ HE.text "from " ], HE.span_ [ HE.text <<< DM.fromMaybe "" $ DH.lookup c SCO.countries ] ] ]) model.countryInputed
       speaks
             | DA.null model.languagesInputed = []
             | otherwise = [ HE.div [ HA.class' "lynx-inline" ] $ HE.span [ HA.class' "duller" ] [ HE.text "speaks " ] : (DA.intersperse separator $ map languageEntry model.languagesInputed) ]
-      languages = DH.fromArrayBy _.id _.name model.languages
-      languageEntry id = HE.span_ [ HE.text <<< SU.fromJust $ DH.lookup id languages ]
+      languages = SL.languages
+      languageEntry id = HE.span_ [ HE.text <<< DM.fromMaybe "" $ DH.lookup id languages ]
+
+
+dropdown ∷ ProfileModel → String → String → (String → ProfileMessage) → Array { value ∷ String, name ∷ String } → Html ProfileMessage
+dropdown model key label select options = HE.div [ HA.class' "profile-choice" ]
+      [ HE.button [ HA.class' "modal-select", HA.onClick <<< SetPField $ _ { choice = if model.choice == Just key then Nothing else Just key } ] [ HE.text label ]
+      , if model.choice == Just key then
+              HE.scrollView [ HA.class' "profile-choice-options", HA.scrollOrientation "vertical" ] $
+                    map (\option → HE.button [ HA.onClick $ select option.value ] [ HE.text option.name ]) options
+        else HE.div_ []
+      ]

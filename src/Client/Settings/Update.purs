@@ -23,7 +23,8 @@ import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
 import Payload.ResponseTypes (Response(..))
 import Shared.Im.Types (ImMessage(SetChatBackgroundFromProfile, SetPrivacySettings))
-import Shared.Modal (ScreenModal(..))
+import Shared.Im.Types as SIT
+import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Resource (maxImageSize)
 import Shared.Routes (routesSpec)
@@ -46,7 +47,7 @@ update model message =
             RemoveChatBackground → removeChatBackground model
             SaveChatBackground → saveChatBackground model
             ChangePrivacySettings request → changePrivacySettings request model
-            ToggleVisibility modal → setIt (_ { visible = modal == ShowSettings }) model
+            ToggleVisibility modal → toggleVisibility model modal
 
 setIt ∷ (SettingsModel → SettingsModel) → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 setIt s model = s model /\ []
@@ -142,3 +143,13 @@ afterSaveChatBackground url model = model { chatBackground = url } /\ [ success 
       success = do
             EC.liftEffect $ FS.send imAppId $ SetChatBackgroundFromProfile model.ownBackground url
             pure $ Just $ ShowSuccess $ RequestSaveChatBackground
+
+toggleVisibility ∷ SettingsModel → Modal → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+toggleVisibility model = case _ of
+      HideModal → model /\ [ hide ]
+      Screen modal → model { visible = modal == ShowSettings } /\ []
+      _ → model /\ []
+      where
+      hide = EC.liftEffect do
+            FS.send imAppId <<< SIT.SpecialRequest $ SIT.ToggleModal HideModal
+            pure Nothing

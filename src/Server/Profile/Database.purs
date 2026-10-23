@@ -18,11 +18,10 @@ import Effect.Now as EN
 import Prelude as P
 import Server.Database as SD
 import Server.Database.Asks (_answer, _answerer, asks)
-import Server.Database.Countries (countries)
 import Server.Database.Fields (_date, _id, _name, b, bu, k, l, lu, onlineStatus, p, tu, u)
 import Server.Database.Functions (utc_now)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
-import Server.Database.Languages (_languages, languages)
+
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.Messages (_content)
 import Server.Database.ModeratedProfileFields (_avatared, _descriptioned, _headlined, _moderated, _named, moderated_profile_fields)
@@ -51,7 +50,7 @@ presentProfile loggedUserId = map SU.fromJust <<< SD.single $ select profilePres
             /\ _descriptioned
             /\ _country
             /\ (select (array_agg _feature # as _privileges) # from privileges # wher (_quantity .<=. k ... _current_karma) # orderBy _privileges # limit (Proxy ∷ _ 1))
-            /\ (select (array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg _language # as (Proxy ∷ Proxy "languages")) # from languages_users # wher (_speaker .=. u ... _id) # orderBy (Proxy ∷ Proxy "languages") # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
             /\ (select (array_agg _description # as _badges) # from (((badges # as b) `join` (badges_users # as bu)) # on (b ... _id .=. bu ... _badge .&&. bu ... _receiver .=. u ... _id)) # orderBy _badges # limit (Proxy ∷ _ 1))
             /\ (k ... _current_karma # as _karma)
@@ -59,17 +58,11 @@ presentProfile loggedUserId = map SU.fromJust <<< SD.single $ select profilePres
       source = join (join (users # as u) (moderated_profile_fields # as p) # on (u ... _id .=. p ... _moderated)) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
       filtered = (u ... _id .=. loggedUserId)
 
-presentCountries ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
-presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _name
-
 presentPosts ∷ Int → Maybe Int → ServerEffect (Array Post)
 presentPosts loggedUserId after =
       case after of
             Just id → SD.query $ select (_id /\ _date /\ _expires /\ _content) # from posts # wher (_poster .=. loggedUserId .&&. _id .>. id) # orderBy (_date # desc) # limit (Proxy ∷ _ 8)
             Nothing → SD.query $ select (_id /\ _date /\ _expires /\ _content) # from posts # wher (_poster .=. loggedUserId) # orderBy (_date # desc) # limit (Proxy ∷ _ 8)
-
-presentLanguages ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
-presentLanguages = SD.query $ select (_id /\ _name) # from languages # orderBy _name
 
 presentGeneratedFields ∷ Connection → Int → _
 presentGeneratedFields connection loggedUserId = map SU.fromJust <<< SD.singleWith connection $ select (_name /\ _headline /\ _description) # from users # wher (_id .=. loggedUserId)

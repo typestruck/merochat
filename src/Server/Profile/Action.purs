@@ -4,6 +4,9 @@ import Prelude
 import Shared.Options.Profile
 
 import Data.Array as DA
+import Data.HashMap as DH
+import Shared.Countries as SCO
+import Shared.Languages as SL
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -53,18 +56,21 @@ profile ∷ Int → ServerEffect _
 profile loggedUserId = do
       profileUser ← SPDF.fromFlatProfileUser <$> SPD.presentProfile loggedUserId
       posts ← SPD.presentPosts loggedUserId Nothing
-      countries ← SPD.presentCountries
-      languages ← SPD.presentLanguages
       asks ← SAD.presentAllAsks loggedUserId Nothing
       praise ← SPRD.presentPraise loggedUserId
       pure
             { user: profileUser
-            , countries
             , posts
             , asks
             , praise
-            , languages
             }
+
+initialize ∷ Int → ServerEffect SPT.ProfileData
+initialize loggedUserId = do
+      posts ← SPD.presentPosts loggedUserId Nothing
+      asks ← SAD.presentAllAsks loggedUserId Nothing
+      praise ← SPRD.presentPraise loggedUserId
+      pure { posts, asks, praise }
 
 generateField ∷ SPT.What → ServerEffect String
 generateField field = do
@@ -89,6 +95,8 @@ data SaveAvatar = Ignore | Save (Maybe String)
 
 save ∷ Int → SavedFields → _
 save loggedUserId fields = do
+      when (DM.maybe false (not <<< flip DH.member SCO.countries) fields.country) $ SR.throwBadRequest "Invalid country"
+      when (DA.any (not <<< flip DH.member SL.languages) fields.languages) $ SR.throwBadRequest "Invalid language"
       avatar ← case fields.avatar of
             Nothing → pure $ Save Nothing
             Just base64 | DM.isJust (SSF.fromBase64File base64) → Save <<< Just <$> SF.saveBase64File base64

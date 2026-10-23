@@ -173,8 +173,8 @@ resumeSuggesting model =
             , editing = Nothing
             } /\ [ updateDraft ]
       where
-      updateDraft = EC.liftEffect do
-            input ← CUD.unsafeGetElementById ChatInput
+      updateDraft = do
+            input ← EC.liftEffect $ CUD.unsafeGetElementById ChatInput
             draft ← CUE.value input
             CUE.setValue input ""
             if DM.isNothing model.chatting then

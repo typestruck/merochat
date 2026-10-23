@@ -57,8 +57,6 @@ import Shared.User (User)
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 import Web.DOM.Element as WDE
-import Web.HTML.HTMLElement as WHHE
-import Web.HTML.HTMLTextAreaElement as WHHT
 
 -- | Send a message on enter
 enterSendMessage ∷ ElementId → Event → ImModel → NoMessages
@@ -76,21 +74,24 @@ forceSendMessage elementId model =
             [ messageContent elementId model
             ]
 
+--the annoying here thing that we need a better design over imperatively getting input element values
+-- is that we need to support both keydown enter / button press to send messages, as well typing status and
+-- text insertion and focus
 -- | Is the message to be sent an audio, text or image?
 messageContent ∷ ElementId → ImModel → Aff (Maybe ImMessage)
 messageContent elementId model = do
       input ← EC.liftEffect $ CUD.unsafeGetElementById elementId
-      value ← EC.liftEffect $ CUE.value input
+      value ← CUE.value input
       date ← EC.liftEffect $ map DateTimeWrapper EN.nowDateTime
       cleanUp input
       pure <<< Just $ SendMessage elementId (DM.maybe (Text value) toImage model.selectedImage) date
       where
       toImage selected = Image (DM.fromMaybe "" model.imageCaption) selected.width selected.height selected.base64
 
-      cleanUp input = EC.liftEffect do
-            WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
+      cleanUp input = do
+            CUE.focus input
             CUE.setValue input ""
-            SR.resizeInput input
+            EC.liftEffect $ SR.resizeInput input
 
 -- | Prepare and send a message via web socket
 prepareSendMessage ∷ ElementId → Content → DateTimeWrapper → WebSocket → ImModel → MoreMessages
@@ -271,23 +272,20 @@ makeTurn user contact =
       accountAge { joined: DateTimeWrapper dt } = DI.toNumber $ SD.daysDiff dt
 
 -- | Find the cursor on the chatting textarea and set text at is position
-setAtCursor ∷ Element → String → Effect (Maybe ImMessage)
+setAtCursor ∷ Element → String → Aff (Maybe ImMessage)
 setAtCursor input text = do
-      let textarea = SU.fromJust $ WHHT.fromElement input
-      end ← WHHT.selectionEnd textarea
-      value ← WHHT.value textarea
+      end ← CUE.selectionEnd input
+      value ← CUE.value input
       let { before, after } = DS.splitAt end value
       setTextAt input (end + DS.length text + 1) $ before <> text <> after
       pure Nothing
 
--- | Set text on the chatting textarea at the given cursor position
-setTextAt ∷ Element → Int → String → Effect Unit
+setTextAt ∷ Element → Int → String → Aff Unit
 setTextAt input position markdown = do
-      let textarea = SU.fromJust $ WHHT.fromElement input
-      WHHE.focus $ WHHT.toHTMLElement textarea
-      WHHT.setValue markdown textarea
-      WHHT.setSelectionEnd position textarea
-      SR.resizeInput input
+      CUE.setValue input markdown
+      CUE.setSelection input position
+      CUE.focus input
+      EC.liftEffect $ SR.resizeInput input
 
 -- | Handle drag and drop
 catchFile ∷ Event → ImModel → NoMessages
@@ -317,9 +315,9 @@ setSelectedImage selected model =
 setEmoji ∷ ElementId → Event → ImModel → NextMessage
 setEmoji elementId event model = model /\ [ setIt, hideModal ]
       where
-      setIt = EC.liftEffect do
-            emoji ← CUEV.innerTextFromTarget event
-            input ← CUD.unsafeGetElementById elementId
+      setIt = do
+            emoji ← EC.liftEffect $ CUEV.innerTextFromTarget event
+            input ← EC.liftEffect $ CUD.unsafeGetElementById elementId
             setAtCursor input emoji
       hideModal = pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
 
@@ -438,10 +436,10 @@ quoteMessage messageId contents touchEvent model =
             | touch.startX < touch.endX && touch.endX - touch.startX >= threshold && DO.abs (touch.startY - touch.endY) < threshold = quoteIt
             | otherwise = pure Nothing
 
-      quoteIt = EC.liftEffect do
-            input ← CUD.unsafeGetElementById ChatInput
+      quoteIt = do
+            input ← EC.liftEffect $ CUD.unsafeGetElementById ChatInput
             let markup = sanitized <> "\n\n"
-            value ← WHHT.value <<< SU.fromJust $ WHHT.fromElement input
+            value ← CUE.value input
             setAtCursor input $ if DS.null value then markup else "\n" <> markup
 
 editMessage ∷ String → Int → ImModel → NoMessages
@@ -451,10 +449,10 @@ editMessage message id model =
             , toggleContextMenu = HideContextMenu
             } /\ [ setIt *> pure Nothing ]
       where
-      setIt = EC.liftEffect do
-            input ← CUD.unsafeGetElementById ChatInput
+      setIt = do
+            input ← EC.liftEffect $ CUD.unsafeGetElementById ChatInput
             CUE.setValue input message
-            WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
+            CUE.focus input
 
 deleteMessage ∷ Int → WebSocket → ImModel → NoMessages
 deleteMessage id webSocket model =

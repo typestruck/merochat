@@ -4,6 +4,7 @@ import Prelude
 
 import Client.AppId (imAppId, profileAppId)
 import Client.Ui.Document as CUD
+import Client.Ui.Element as CUE
 import Client.Ui.Window as CUW
 import Client.Im.Asks as CIA
 import Client.Im.Changelog as CICL
@@ -309,6 +310,7 @@ update st model =
             ReloadPage → reloadPage model
             RemoveChatBackground → removeChatBackground model
             HideBuildProfile → hideBuildProfile model
+            SetUserFromProfile user → storeUser $ model { user = user }
             SetNameFromProfile name → setName name model
             SendUpdatedProfile → sendUpdatedProfile webSocket model
             SetAvatarFromProfile base64 → setAvatar base64 model
@@ -617,11 +619,9 @@ toggleUserContextMenu event model
 
 focusInput ∷ ElementId → ImModel → NextMessage
 focusInput elementId model = model /\
-      [ EC.liftEffect do
-              element ← CUD.getElementById elementId
-              WHHE.focus $ SU.fromJust do
-                    e ← element
-                    WHHE.fromElement e
+      [ do
+              element ← EC.liftEffect $ CUD.unsafeGetElementById elementId
+              CUE.focus element
               pure Nothing
       ]
 
@@ -678,7 +678,7 @@ sinceLastMessage model = case _.lastMessageDate <$> DA.last model.contacts of
 
 setName ∷ String → ImModel → NoMessages
 setName name model =
-      F.noMessages model
+      storeUser $ model
             { user
                     { name = name
                     }
@@ -692,7 +692,7 @@ sendUpdatedProfile webSocket model = model /\ [ send ]
             pure Nothing
 
 setAvatar ∷ Maybe String → ImModel → NoMessages
-setAvatar base64 model = F.noMessages model
+setAvatar base64 model = storeUser $ model
       { user
               { avatar = base64
               }
@@ -716,7 +716,7 @@ hideBuildProfile ∷ ImModel → NoMessages
 hideBuildProfile model = model { showBuildProfile = false } /\ []
 
 setCompletedFields ∷ Array ProfileColumn → ImModel → NoMessages
-setCompletedFields fields model = model { user = model.user { completedFields = fields } } /\ []
+setCompletedFields fields model = storeUser $ model { user = model.user { completedFields = fields } }
 
 highlightMessage ∷ IntWrapper → ImModel → NoMessages
 highlightMessage w model = model { highlighted = Just w.id } /\ [ scroll ]

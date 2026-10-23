@@ -4,10 +4,8 @@ import Droplet.Language
 import Prelude hiding (join, not)
 import Server.Database.Badges
 import Server.Database.BadgesUsers
-import Server.Database.Countries
 import Server.Database.Fields
 import Server.Database.KarmaLeaderboard
-import Server.Database.Languages
 import Server.Database.LanguagesUsers
 import Server.Database.LastSeen
 import Server.Database.Notes (_author, _target, notes)
@@ -27,7 +25,6 @@ import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Database.Asks (_answerer, _totalAsks, asks)
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
-import Server.Database.Functions (date_part_age)
 import Server.Database.Histories (_favorite)
 import Server.Database.ModeratedProfileFields (_avatared, _chatBackgrounded, _descriptioned, _headlined, _moderated, _named, moderated_profile_fields)
 import Server.Database.Posts (_poster, _totalPosts, _unseenPosts, posts)
@@ -42,7 +39,7 @@ import Type.Proxy (Proxy(..))
 userFields =
       (u ... _id # as _id)
             /\ _gender
-            /\ (date_part_age ("year" /\ _birthday) # as _age)
+            /\ (_birthday # as _age)
             /\ (_visibility # as profileVisibility)
             /\ (_readReceipts # as readReceipts)
             /\ (_typingStatus # as typingStatus)
@@ -57,11 +54,11 @@ userFields =
             /\ (l ... _date # as _lastSeen)
             /\ (_messageTimestamps # as messageTimestamps)
             /\ (_lastMessageOnContactList # as lastMessageOnContactList)
-            /\ (select (array_agg (l ... _name # orderBy (l ... _name)) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg (_language # orderBy _language) # as (Proxy ∷ Proxy "languages")) # from languages_users # wher (_speaker .=. u ... _id) # orderBy (Proxy ∷ Proxy "languages") # limit (Proxy ∷ _ 1))
             /\ _joined
             /\ _headline
             /\ _description
-            /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy ∷ _ 1) # as _country)
+            /\ _country
             /\ (select (array_agg _feature # as _privileges) # from privileges # wher (_quantity .<=. k ... _current_karma) # orderBy _privileges # limit (Proxy ∷ _ 1))
             /\ (select (array_agg _description # as _badges) # from (((badges # as b) `join` (badges_users # as bu)) # on (b ... _id .=. bu ... _badge .&&. bu ... _receiver .=. u ... _id)) # orderBy _badges # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
@@ -97,7 +94,7 @@ presentUserContactFields =
       , (select count(1) "totalPosts" from posts where poster = u.id and (u.posts_visibility = @everyone or u.posts_visibility = @noTemporaryUsers and not (exists (select 1 from users where id = @loggedUserId and temporary)) or u.posts_visibility = @contacts and h.sender is not null))
       , (select count(1) "totalAsks" from asks where answerer = u.id and answer is not null)
       , (select count(1) "unseenPosts" from posts p where poster = u.id and date >= @dayAgo and not (exists(select 1 from posts_seen where poster = u.id and reader = @loggedUserId and until >= p.id)) and (u.posts_visibility = @everyone or u.posts_visibility = @noTemporaryUsers and not (exists (select 1 from users where id = @loggedUserId and temporary)) or u.posts_visibility = @contacts and h.sender is not null))
-      , date_part_age ('year', birthday) age
+      , birthday age
       , name
       , 1 as bin
       , ls.date as "lastSeen"
@@ -112,8 +109,8 @@ presentUserContactFields =
       , suggestions_from
       , headline
       , description
-      , (SELECT name from countries WHERE id = u.country) country
-      , (SELECT ARRAY_AGG(l.name ORDER BY name) from languages l JOIN languages_users lu ON l.id = lu.language AND lu.speaker = u.id) languages
+      , u.country
+      , (SELECT ARRAY_AGG(lu.language ORDER BY lu.language) from languages_users lu WHERE lu.speaker = u.id) languages
       , (SELECT ARRAY_AGG(description) from badges b JOIN badges_users bu ON b.id = bu.badge AND bu.receiver = u.id) badges
       , (SELECT ARRAY_AGG(t.name ORDER BY t.id) from tags t JOIN tags_users tu ON t.id = tu.tag AND tu.creator = u.id) tags
       , k.current_karma karma
@@ -280,8 +277,8 @@ presentProfileUser loggedUserId = SD.single $ select profileUserFields # from (u
                   /\ _avatar
                   /\ _description
                   /\ _headline
-                  /\ (date_part_age ("year" /\ _birthday) # as _age)
+                  /\ (_birthday # as _age)
                   /\ _gender
-                  /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy ∷ _ 1) # as _country)
-                  /\ (select (array_agg (l ... _name # orderBy (l ... _name)) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
+                  /\ _country
+                  /\ (select (array_agg (_language # orderBy _language) # as (Proxy ∷ Proxy "languages")) # from languages_users # wher (_speaker .=. u ... _id) # orderBy (Proxy ∷ Proxy "languages") # limit (Proxy ∷ _ 1))
                   /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))

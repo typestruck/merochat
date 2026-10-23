@@ -21,11 +21,11 @@ import Shared.Unsafe as SU
 import Web.HTML.Event.EventTypes (click)
 
 registerRegularUser ∷ Effect Unit
-registerRegularUser = do
+registerRegularUser = EA.launchAff_ do
       registerLogin ← CCA.validateEmailPassword
       case registerLogin of
             Nothing → pure unit
-            Just rl → EA.launchAff_ do
+            Just rl → do
                   status ← CCA.formRequest $ routes.register { body: { email: rl.email, password: rl.password, captchaResponse: "" } }
                   liftEffect $ case status of
                         Success → CCL.setLocation $ routesSpec.im.get {}

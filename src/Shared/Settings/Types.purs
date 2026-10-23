@@ -8,7 +8,7 @@ import Data.Argonaut.Encode.Generic as DAEG
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
 import Flame.Html.Event (Event)
-import Shared.Modal (ScreenModal)
+import Shared.Modal (Modal)
 import Shared.Network (RequestStatus)
 import Shared.SuggestionsFrom (SuggestionsFrom)
 import Shared.User (ProfileVisibility)
@@ -67,7 +67,7 @@ data SettingsMessage
       | RemoveChatBackground
       | SaveChatBackground
       | AfterSaveChatBackground (Maybe String)
-      | ToggleVisibility ScreenModal
+      | ToggleVisibility Modal
       | ToggleTerminateAccount
       | TerminateAccount --very bad
 

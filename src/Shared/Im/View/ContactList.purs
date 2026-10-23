@@ -17,7 +17,6 @@ import Shared.Avatar (async)
 import Shared.Avatar as SA
 import Shared.Backer.Contact (backerId)
 import Shared.DateTime as SD
-import Shared.Extra as SE
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (For(..), ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..))
 import Shared.Im.View.Profile as SIVP
@@ -109,12 +108,12 @@ contactList isClientRender model =
                                                         HE.div [ HA.class' "contact-list-last-message duller typing" ] [ HE.p_ [ HE.text "Typing..." ] ]
                                                   else if model.user.lastMessageOnContactList then
                                                         if not $ DS.null contact.draft then
-                                                              HE.div' [ HA.class' "contact-list-last-message duller message-draft", SE.innerHtml $ SM.parseRestricted ("Draft: " <> contact.draft) ]
+                                                              SM.restrictedMarkdown [ HA.class' "contact-list-last-message duller message-draft" ] $ "Draft: " <> contact.draft
                                                         else
                                                               case lastHistoryEntry of
                                                                     Just entry → case entry.reaction of
                                                                           Just reaction → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ "Reacted with " <> reaction ] ]
-                                                                          Nothing → HE.div' [ HA.class' "contact-list-last-message duller", SE.innerHtml $ SM.parseRestricted entry.content ]
+                                                                          Nothing → SM.restrictedMarkdown [ HA.class' "contact-list-last-message duller" ] entry.content
                                                                     _ → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text "No messages yet" ] ]
                                                   else if model.user.onlineStatus && contact.user.onlineStatus then
                                                         HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ show contact.user.availability ] ]

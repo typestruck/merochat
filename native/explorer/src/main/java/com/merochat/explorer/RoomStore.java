@@ -23,8 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /** Stores the Argonaut representation of ImModel.user and ImModel.contacts. */
-@Database(entities = {RoomStore.UserEntity.class, RoomStore.ContactEntity.class, RoomStore.SuggestionEntity.class},
-    version = 4, exportSchema = true)
+@Database(entities = {RoomStore.UserEntity.class, RoomStore.ContactEntity.class, RoomStore.SuggestionEntity.class, RoomStore.PostEntity.class, RoomStore.AskEntity.class, RoomStore.PraiseEntity.class},
+    version = 7, exportSchema = true)
 public abstract class RoomStore extends RoomDatabase {
   private static RoomStore instance;
   static final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -64,6 +64,42 @@ public abstract class RoomStore extends RoomDatabase {
             @Override public void migrate(@NonNull SupportSQLiteDatabase database) {
               database.execSQL("DROP TABLE changelogs");
             }
+          }, new Migration(4, 5) {
+            @Override public void migrate(@NonNull SupportSQLiteDatabase database) {
+              database.execSQL("CREATE TABLE IF NOT EXISTS profile (id INTEGER NOT NULL, json TEXT NOT NULL, PRIMARY KEY(id))");
+            }
+          }, new Migration(5, 6) {
+            @Override public void migrate(@NonNull SupportSQLiteDatabase database) {
+              database.execSQL("DELETE FROM users");
+              database.execSQL("DELETE FROM contacts");
+              database.execSQL("DELETE FROM suggestions");
+              database.execSQL("DELETE FROM profile");
+            }
+          }, new Migration(6, 7) {
+            @Override public void migrate(@NonNull SupportSQLiteDatabase database) {
+              for (String table : new String[] {"posts", "asks", "praise"}) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS " + table + " (id INTEGER NOT NULL, position INTEGER NOT NULL, json TEXT NOT NULL, PRIMARY KEY(id))");
+              }
+              try (Cursor cursor = database.query("SELECT json FROM profile WHERE id = 0")) {
+                if (cursor.moveToFirst()) {
+                  JSONObject profile = new JSONObject(cursor.getString(0));
+
+                  for (String table : new String[] {"posts", "asks", "praise"}) {
+                    JSONArray rows = profile.getJSONArray(table);
+
+                    for (int i = 0; i < rows.length(); i++) {
+                      JSONObject row = rows.getJSONObject(i);
+
+                      database.execSQL("INSERT OR REPLACE INTO " + table + " (id, position, json) VALUES (?, ?, ?)",
+                          new Object[] {row.getInt("id"), i, row.toString()});
+                    }
+                  }
+                }
+              } catch (JSONException error) {
+                throw new IllegalStateException("Invalid Room profile data", error);
+              }
+              database.execSQL("DROP TABLE profile");
+            }
           }).build();
     }
     return instance;
@@ -90,8 +126,59 @@ public abstract class RoomStore extends RoomDatabase {
     @NonNull public String json = "";
   }
 
+  @Entity(tableName = "posts")
+  public static class PostEntity {
+    @PrimaryKey public int id;
+    public int position;
+    @NonNull public String json = "";
+  }
+
+  @Entity(tableName = "asks")
+  public static class AskEntity {
+    @PrimaryKey public int id;
+    public int position;
+    @NonNull public String json = "";
+  }
+
+  @Entity(tableName = "praise")
+  public static class PraiseEntity {
+    @PrimaryKey public int id;
+    public int position;
+    @NonNull public String json = "";
+  }
+
   @Dao
   public interface ImDao {
+    @Transaction
+    default void insertPosts(List<PostEntity> rows) {
+      clearPosts();
+      insertPostsRows(rows);
+    }
+
+    @Query("DELETE FROM posts") void clearPosts();
+    @Insert(onConflict = OnConflictStrategy.REPLACE) void insertPostsRows(List<PostEntity> rows);
+    @Query("SELECT * FROM posts ORDER BY position") List<PostEntity> selectPosts();
+
+    @Transaction
+    default void insertAsks(List<AskEntity> rows) {
+      clearAsks();
+      insertAsksRows(rows);
+    }
+
+    @Query("DELETE FROM asks") void clearAsks();
+    @Insert(onConflict = OnConflictStrategy.REPLACE) void insertAsksRows(List<AskEntity> rows);
+    @Query("SELECT * FROM asks ORDER BY position") List<AskEntity> selectAsks();
+
+    @Transaction
+    default void insertPraise(List<PraiseEntity> rows) {
+      clearPraise();
+      insertPraiseRows(rows);
+    }
+
+    @Query("DELETE FROM praise") void clearPraise();
+    @Insert(onConflict = OnConflictStrategy.REPLACE) void insertPraiseRows(List<PraiseEntity> rows);
+    @Query("SELECT * FROM praise ORDER BY position") List<PraiseEntity> selectPraise();
+
     @Transaction
     default void insertUser(UserEntity user) {
       clearUsers();

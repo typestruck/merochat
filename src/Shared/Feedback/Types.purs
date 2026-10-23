@@ -8,7 +8,7 @@ import Data.Argonaut.Encode.Generic as DAEG
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
 import Flame.Html.Event (Event)
-import Shared.Modal (ScreenModal)
+import Shared.Modal (Modal)
 import Shared.Network (RequestStatus)
 
 -- | Used for validation / error and success messages
@@ -28,7 +28,7 @@ data FeedbackMessage
       = SetComments String
       | BeforeSetScreenshot Event
       | SetScreenshot String
-      | ToggleVisibility ScreenModal
+      | ToggleVisibility Modal
       | SendFeedback
       | AfterSendFeedback (Maybe RequestStatus)
 

@@ -10,6 +10,8 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodePoints as DSC
 import Data.Symbol (class IsSymbol)
+import Shared.Modal (Modal(..))
+import Shared.Modal as SM
 import Flame (Html)
 import Flame.Html.Attribute (ToSpecialEvent)
 import Flame.Html.Attribute as HA
@@ -33,7 +35,8 @@ import Type.Proxy (Proxy(..))
 view ∷ SettingsModel → Html SettingsMessage
 view model =
       HE.div [ HA.id "settings-edition", HA.class' { hidden: not model.visible } ]
-            [ HE.div [ HA.class' "modal-section" ]
+            [ SM.header "Settings" $ ToggleVisibility HideModal
+            , HE.div [ HA.class' "modal-section" ]
                     [ HE.div [ HA.class' "green-tab lynx-inline" ]
                             [ HE.div [ HA.onClick $ setTab Privacy, HA.class' { "regular-green-tab": true, "selected-green-tab": model.tab == Privacy } ] [ HE.text "Privacy" ]
                             , HE.div [ HA.onClick $ setTab Account, HA.class' { "regular-green-tab": true, "selected-green-tab": model.tab == Account } ] [ HE.text "Account" ]

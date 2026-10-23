@@ -4,6 +4,9 @@ let constant = 22,
 
 export function resizeInput(textarea) {
     return function () {
+        if (typeof lynx !== 'undefined')
+            return;
+
         if (initialHeight === undefined)
             initialHeight = textarea.clientHeight - constant;
 

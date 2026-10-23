@@ -9,7 +9,7 @@ import Flame.Html.Element as HE
 import Flame.Types (NodeData)
 import Shared.Im.Types (ImMessage(..))
 
-arrow ∷ Array (NodeData ImMessage) → Html ImMessage
+arrow ∷ ∀ message. Array (NodeData message) → Html message
 arrow attrs = HE.svg (HA.viewBox "0 0 16 16" : attrs)
       [ HE.polygon' [ HA.points "6.43 2.05 7.42 3.12 2.17 8 7.42 12.88 6.43 13.95 0.03 8 6.43 2.05" ]
       ]

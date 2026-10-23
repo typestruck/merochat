@@ -5,6 +5,7 @@ import Prelude
 import Client.AppId (imAppId, profileAppId)
 import Client.Ui.Document as CUD
 import Client.File as CF
+import Client.Lynx.Room as CLR
 import Client.Network (routes)
 import Client.Network as CN
 import Data.Array ((:))
@@ -19,6 +20,7 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff)
 import Effect.Class as EC
 import Flame (Update)
+import Flame as F
 import Flame.Html.Event (Event)
 import Flame.Subscription as FS
 import Payload.ResponseTypes (Response(..))
@@ -29,7 +31,7 @@ import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.Types as SIT
-import Shared.Modal (ScreenModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
@@ -117,7 +119,10 @@ refreshAsks model = model { mode = Asked } /\ [ fetch ]
       fetch = do
             result ← routes.profile.asks { query: { after: _.id <$> DA.head model.asks } }
             case result of
-                  Right (Response response) → pure <<< Just <<< SetPField $ _ { asks = map extend response.body <> model.asks }
+                  Right (Response response) → do
+                        let asks = map extend response.body <> model.asks
+                        CLR.insert $ map (R.delete (Proxy ∷ Proxy "typedAnswer")) asks
+                        pure <<< Just <<< SetPField $ _ { asks = asks }
                   _ → pure Nothing
       extend ask = (R.merge (ask ∷ Ask) { typedAnswer: Nothing ∷ Maybe String }) ∷ ProfileAsk
 
@@ -127,7 +132,9 @@ refreshPraise model = model { mode = Praise } /\ [ fetch ]
       fetch = do
             result ← routes.praise.get { query: { praised: model.user.id } }
             case result of
-                  Right (Response response) → pure <<< Just <<< SetPField $ _ { praise = response.body.praise }
+                  Right (Response response) → do
+                        CLR.insert response.body.praise
+                        pure <<< Just <<< SetPField $ _ { praise = response.body.praise }
                   _ → pure Nothing
 
 refreshPosts ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
@@ -136,7 +143,10 @@ refreshPosts model = model { mode = OwnPosts } /\ [ fetch ]
       fetch = do
             result ← routes.profile.posts { query: { after: _.id <$> DA.head model.posts } }
             case result of
-                  Right (Response response) → pure <<< Just <<< SetPField $ _ { posts = response.body <> model.posts }
+                  Right (Response response) → do
+                        let posts = response.body <> model.posts
+                        CLR.insert posts
+                        pure <<< Just <<< SetPField $ _ { posts = posts }
                   _ → pure Nothing
 
 clear ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
@@ -155,13 +165,32 @@ clear model =
             , avatarInputed = model.user.avatar
             } /\ []
 
+completedFields ∷ ProfileModel → Array SP.ProfileColumn
+completedFields model =
+      required SP.Name Name model.nameInputed model.user.name <>
+            required SP.Headline Headline model.headlineInputed model.user.headline <>
+            required SP.Description Description model.descriptionInputed model.user.description <>
+            present SP.Birthday (DM.isJust model.ageInputed) <>
+            present SP.Tags (not $ DA.null model.tagsInputed) <>
+            present SP.Country (DM.isJust model.countryInputed) <>
+            present SP.Languages (not $ DA.null model.languagesInputed) <>
+            present SP.Gender (DM.isJust model.genderInputed) <>
+            present SP.Avatar (DM.isJust model.avatarInputed) <>
+            present SP.ChatBackground (DA.elem SP.ChatBackground model.user.completedFields)
+      where
+      present field filled = if filled then [ field ] else []
+
+      required field what input previous
+            | DS.trim (DM.fromMaybe previous input) == previous = present field $ DA.elem field model.user.completedFields
+            | otherwise = present field $ not (DA.elem what model.generated) && DM.isJust input
+
 save ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 save model = model { loading = true, fromTemporary = false } /\ [ saveIt ]
       where
       fields =
-            { name: { value: DM.fromMaybe model.user.name model.nameInputed, generated: DA.elem Name model.generated }
-            , headline: { value: DM.fromMaybe model.user.headline model.headlineInputed, generated: DA.elem Headline model.generated }
-            , description: { value: DM.fromMaybe model.user.description model.descriptionInputed, generated: DA.elem Description model.generated }
+            { name: { value: DS.trim $ DM.fromMaybe model.user.name model.nameInputed, generated: DA.elem Name model.generated }
+            , headline: { value: DS.trim $ DM.fromMaybe model.user.headline model.headlineInputed, generated: DA.elem Headline model.generated }
+            , description: { value: DS.trim $ DM.fromMaybe model.user.description model.descriptionInputed, generated: DA.elem Description model.generated }
             , age: model.ageInputed
             , tags: model.tagsInputed
             , country: model.countryInputed
@@ -173,33 +202,25 @@ save model = model { loading = true, fromTemporary = false } /\ [ saveIt ]
             result ← routes.profile.save { body: fields }
             case result of
                   Right (Response response) → do
+                        let user = model.user
+                              { name = fields.name.value
+                              , headline = fields.headline.value
+                              , description = fields.description.value
+                              , age = fields.age
+                              , country = fields.country
+                              , languages = fields.languages
+                              , gender = fields.gender
+                              , tags = fields.tags
+                              , avatar = response.body.avatar
+                              , completedFields = completedFields model
+                              }
                         EC.liftEffect do
-                              FS.send imAppId $ SIT.SetNameFromProfile fields.name.value
-                              FS.send imAppId $ SIT.SetAvatarFromProfile response.body.avatar
-                              FS.send imAppId $ SIT.SetCompletedFields
-                                    ( (if DA.elem Name model.generated || model.nameInputed == Just model.user.name then [ SP.Name ] else [])
-                                            <>
-                                                  (if DA.elem Headline model.generated || model.headlineInputed == Just model.user.headline then [] else [ SP.Headline ])
-                                            <>
-                                                  (if DA.elem Description model.generated || model.descriptionInputed == Just model.user.description then [] else [ SP.Description ])
-                                            <>
-                                                  (if DM.isNothing model.ageInputed then [] else [ SP.Birthday ])
-                                            <>
-                                                  (if DA.null model.tagsInputed then [] else [ SP.Tags ])
-                                            <>
-                                                  (if DM.isNothing model.countryInputed then [] else [ SP.Country ])
-                                            <>
-                                                  (if DA.null model.languagesInputed then [] else [ SP.Languages ])
-                                            <>
-                                                  (if DM.isNothing model.genderInputed then [] else [ SP.Gender ])
-                                            <>
-                                                  (if DM.isNothing model.avatarInputed then [] else [ SP.Avatar ])
-                                    )
+                              FS.send imAppId $ SIT.SetUserFromProfile user
 
                               FS.send imAppId SIT.SendUpdatedProfile
-                        pure <<< Just <<< SetPField $ _ { loading = false }
+                        pure <<< Just <<< SetPField $ _ { loading = false, user = user }
                   Left err → do
-                        pure <<< Just <<< SetPField $ _ { updateRequestStatus = Just <<< Failure $ SN.errorMessage err }
+                        pure <<< Just <<< SetPField $ _ { loading = false, updateRequestStatus = Just <<< Failure $ SN.errorMessage err }
 
 setFromTemporary ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 setFromTemporary model = model { fromTemporary = true } /\ []
@@ -208,10 +229,10 @@ setAge ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe Profile
 setAge value model = model { ageInputed = DateWrapper <$> SD.unformatIsoDate value } /\ []
 
 setCountry ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-setCountry value model = model { countryInputed = DI.fromString value } /\ []
+setCountry value model = model { countryInputed = DI.fromString value, choice = Nothing } /\ []
 
 setGender ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-setGender value model = model { genderInputed = parsed } /\ []
+setGender value model = model { genderInputed = parsed, choice = Nothing } /\ []
       where
       parsed =
             case DS.toLower $ DS.trim value of
@@ -240,7 +261,8 @@ setTag tag model =
 setLanguage ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 setLanguage value model =
       model
-            { languagesInputed = case DI.fromString value of
+            { choice = Nothing
+            , languagesInputed = case DI.fromString value of
                     Nothing → []
                     Just id →
                           if DA.elem id model.languagesInputed then
@@ -262,7 +284,7 @@ setAutoGenerated model what raw =
             | DS.null raw = Nothing
             | otherwise = Just raw
 
-      markGenerated = let g = DA.filter (what == _) model.generated in if value == Nothing then what : g else g
+      markGenerated = let g = DA.filter (what /= _) model.generated in if value == Nothing then what : g else g
 
       generated ∷ ∀ r u. IsSymbol r ⇒ Cons r (Maybe String) u PM ⇒ Proxy r → _
       generated field = case value of
@@ -272,15 +294,19 @@ setAutoGenerated model what raw =
                         Right (Response { body }) → do
                               pure <<< Just $ SetPField (R.set field <<< Just $ body)
                         Left err → do
-                              pure <<< Just <<< SetPField $ _ { updateRequestStatus = Just <<< Failure $ SN.errorMessage err }
+                              pure <<< Just <<< SetPField $ _ { loading = false, updateRequestStatus = Just <<< Failure $ SN.errorMessage err }
             _ → pure Nothing
 
-setVisibility ∷ ProfileModel → ScreenModal → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-setVisibility model modal = model { mode = mode, visible = visible } /\ []
+setVisibility ∷ ProfileModel → Modal → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+setVisibility model = case _ of
+      HideModal → model /\ [ hide ]
+      Screen (ShowProfile mode) → model { mode = mode, visible = true } /\ []
+      Screen _ → model { visible = false } /\ []
+      _ → model /\ []
       where
-      mode /\ visible = case modal of
-            ShowProfile profileMode → profileMode /\ true
-            _ → model.mode /\ false
+      hide = EC.liftEffect do
+            FS.send imAppId <<< SIT.SpecialRequest $ SIT.ToggleModal HideModal
+            pure Nothing
 
 setField ∷ ProfileModel → (ProfileModel → ProfileModel) → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 setField model upd = upd model { loading = false } /\ []

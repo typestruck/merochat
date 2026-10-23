@@ -11,6 +11,8 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Effect (Effect)
 import Effect.Aff (Aff)
+import Effect.Aff as EA
+import Effect.Class as EC
 import Payload.Client (ClientResponse)
 import Shared.Account (EmailPassword)
 import Shared.Element (ElementId(..))
@@ -29,7 +31,7 @@ formSelector = ".form-up"
 buttonSelector ∷ String
 buttonSelector = formSelector <> " input[type=button]"
 
-validateEmailPassword ∷ Effect (Maybe EmailPassword)
+validateEmailPassword ∷ Aff (Maybe EmailPassword)
 validateEmailPassword = do
       maybeEmail ← validateEmail
       maybePassword ← validatePassword
@@ -42,44 +44,44 @@ validateEmailPassword = do
                         }
             _, _ → pure Nothing
 
-validateEmail ∷ Effect (Maybe String)
+validateEmail ∷ Aff (Maybe String)
 validateEmail = do
-      emailElement ← CUD.unsafeGetElementById EmailInput
+      emailElement ← EC.liftEffect $ CUD.unsafeGetElementById EmailInput
       email ← CUE.value emailElement
-      WDE.setClassName "input" emailElement
+      EC.liftEffect $ WDE.setClassName "input" emailElement
 
       if DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email) then do
-            WDE.setClassName "input error" emailElement
+            EC.liftEffect $ WDE.setClassName "input error" emailElement
             pure Nothing
       else
             pure $ Just email
 
-validatePassword ∷ Effect (Maybe String)
+validatePassword ∷ Aff (Maybe String)
 validatePassword = do
-      passwordElement ← CUD.unsafeGetElementById PasswordInput
+      passwordElement ← EC.liftEffect $ CUD.unsafeGetElementById PasswordInput
       password ← CUE.value passwordElement
-      WDE.setClassName "input" passwordElement
+      EC.liftEffect $ WDE.setClassName "input" passwordElement
 
       if DS.length password < passwordMinCharacters then do
-            WDE.setClassName "input error" passwordElement
+            EC.liftEffect $ WDE.setClassName "input error" passwordElement
             pure Nothing
       else
             pure $ Just password
 
-listenValidatePasswordConfirmation ∷ Effect (Maybe String)
+listenValidatePasswordConfirmation ∷ Aff (Maybe String)
 listenValidatePasswordConfirmation = do
-      passwordElement ← CUD.unsafeGetElementById PasswordInput
+      passwordElement ← EC.liftEffect $ CUD.unsafeGetElementById PasswordInput
       password ← CUE.value passwordElement
       validatePasswordConfirmation $ Just password
 
-validatePasswordConfirmation ∷ Maybe String → Effect (Maybe String)
+validatePasswordConfirmation ∷ Maybe String → Aff (Maybe String)
 validatePasswordConfirmation password = do
-      passwordConfirmationElement ← CUD.unsafeGetElementById PasswordConfirmationInput
+      passwordConfirmationElement ← EC.liftEffect $ CUD.unsafeGetElementById PasswordConfirmationInput
       passwordConfirmation ← CUE.value passwordConfirmationElement
-      WDE.setClassName "input" passwordConfirmationElement
+      EC.liftEffect $ WDE.setClassName "input" passwordConfirmationElement
 
       if Just passwordConfirmation /= password then do
-            WDE.setClassName "input error" passwordConfirmationElement
+            EC.liftEffect $ WDE.setClassName "input error" passwordConfirmationElement
             pure Nothing
       else
             pure password
@@ -101,10 +103,10 @@ registerEvents callback = do
             let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
             when (pressed == "Enter") callback
 
-      listenIfExists ∷ ∀ a. Maybe Element → Effect a → Effect Unit
+      listenIfExists ∷ ∀ a. Maybe Element → Aff a → Effect Unit
       listenIfExists maybeElement handler = case maybeElement of
             Nothing → pure unit
-            Just element → CUEV.addEventListener element change (const handler)
+            Just element → CUEV.addEventListener element change (const $ EA.launchAff_ $ void handler)
 
 formRequest ∷ ∀ a. Aff (ClientResponse a) → Aff RequestStatus
 formRequest = CNN.formRequest formSelector

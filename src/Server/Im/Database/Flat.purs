@@ -7,22 +7,22 @@ import Shared.User
 import Data.BigInt (BigInt)
 import Data.BigInt as BI
 import Data.DateTime (DateTime)
-import Data.Int as DI
+import Data.Date (Date)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
 import Shared.Badge (Badge)
-import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime (DateTimeWrapper(..), DateWrapper(..))
 import Shared.Im.Types (Contact, HM, HistoryMessage)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.SuggestionsFrom (SuggestionsFrom)
 
 type FlatFields rest =
-      { age ∷ Maybe Number
+      { age ∷ Maybe Date
       , avatar ∷ Maybe String
-      , country ∷ Maybe String
+      , country ∷ Maybe Int
       , description ∷ String
       , gender ∷ Maybe Gender
       , ownBackground ∷ Checked
@@ -40,7 +40,7 @@ type FlatFields rest =
       , postsVisibility ∷ ProfileVisibility
       , isContact ∷ Boolean
       , completedTutorial ∷ Checked
-      , languages ∷ Maybe (Array String)
+      , languages ∷ Maybe (Array Int)
       , profileVisibility ∷ ProfileVisibility
       , asks_visibility ∷ ProfileVisibility
       , suggestions_from ∷ SuggestionsFrom
@@ -130,10 +130,10 @@ fromFlatUser fc =
       , karma: fc.karma
       , availability: LastSeen $ DateTimeWrapper fc.lastSeen
       , karmaPosition: fc.karmaPosition
-      , gender: show <$> fc.gender
+      , gender: fc.gender
       , country: fc.country
       , languages: DM.fromMaybe [] fc.languages
-      , age: DI.ceil <$> fc.age
+      , age: DateWrapper <$> fc.age
       , privateNote: fc.privateNote
       }
 

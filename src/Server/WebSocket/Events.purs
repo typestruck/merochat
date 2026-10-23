@@ -67,7 +67,7 @@ import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketM
 import Server.WebSocket as SW
 import Shared.Availability (Availability(..))
 import Shared.Availability as SA
-import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime (DateTimeWrapper(..), DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus(..), OutgoingRecord, UpdatedProfile, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
 import Shared.Json as SJ
@@ -206,8 +206,8 @@ sendUpdatedProfile loggedUserId allUsersAvailability = do
                         , tags: DM.fromMaybe [] profile.tags
                         , country: profile.country
                         , languages: DM.fromMaybe [] profile.languages
-                        , gender: show <$> profile.gender
-                        , age: DI.ceil <$> profile.age
+                        , gender: profile.gender
+                        , age: DateWrapper <$> profile.age
                         }
                   case DH.lookup loggedUserId allUsersAvailability of
                         Just userAvailability → DF.traverse_ (sendToTracker user) userAvailability.trackedBy

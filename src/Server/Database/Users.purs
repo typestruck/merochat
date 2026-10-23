@@ -8,7 +8,6 @@ import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
 import Data.Tuple.Nested (type (/\), (/\))
 import Server.Database as SD
-import Server.Database.Countries (CountriesTable)
 import Server.Database.Fields (_id)
 import Server.Database.Types (Checked)
 import Server.Effect (ServerEffect)
@@ -31,7 +30,7 @@ type Users =
       , asks_visibility ∷ Column ProfileVisibility Default
       , receive_email ∷ Column ReceiveEmail Default
       , gender ∷ Maybe Gender
-      , country ∷ Column (Maybe Int) (ForeignKey "id" CountriesTable)
+      , country ∷ Maybe Int
       , read_receipts ∷ Column Checked Default
       , typing_status ∷ Column Checked Default
       , temporary ∷ Column Checked Default

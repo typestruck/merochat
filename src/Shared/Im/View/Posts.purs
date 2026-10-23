@@ -12,7 +12,6 @@ import Flame.Html.Element as HE
 import Safe.Coerce as SC
 import Shared.Change as SC
 import Shared.DateTime as SD
-import Shared.Extra as SE
 import Shared.Im.Svg as SIS
 import Shared.Im.Types (ImMessage(..), ImModel, PostMode(..), RetryableRequest(..))
 import Shared.Im.View.ChatInput as SIVC
@@ -28,7 +27,7 @@ import Type.Proxy (Proxy(..))
 posted ∷ ∀ message. String → Post → Html message
 posted userName post = HE.div [ HA.class' "post-entry" ]
       [ HE.div [ HA.class' "post-header lynx-inline" ] [ HE.div_ [ HE.text userName ], HE.div [ HA.class' "post-header-separator duller" ] [ HE.text " • " ], HE.div [ HA.class' "duller" ] [ HE.text <<< SD.ago $ SC.coerce post.date ] ]
-      , HE.div' [ HA.class' "post-content", SE.innerHtml $ SM.parse post.content { id: _ } ]
+      , SM.markdown [ HA.class' "post-content" ] post.content
       ]
 
 postForm ∷ ImModel → Array (Html ImMessage)

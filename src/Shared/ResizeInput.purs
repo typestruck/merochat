@@ -4,12 +4,12 @@ import Prelude
 
 import Client.Ui.Event as CUEV
 import Data.Maybe (Maybe(..))
+import Data.Foldable as DF
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class as EC
 import Flame.Html.Event (Event)
-import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.DOM.Element as WDE
 
@@ -20,7 +20,7 @@ resizeInputFrom ∷ ∀ model message. Event → model → model /\ (Array (Aff 
 resizeInputFrom event model = model /\ [ resize ]
       where
       resize = do
-            EC.liftEffect <<< resizeInput <<< SU.fromJust $ do
+            EC.liftEffect <<< DF.traverse_ resizeInput $ do
                   target ← CUEV.target event
                   WDE.fromEventTarget target
             pure Nothing

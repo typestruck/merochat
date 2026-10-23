@@ -4,6 +4,8 @@ import Prelude
 import Shared.Experiments.Types
 
 import Data.Maybe (Maybe(..))
+import Shared.Modal (Modal(..))
+import Shared.Modal as SM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -16,7 +18,8 @@ import Shared.Extra as SE
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.visible } ]
-      [ HE.div [ HA.class' "modal-section" ] $ map toDiv model.experiments
+      [ SM.header "Experiments" $ ToggleVisibility HideModal
+      , HE.div [ HA.class' "modal-section" ] $ map toDiv model.experiments
       ]
       where
       toDiv experiment = HE.div [ HA.class' "modal-part column" ]

@@ -39,6 +39,51 @@ public final class RoomModule extends LynxContextModule {
   public void insert(String entity, String json, Callback callback) {
     execute(callback, () -> {
       switch (entity) {
+        case "posts":
+          JSONArray postsValues = new JSONArray(json);
+          List<RoomStore.PostEntity> posts = new ArrayList<>();
+
+          for (int i = 0; i < postsValues.length(); i++) {
+            JSONObject row = postsValues.getJSONObject(i);
+            RoomStore.PostEntity item = new RoomStore.PostEntity();
+
+            item.id = row.getInt("id");
+            item.position = i;
+            item.json = row.toString();
+            posts.add(item);
+          }
+          store.im().insertPosts(posts);
+          break;
+        case "asks":
+          JSONArray asksValues = new JSONArray(json);
+          List<RoomStore.AskEntity> asks = new ArrayList<>();
+
+          for (int i = 0; i < asksValues.length(); i++) {
+            JSONObject row = asksValues.getJSONObject(i);
+            RoomStore.AskEntity item = new RoomStore.AskEntity();
+
+            item.id = row.getInt("id");
+            item.position = i;
+            item.json = row.toString();
+            asks.add(item);
+          }
+          store.im().insertAsks(asks);
+          break;
+        case "praise":
+          JSONArray praiseValues = new JSONArray(json);
+          List<RoomStore.PraiseEntity> praise = new ArrayList<>();
+
+          for (int i = 0; i < praiseValues.length(); i++) {
+            JSONObject row = praiseValues.getJSONObject(i);
+            RoomStore.PraiseEntity item = new RoomStore.PraiseEntity();
+
+            item.id = row.getInt("id");
+            item.position = i;
+            item.json = row.toString();
+            praise.add(item);
+          }
+          store.im().insertPraise(praise);
+          break;
         case "suggestions":
           JSONArray suggestionsValues = new JSONArray(json);
           List<RoomStore.SuggestionEntity> suggestions = new ArrayList<>();
@@ -84,6 +129,30 @@ public final class RoomModule extends LynxContextModule {
   public void select(String entity, Callback callback) {
     execute(callback, () -> {
       switch (entity) {
+        case "posts":
+          JSONArray posts = new JSONArray();
+
+          for (RoomStore.PostEntity row : store.im().selectPosts()) {
+            posts.put(new JSONObject(row.json));
+          }
+
+          return posts.toString();
+        case "asks":
+          JSONArray asks = new JSONArray();
+
+          for (RoomStore.AskEntity row : store.im().selectAsks()) {
+            asks.put(new JSONObject(row.json));
+          }
+
+          return asks.toString();
+        case "praise":
+          JSONArray praise = new JSONArray();
+
+          for (RoomStore.PraiseEntity row : store.im().selectPraise()) {
+            praise.put(new JSONObject(row.json));
+          }
+
+          return praise.toString();
         case "suggestions":
           JSONArray suggestions = new JSONArray();
 

@@ -39,9 +39,8 @@ routes = PC.mkGuardedClient (defaultOpts { baseUrl = "/" }) spec
 -- | Performs a request that has a loading UI and possible error/success messages
 formRequest ∷ ∀ a. Warn (Text "Deprecated") ⇒ String → Aff (ClientResponse a) → Aff RequestStatus
 formRequest formSelector aff = do
-      previousLabel ← liftEffect do
-            button ← CUD.unsafeQuerySelector buttonSelector
-            CUE.value button
+      button ← liftEffect $ CUD.unsafeQuerySelector buttonSelector
+      previousLabel ← CUE.value button
       setLoading (loadingMessage previousLabel) ""
       result ← aff
       case result of
@@ -74,12 +73,12 @@ formRequest formSelector aff = do
 
       isVowel letter = DA.elem letter [ "a", "e", "i", "o", "u" ]
 
-      setLoading buttonText errorText = liftEffect do
+      setLoading buttonText errorText = do
             button ← liftEffect $ CUD.unsafeQuerySelector buttonSelector
             errorElement ← liftEffect $ CUD.unsafeQuerySelector errorMessageSelector
-            CUE.toggleDisabled button
+            liftEffect $ CUE.toggleDisabled button
             CUE.setValue button buttonText
-            CUE.setInnerHTML errorElement errorText
+            liftEffect $ CUE.setInnerHTML errorElement errorText
 
       notifySuccess = liftEffect do
             formDiv ← CUD.unsafeQuerySelector formSelectorId

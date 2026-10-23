@@ -1,6 +1,7 @@
 module Client.Experiments.Update where
 
 import Prelude
+
 import Shared.Experiments.Types
 
 import Client.AppId (imAppId)
@@ -20,7 +21,7 @@ import Flame (Update)
 import Flame as F
 import Flame.Subscription as FS
 import Shared.Experiment (Experiment)
-import Shared.Im.Types (ReportReason(..), RetryableRequest(..))
+import Shared.Im.Types (ReportReason(..))
 import Shared.Im.Types as SIT
 import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Options.Doppelganger as SDO
@@ -31,7 +32,7 @@ import Shared.Unsafe as SU
 update ∷ Update ExperimentsModel ExperimentsMessage
 update model =
       case _ of
-            ToggleVisibility modal → toggleVisibility modal model
+            ToggleVisibility modal → toggleVisibility model modal
             RedirectKarma → redirectKarma model
             UpdatePrivileges { privileges } → F.noMessages model { user { privileges = privileges } }
             SetCurrentExperiment experiment → setCurrentExperiment experiment model
@@ -70,15 +71,22 @@ update model =
 redirectKarma ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 redirectKarma model = model /\ [redirect]
       where redirect  =  do
-              liftEffect <<< FS.send imAppId <<< SIT.SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
+              liftEffect <<< FS.send imAppId <<< SIT.SpecialRequest <<< SIT.ToggleModal $ Screen ShowKarmaPrivileges
               pure Nothing
 
-toggleVisibility ∷ ScreenModal → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
-toggleVisibility modal model = model { debate = model.debate { showFormat = false }, current = current, visible = isExperimentTab } /\ []
+toggleVisibility ∷ ExperimentsModel → Modal → ExperimentsModel /\ Array (Aff (Maybe ExperimentsMessage))
+toggleVisibility model = case _ of
+      HideModal → model /\ [ hide ]
+      Screen modal → model { debate = model.debate { showFormat = false }, current = current, visible = visible } /\ []
+            where
+            current /\ visible = case modal of
+                  ShowExperiments experiment → experiment /\ true
+                  _ → model.current /\ false
+      _ → model /\ []
       where
-      (current /\ isExperimentTab) = case modal of
-            ShowExperiments e → e /\ true
-            _ → model.current /\ false
+      hide = EC.liftEffect do
+            FS.send imAppId <<< SIT.SpecialRequest $ SIT.ToggleModal HideModal
+            pure Nothing
 
 messagePaperPlane ∷ Int → String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 messagePaperPlane userId message model = model /\ [ send ]

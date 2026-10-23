@@ -2,9 +2,10 @@ module Client.Lynx.Main where
 
 import Prelude
 
-import Client.AppId (imAppId, landingAppId, loginAppId)
+import Client.AppId (imAppId, landingAppId, loginAppId, profileAppId)
 import Client.Im.Main as CIM
 import Client.Login.Main as CLM
+import Client.Profile.Main as CPM
 import Client.Lynx.Room as CLR
 import Client.Lynx.Session as CLS
 import Data.Maybe (Maybe(..))
@@ -32,6 +33,7 @@ main = EA.launchAff_ do
             F.mountRoutes
                   [ F.makeGuardedRoute loginAppId (pure $ CLM.application CLM.authenticateNative) $ redirectLogged imAppId
                   , F.makeGuardedRoute imAppId CIM.application <<< redirectAnonymous $ loginAppId
+                  , F.makeGuardedRoute profileAppId CPM.application <<< redirectAnonymous $ loginAppId
                   , F.makeGuardedRoute landingAppId (pure $ other content) $ redirectLogged imAppId
                   ]
 

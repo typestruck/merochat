@@ -1,7 +1,11 @@
 module Client.Lynx.Room
-      ( UserEntity
+      ( PostEntity
+      , AskEntity
+      , PraiseEntity
+      , UserEntity
       , ContactEntity
       , SuggestionEntity
+      , class RecordEntity
       , class ArrayEntity
       , class Selectable
       , class Insertable
@@ -33,7 +37,9 @@ import Effect.Uncurried as EU
 import Prim.RowList (class RowToList, Cons, RowList)
 import Shared.Im.Types (Contact, Suggestion)
 import Shared.User (User)
-import Type.Equality (class TypeEquals)
+import Shared.Post (Post)
+import Shared.Ask (Ask)
+import Shared.Praise (Praise, PraisedFor)
 import Type.Proxy (Proxy(..))
 
 -- Room stores the data as shown to the user, following ImModel types.
@@ -43,19 +49,31 @@ import Type.Proxy (Proxy(..))
 foreign import insert_ ∷ EffectFn2 String String (Promise Unit)
 foreign import select_ ∷ EffectFn1 String (Promise String)
 
+foreign import data PostEntity ∷ Type
+foreign import data AskEntity ∷ Type
+foreign import data PraiseEntity ∷ Type
+
 foreign import data UserEntity ∷ Type
 foreign import data ContactEntity ∷ Type
 foreign import data SuggestionEntity ∷ Type
 
 class ArrayEntity (fields ∷ RowList Type) (entity ∷ Type) | fields → entity
 
-instance ArrayEntity (Cons "availability" value tail) SuggestionEntity
+instance ArrayEntity (Cons "answer" value tail) AskEntity
+else instance ArrayEntity (Cons "content" String tail) PostEntity
+else instance ArrayEntity (Cons "content" PraisedFor tail) PraiseEntity
+else instance ArrayEntity (Cons "availability" value tail) SuggestionEntity
 else instance ArrayEntity (Cons "user" value tail) ContactEntity
 else instance ArrayEntity tail entity ⇒ ArrayEntity (Cons name value tail) entity
 
+class RecordEntity (fields ∷ RowList Type) (entity ∷ Type) | fields → entity
+
+instance RecordEntity (Cons "id" value tail) UserEntity
+else instance RecordEntity tail entity ⇒ RecordEntity (Cons name value tail) entity
+
 class Selectable (row ∷ Type) (entity ∷ Type) | row → entity
 
-instance TypeEquals (Record fields) User ⇒ Selectable (Record fields) UserEntity
+instance (RowToList fields list, RecordEntity list entity) ⇒ Selectable (Record fields) entity
 
 instance (RowToList fields list, ArrayEntity list entity) ⇒ Selectable (Array (Record fields)) entity
 
@@ -63,6 +81,21 @@ class (EncodeJson row, DecodeJson row) ⇐ Entity (entity ∷ Type) row | entity
       entityName ∷ Proxy entity → String
       prepareRows ∷ Proxy entity → row → row
       prepareResult ∷ Proxy entity → row → row
+
+instance Entity PostEntity (Array Post) where
+      entityName _ = "posts"
+      prepareRows _ = identity
+      prepareResult _ = identity
+
+instance Entity AskEntity (Array Ask) where
+      entityName _ = "asks"
+      prepareRows _ = identity
+      prepareResult _ = identity
+
+instance Entity PraiseEntity (Array Praise) where
+      entityName _ = "praise"
+      prepareRows _ = identity
+      prepareResult _ = identity
 
 instance Entity UserEntity User where
       entityName _ = "user"
@@ -81,7 +114,7 @@ instance Entity SuggestionEntity (Array Suggestion) where
 
 class Insertable (row ∷ Type) (entity ∷ Type) | row → entity
 
-instance TypeEquals (Record fields) User ⇒ Insertable (Record fields) UserEntity
+instance (RowToList fields list, RecordEntity list entity) ⇒ Insertable (Record fields) entity
 
 instance (RowToList fields list, ArrayEntity list entity) ⇒ Insertable (Array (Record fields)) entity
 

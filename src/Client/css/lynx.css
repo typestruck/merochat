@@ -176,7 +176,7 @@
     flex: 1;
     width: 0;
     min-width: 0;
-    height: 48px;
+    height: auto;
     min-height: 48px;
     padding: 12px;
     color: var(--im-text-color);
@@ -198,4 +198,135 @@
 .suggestion-input .chat-input-area,
 .suggestion-input .chat-right-buttons {
     z-index: 0;
+}
+
+.chat-input {
+    box-sizing: border-box;
+    height: auto;
+    min-height: 48px;
+    max-height: 150px;
+}
+
+.paper-input {
+    height: auto;
+    min-height: 48px;
+}
+
+.chat-input-frame {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 0;
+    min-width: 0;
+    box-sizing: border-box;
+    height: auto;
+    min-height: 48px;
+    max-height: 150px;
+    padding: 12px;
+    border: 1px solid var(--text-color);
+    border-radius: 20px;
+    background-color: var(--background-color);
+}
+
+.chat-input-frame > .chat-input {
+    flex: none;
+    width: 100%;
+    height: auto;
+    min-height: 22px;
+    max-height: 124px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+}
+
+
+.profile-route {
+    display: linear;
+    linear-orientation: vertical;
+    height: 100vh;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--im-background-color);
+}
+
+.profile-route .profile-section .modal-input,
+.profile-route .profile-section .modal-select,
+.profile-route .profile-section-wedge .modal-input,
+.profile-route .profile-section-wedge .modal-select {
+    width: 100%;
+}
+
+.profile-route .profile-section-wedge {
+    flex-direction: column;
+}
+
+.profile-choice {
+    margin-bottom: 10px;
+}
+
+.profile-choice-options {
+    height: 200px;
+    width: 100%;
+}
+
+.profile-choice-options view {
+    padding: 10px;
+}
+
+.profile-route text,
+.profile-route input,
+.profile-route textarea {
+    color: var(--text-color);
+}
+
+.modal-screen-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: transparent;
+}
+
+.modal-screen-back {
+    width: 32px;
+    height: 32px;
+    margin-right: 15px;
+    fill: var(--text-color);
+}
+
+.modal-screen-title {
+    color: var(--text-color);
+    font-weight: bold;
+}
+
+.profile-edition > .green-tab {
+    flex-wrap: nowrap;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.profile-edition > .green-tab > .regular-green-tab {
+    padding: 0px 6px;
+    flex-shrink: 0;
+}
+
+.profile-route #profile-edition-form {
+    z-index: 0;
+    display: linear;
+    linear-orientation: vertical;
+    height: auto;
+    width: 100%;
+    margin-top: 0;
+    padding: 0;
+    overflow: visible;
+    flex-shrink: 0;
+}
+
+.profile-route .profile-buttons {
+    position: relative;
+    bottom: auto;
 }

@@ -59,8 +59,8 @@ resumeChat userId model =
                           ]
                         )
       where
-      loadDraft currentDraft = EC.liftEffect do
-            input ← CUD.unsafeGetElementById ChatInput
+      loadDraft currentDraft = do
+            input ← EC.liftEffect $ CUD.unsafeGetElementById ChatInput
             previousDraft ← CUE.value input
             CUE.setValue input currentDraft
             if DM.isNothing model.chatting then

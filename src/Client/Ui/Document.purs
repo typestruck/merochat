@@ -5,6 +5,8 @@ import Prelude
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Effect (Effect)
+import Effect.Uncurried (EffectFn1)
+import Effect.Uncurried as EU
 import Effect.Exception as EE
 import Shared.Element (ElementId)
 import Shared.Resource (Bundle, ResourceType(..))
@@ -28,10 +30,10 @@ foreign import documentHasFocus ∷ Effect Boolean
 foreign import documentIsNotHidden ∷ Effect Boolean
 
 -- | Selects a single element
+foreign import unsafeGetElementById_ ∷ EffectFn1 String Element
+
 unsafeGetElementById ∷ ElementId → Effect Element
-unsafeGetElementById elementId = do
-      maybeElement ← getElementById elementId
-      DM.maybe (EE.throwException $ EE.error $ "No element with id:" <> show elementId) pure maybeElement
+unsafeGetElementById = show >>> EU.runEffectFn1 unsafeGetElementById_
 
 getElementById ∷ ElementId → Effect (Maybe Element)
 getElementById elementId = do
@@ -48,7 +50,7 @@ loadScript resource = do
       body ← SU.fromJust <$> WHHD.body document
       void <<< WDN.appendChild (WDE.toNode script) $ WHHE.toNode body
 
--- | Selects a single element.
+
 unsafeQuerySelector ∷ String → Effect Element
 unsafeQuerySelector selector = do
       maybeElement ← querySelector selector
