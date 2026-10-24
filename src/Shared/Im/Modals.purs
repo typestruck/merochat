@@ -267,7 +267,7 @@ temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { 
                     , HE.span [ HA.class' { "error-message": true, hidden: not $ DA.elem (DS.reflectSymbol (Proxy ∷ Proxy "temporaryPassword")) erroredFields } ] [ HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more" ]
                     ]
             , HE.div_
-                    [ HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Create account", HA.onClick CreateUserFromTemporary ]
+                    [ HE.button [ HA.class' "green-button", HA.onClick CreateUserFromTemporary ] [ HE.text "Create account" ]
                     , HE.span' [ HA.class' "request-error-message error-message" ]
                     ]
             ]

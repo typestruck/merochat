@@ -8,6 +8,7 @@ import Shared.Modal as SM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Data.Maybe as DM
 import Shared.Element (ElementId(..))
 import Shared.Extra (br)
 import Shared.Extra as SE
@@ -30,13 +31,14 @@ view model =
                     ]
             , HE.div_
                     [ HE.label_ [ HE.text "Optionally, include a screenshot" ]
-                    , HE.input [ HA.onChange' BeforeSetScreenshot, HA.type' "file", HA.class' "modal-input", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
+                    , HE.button [ HA.onClick SelectScreenshot, HA.class' "modal-input" ] [ HE.text "Choose screenshot" ]
+                    , if DM.isJust model.screenshot then HE.img [ HA.class' "feedback-screenshot", HA.src $ DM.fromMaybe "" model.screenshot ] else HE.div_ []
                     ]
             , HE.div [ HA.class' "buttons" ]
                     [ if model.loading then
                             HE.div' [ HA.class' "loading" ]
                       else
-                            HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Send", HA.onClick SendFeedback ]
+                            HE.button [ HA.class' "green-button", HA.onClick SendFeedback ] [ HE.text $ "Send" ]
                     , HE.div [ HA.class' { "error-message": true, hidden: not isFailure } ] [ HE.text "Could not send feedback. Please try again" ]
                     , HE.div [ HA.class' { "success-message": true, hidden: model.feedbackStatus /= Just (Request Success) } ] [ HE.text "Feedback sent!" ]
                     ]

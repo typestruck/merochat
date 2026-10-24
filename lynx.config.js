@@ -21,6 +21,7 @@ export default defineConfig({
     source: {
         entry: './index.js',
         define: {
+            'process.env.PRODUCTION': false,
             'process.env.LYNX_WEBSOCKET_URL': JSON.stringify(websocketUrl()),
             'process.env.LYNX_WEBSOCKET_PORT': websocketPort,
             'process.env.LYNX_API_URL': JSON.stringify(apiUrl),

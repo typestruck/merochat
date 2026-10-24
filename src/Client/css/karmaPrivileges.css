@@ -76,11 +76,6 @@
     display: flex;
 }
 
-.user .name::after {
-    content: ' (You!)';
-    white-space: normal;
-}
-
 .avatar-leaderboard-div {
     margin-right: -14px;
 }

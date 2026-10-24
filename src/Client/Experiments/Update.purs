@@ -4,6 +4,7 @@ import Prelude
 
 import Shared.Experiments.Types
 
+import Shared.Dropdown as SDRO
 import Client.AppId (imAppId)
 import Client.Location as CCL
 import Client.Network (routes)
@@ -31,6 +32,7 @@ import Shared.Unsafe as SU
 update ∷ Update ExperimentsModel ExperimentsMessage
 update model =
       case _ of
+            SelectDropdown title initial options select → model /\ [ map (map select) $ SDRO.pick title initial options ]
             ToggleVisibility modal → toggleVisibility model modal
             RedirectKarma → redirectKarma model
             UpdatePrivileges { privileges } → model { user { privileges = privileges } } /\ []

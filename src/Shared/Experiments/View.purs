@@ -28,11 +28,7 @@ view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.vi
                             [ HE.label [ HA.class' "bold" ] [ HE.text experiment.name ]
                             , HE.div [ HA.class' "duller" ] [ HE.text experiment.description ]
                             ]
-                    , HE.input
-                            [ HA.type' "button"
-                            , HA.class' "green-button show-button"
-                            , HA.value $ if model.current == Just experiment.code then "-" else "+"
-                            ]
+                    , HE.button [ HA.class' "green-button show-button" ] [ HE.text $ if model.current == Just experiment.code then "-" else "+" ]
 
                     ]
             , HE.div [ HA.class' { hidden: model.current /= Just experiment.code, extra: true } ] [ extra model experiment.code ]

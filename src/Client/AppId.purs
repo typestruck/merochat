@@ -4,6 +4,7 @@ import Prelude
 
 import Flame (AppId(..))
 import Shared.Experiments.Types (ExperimentsMessage)
+import Shared.InternalHelp.Types (InternalHelpMessage)
 import Shared.Feedback.Types (FeedbackMessage)
 import Shared.Im.Types (ImMessage)
 import Shared.KarmaPrivileges.Types (KarmaPrivilegesMessage)
@@ -30,6 +31,8 @@ data ClientAppId
       | Backer
       | Recover
       | Banned
+      | InternalHelp
+      | InternalBacker
 
 profileAppId ∷ AppId ClientAppId ProfileMessage
 profileAppId = AppId Profile
@@ -73,6 +76,12 @@ recoverAppId = AppId Recover
 bannedAppId ∷ AppId ClientAppId Void
 bannedAppId = AppId Banned
 
+internalHelpAppId ∷ AppId ClientAppId InternalHelpMessage
+internalHelpAppId = AppId InternalHelp
+
+internalBackerAppId ∷ AppId ClientAppId BackerMessage
+internalBackerAppId = AppId InternalBacker
+
 instance Show ClientAppId where
       show = case _ of
             Im → "im-app-id"
@@ -89,3 +98,5 @@ instance Show ClientAppId where
             Backer → "backer-app-id"
             Recover → "recover-app-id"
             Banned → "banned-app-id"
+            InternalHelp → "internal-help-app-id"
+            InternalBacker → "internal-backer-app-id"

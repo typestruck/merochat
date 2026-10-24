@@ -126,6 +126,7 @@ type Im =
       , selectedImage ∷ SelectedImage
       , imageCaption ∷ Maybe String
       , messageEnter ∷ Boolean
+      , keyboardHeight ∷ Number
       , suggestionsPage ∷ Int
       , webSocketStatus ∷ WebSocketConnectionStatus
       , erroredFields ∷ Array String
@@ -335,6 +336,7 @@ data ImMessage
       | EnterSendMessage ElementId Event
       | ForceSendMessage ElementId
       | ResizeChatInput Event
+      | SetKeyboardHeight Number
       | SendMessage ElementId Content DateTimeWrapper
       | SetEmoji ElementId Event
       | BeforeAudioMessage

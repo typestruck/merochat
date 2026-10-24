@@ -14,12 +14,12 @@ import Server.Database as SD
 import Server.Effect (ServerEffect)
 import Server.Database.Types (Checked(..))
 import Server.Experiments.Database as SED
-import Shared.Experiments.Types (Match, PaperPlane, PaperPlaneStatus(..), Question)
+import Shared.Experiments.Types (ExperimentsData, Match, PaperPlane, PaperPlaneStatus(..), Question)
 import Shared.Options.Doppelganger (changelogEntry, totalQuestions)
 import Shared.Options.PaperPlane (maxPaperPlanes)
 import Shared.ResponseError (ResponseError(..))
 
-experiments ∷ Int → ServerEffect _
+experiments ∷ Int → ServerEffect ExperimentsData
 experiments loggedUserId = do
       list ← SED.fetchExperiments
       user ← SED.fetchExperimentUser loggedUserId

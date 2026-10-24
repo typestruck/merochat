@@ -30,6 +30,7 @@ type ChatExperimentUser = { id ∷ Int, privileges ∷ Array Privilege }
 
 data ExperimentsMessage
       = ToggleVisibility Modal
+      | SelectDropdown String (Maybe String) (Array { value ∷ String, name ∷ String }) (String → ExperimentsMessage)
       | RedirectKarma
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
       | SetCurrentExperiment Experiment
@@ -84,6 +85,16 @@ type Debate =
       , pro ∷ Maybe Int
       , con ∷ Maybe Int
       , ongoing ∷ Boolean
+      }
+
+type ExperimentsData =
+      { experiments ∷ Array ChatExperiment
+      , user ∷ ChatExperimentUser
+      , completedDoppelganger ∷ Boolean
+      , thrown ∷ Array PaperPlane
+      , flyingBy ∷ Array PaperPlane
+      , caught ∷ Array PaperPlane
+      , mine ∷ Array Debate
       }
 
 type ExperimentsModel =

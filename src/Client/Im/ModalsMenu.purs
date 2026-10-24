@@ -2,7 +2,7 @@ module Client.Im.ModalsMenu where
 
 import Prelude
 
-import Client.AppId (imAppId, loginAppId, profileAppId, bannedAppId)
+import Client.AppId (ClientAppId, imAppId, loginAppId, profileAppId, bannedAppId, settingsAppId, karmaPrivilegesAppId, experimentsAppId, feedbackAppId, internalHelpAppId, internalBackerAppId)
 import Client.Ui.Document as CUD
 import Client.Ui.Element as CUE
 import Client.EventTypes (modalVisible)
@@ -12,21 +12,21 @@ import Client.Im.Suggestion as CIS
 import Client.Location as CL
 import Client.Lynx.Session as CLS
 import Client.Network (routes)
-import Client.Network as CN
-import Data.Array ((:))
-import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
-import Effect.Aff (Aff)
 import Effect.Class as EC
+import Flame (AppId)
+import Flame.Subscription as FS
+import Shared.Settings.Types as SST
+import Shared.KarmaPrivileges.Types as SKT
+import Shared.Experiments.Types as SET
+import Shared.Feedback.Types as SFT
+import Shared.InternalHelp.Types as SIHT
+import Shared.Backer.Types as SBT
 import Flame as F
 import Flame.Subscription.Unsafe.CustomEvent as FSUC
-import Payload.Client (ClientResponse)
-import Prim.Coerce (class Coercible)
-import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
-import Shared.Html (Html(..))
 import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), ShowContextMenu(..))
 import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..))
@@ -74,12 +74,12 @@ modal ∷ Modal → ImModel → NextMessage
 modal toggled model =
       case toggled of
             Screen (ShowProfile _) → model /\ [ EC.liftEffect (F.navigate profileAppId) $> Nothing ]
-            Screen ShowSettings → showModal routes.settings.get {} ShowSettings Settings SettingsEditionRoot
-            Screen ShowKarmaPrivileges → showModal routes.leaderboard {} ShowKarmaPrivileges KarmaPrivileges KarmaPrivilegesRoot
-            Screen ShowHelp → showModal routes.internalHelp {} ShowHelp InternalHelp HelpRoot
-            Screen (ShowExperiments e) → showModal routes.experiments.get {} (ShowExperiments e) Experiments ExperimentsRoot
-            Screen ShowBacker → showModal routes.internalBacker {} ShowBacker InternalBacker BackerRoot
-            Screen ShowFeedback → showModal routes.feedback.get {} ShowFeedback Feedback FeedbackRoot
+            Screen ShowSettings → showScreen settingsAppId SST.ToggleVisibility ShowSettings
+            Screen ShowKarmaPrivileges → showScreen karmaPrivilegesAppId SKT.ToggleVisibility ShowKarmaPrivileges
+            Screen ShowHelp → showScreen internalHelpAppId SIHT.ToggleVisibility ShowHelp
+            Screen (ShowExperiments e) → showScreen experimentsAppId SET.ToggleVisibility $ ShowExperiments e
+            Screen ShowBacker → showScreen internalBackerAppId SBT.ToggleVisibility ShowBacker
+            Screen ShowFeedback → showScreen feedbackAppId SFT.ToggleVisibility ShowFeedback
             Special ShowPostForm → model { modal = toggled, showSuggestionsPostForm = false } /\ []
             Special (ShowSuggestionCard id) → model
                   { modal = toggled
@@ -102,27 +102,18 @@ modal toggled model =
                   when (toggle == ShowMenu) $ F.navigate imAppId
             pure Nothing
 
-      showModal ∷ ∀ query response. Coercible response String ⇒ (query → Aff (ClientResponse response)) → query → ScreenModal → Bundle → ElementId → NextMessage
-      showModal req query toggle resource root
-            | model.user.temporary =
-                    model
-                          { modal = Screen toggle
-                          , toggleContextMenu = HideContextMenu
-                          , failedRequests = []
-                          } /\ []
-            | otherwise =
-                    model
-                          { modal = Screen toggle
-                          , toggleContextMenu = HideContextMenu
-                          , failedRequests = []
-                          , modalsLoaded = toggle : model.modalsLoaded
-                          } /\
-                          if DA.elem toggle model.modalsLoaded then
-                                [ visible toggle ]
-                          else
-                                [ visible toggle
-                                , CN.retryableRequest (ToggleModal $ Screen toggle) (SetModalContents resource root <<< SC.coerce) (req query)
-                                ]
+      showScreen ∷ ∀ message. AppId ClientAppId message → (Modal → message) → ScreenModal → NextMessage
+      showScreen appId message toggle =
+            model
+                  { modal = Screen toggle
+                  , toggleContextMenu = HideContextMenu
+                  , failedRequests = []
+                  } /\ if model.user.temporary then [] else [ open ]
+            where
+            open = EC.liftEffect do
+                  F.navigate appId
+                  FS.send appId <<< message $ Screen toggle
+                  pure Nothing
 
 setModalContents ∷ Bundle → ElementId → String → ImModel → NextMessage
 setModalContents resource root html model = model /\ [ loadModal ]

@@ -84,13 +84,7 @@ new model =
                 else if model.paperPlane.loading then
                       HE.div' [ HA.class' "loading" ]
                 else
-                      HE.input
-                            [ HA.type' "button"
-                            , HA.onClick ThrowPlane
-                            , HA.disabled $ DM.isNothing model.paperPlane.message
-                            , HA.class' "green-button"
-                            , HA.value "Throw paper plane"
-                            ]
+                      HE.button [ HA.onClick ThrowPlane, HA.disabled $ DM.isNothing model.paperPlane.message, HA.class' "green-button" ] [ HE.text $ "Throw paper plane" ]
               ] <> (planeIcon : map plane model.paperPlane.thrown)
             )
       where

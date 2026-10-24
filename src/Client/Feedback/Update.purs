@@ -2,8 +2,8 @@ module Client.Feedback.Update (update) where
 
 import Prelude
 
-import Client.AppId (imAppId, feedbackAppId)
-import Client.File as CF
+import Client.AppId (imAppId)
+import Client.Lynx.Image as CLI
 import Client.Network (routes)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -13,7 +13,6 @@ import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class as EC
 import Flame (Update)
-import Flame.Html.Event (Event)
 import Flame.Subscription as FS
 import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
 import Shared.Im.Types as SIT
@@ -26,7 +25,7 @@ update model =
       case _ of
             ToggleVisibility modal → toggleVisibility model modal
             SetComments input → setComments input model
-            BeforeSetScreenshot event → beforeSetScreenshot event model
+            SelectScreenshot → model /\ [ map (map SetScreenshot) CLI.pick ]
             SetScreenshot base64 → setScreenshot base64 model
             SendFeedback → sendFeedback model
             AfterSendFeedback status → afterSendFeedback status model
@@ -46,13 +45,6 @@ setComments input model =
       model
             { comments = input
             } /\ []
-
-beforeSetScreenshot ∷ Event → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
-beforeSetScreenshot event model = model /\ [ before ]
-      where
-      before = do
-            CF.compressImage feedbackAppId event false $ \_ _ b → SetScreenshot b
-            pure Nothing
 
 setScreenshot ∷ String → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
 setScreenshot base64 model =

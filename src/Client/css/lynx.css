@@ -14,9 +14,12 @@ page,
     background-color: var(--background-color);
 }
 
-#im {
-    height: 100vh;
+page {
+    height: 100%;
+}
 
+#im {
+    height: calc(100% - var(--keyboard-height, 0px));
 }
 
 .contact-box.current-mobile-screen {
@@ -237,7 +240,7 @@ page,
     height: auto;
     min-height: 48px;
     max-height: 150px;
-    padding: 12px;
+    padding: 10px 20px 12px;
     border: 1px solid var(--text-color);
     border-radius: 20px;
     background-color: var(--background-color);
@@ -293,8 +296,9 @@ page,
 
 .modal-screen-back {
     color: var(--text-color);
-    width: 32px;
-    height: 32px;
+    width: 25px;
+    height: 25px;
+    flex-shrink: 0;
     margin-right: 15px;
     fill: currentColor;
 }
@@ -845,7 +849,7 @@ textarea {
 
 .profile-markdown {
     width: 100%;
-    color: var(--text-color);
+    color: inherit;
 }
 
 .profile-markdown .markdown-paragraph {
@@ -862,7 +866,7 @@ textarea {
 .profile-markdown .markdown-list-item {
     display: flex;
     flex-direction: row;
-    margin-bottom: 8px;
+    margin-bottom: 0;
 }
 
 .profile-markdown .markdown-list-marker {
@@ -904,4 +908,487 @@ textarea {
 .profile-markdown .markdown-image {
     width: 120px;
     height: 120px;
+}
+
+.native-disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+#im .green-button,
+#im .see-profile-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+}
+
+#im .green-button text,
+#im .see-profile-button text {
+    color: var(--light-color);
+}
+
+#im .green-button text,
+.big-card-name,
+.mini-suggestion-karma,
+.ask-q,
+.ask-question-itself {
+    font-weight: bold;
+}
+
+.ask-q,
+.ask-question-itself {
+    font-style: italic;
+}
+
+#im .cancel {
+    background-color: transparent;
+    color: var(--text-color);
+    padding: 10px 15px;
+    justify-content: center;
+}
+
+.build-profile .cancel text {
+    color: var(--light-color);
+}
+
+.build-checked svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-right: 5px;
+}
+
+.build-checked text {
+    text-decoration: line-through;
+}
+
+.suggestions-filter {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.suggestions-filter-gear {
+    width: 23px;
+    height: 23px;
+    flex-shrink: 0;
+}
+
+.profile-route .posts,
+.profile-route .ask-list,
+.profile-route .praise,
+.profile-route .ask-answer-form {
+    width: 100%;
+    min-width: 0;
+}
+
+.profile-route .ask-answer-form {
+    flex-direction: row;
+}
+
+.profile-route .ask-answer-form .modal-input {
+    flex: 1;
+    width: 0;
+    min-width: 0;
+}
+
+.profile-markdown .markdown-list {
+    margin: 12px 0;
+    padding-left: 10px;
+}
+
+.profile-markdown .markdown-list-content .markdown-paragraph {
+    margin: 0;
+}
+
+.message-content .profile-markdown .markdown-paragraph {
+    margin: 10px 0;
+}
+
+.incoming-message .profile-markdown {
+    color: var(--light-color);
+}
+
+#im .contact-full-profile .avatar-info,
+#im .contact-full-profile .full-card-headline-tags,
+#im .contact-full-profile .card-description,
+.contact-full-profile .profile-markdown {
+    color: var(--light-color);
+}
+
+.contact-full-profile .full-card-headline-tags,
+.big-card .full-card-headline-tags {
+    width: 100%;
+    min-width: 0;
+}
+
+.profile-avatar-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.profile-avatar-controls svg {
+    margin-left: 5px;
+    color: var(--text-color);
+}
+
+.profile-route .green-tab {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.profile-route .green-tab .regular-green-tab {
+    margin-bottom: 5px;
+}
+
+.profile-route .post-entry,
+.profile-route .ask-entry,
+.profile-route .ask-question,
+.profile-route .ask-answer {
+    width: 100%;
+    min-width: 0;
+}
+
+.card .mini-card-name,
+.card .big-card-name,
+.card .mini-suggestion-info,
+.contact-full-profile .big-suggestion-info {
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+.chat-input-area {
+    align-items: center;
+}
+
+.chat-right-buttons {
+    flex-direction: row;
+    flex-shrink: 0;
+}
+
+.svg-back-card,
+.svg-back-profile {
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.profile-contact-top .svg-back-card {
+    padding: 0;
+    margin-right: 15px;
+}
+
+.svg-back-profile {
+    padding: 0;
+    margin: 10px;
+}
+
+.profile-top-menu,
+.back-filter {
+    align-items: center;
+}
+
+#im .user-menu {
+    width: 220px;
+    max-width: calc(100vw - 32px);
+    box-sizing: border-box;
+    flex-direction: column;
+}
+
+#im .user-menu.visible {
+    display: linear;
+    linear-orientation: vertical;
+    height: max-content;
+}
+
+#im .user-menu-item {
+    flex-shrink: 0;
+    white-space: normal;
+}
+
+#im .profile-contact-top,
+#im .profile-top-menu {
+    position: relative;
+    overflow: visible;
+    z-index: 6;
+}
+
+#im .profile-contact-header {
+    color: var(--light-color);
+}
+
+#im .profile-contact-top .user-menu,
+#im .profile-top-menu .user-menu {
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+.authenticated-route {
+    display: linear;
+    linear-orientation: vertical;
+    height: 100vh;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--im-background-color);
+    color: var(--text-color);
+    font-family: var(--text-font);
+    font-size: 16px;
+    line-height: 1.51857143;
+}
+
+.authenticated-route .modal-section,
+.authenticated-route .modal-part,
+.authenticated-route #settings-edition,
+.authenticated-route #chat-experiments,
+.authenticated-route #karma-leaderboard,
+.authenticated-route #feedback-form {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.authenticated-route .modal-section,
+.authenticated-route .modal-part {
+    display: flex;
+    flex-direction: column;
+}
+
+.authenticated-route .green-tab {
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.authenticated-route .regular-green-tab {
+    padding: 0 8px;
+}
+
+.authenticated-route .modal-input,
+.authenticated-route .modal-select {
+    width: 100%;
+    box-sizing: border-box;
+    color: var(--input-text-color);
+}
+
+.authenticated-route .section-buttons {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.authenticated-route .green-button {
+    color: var(--light-color);
+    background-color: var(--merochat-green);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.authenticated-route .green-button text {
+    color: var(--light-color);
+    font-weight: bold;
+}
+
+.authenticated-route .danger {
+    background-color: var(--merochat-red);
+}
+
+.authenticated-route .cancel {
+    background-color: transparent;
+    color: var(--text-color);
+}
+
+.lynx-checkbox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.checkbox-mark {
+    width: 22px;
+    height: 22px;
+    line-height: 20px;
+    border: 1px solid var(--text-color);
+    border-radius: 3px;
+    margin-right: 10px;
+    flex-shrink: 0;
+    text-align: center;
+    color: var(--light-color);
+}
+
+.checkbox-selected {
+    background-color: var(--merochat-green);
+    border-color: var(--merochat-green);
+}
+
+.checkbox-label {
+    flex: 1;
+    white-space: normal;
+}
+
+.authenticated-route .chat-background-preview,
+.authenticated-route .feedback-screenshot {
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+    margin: 10px 0;
+}
+
+.authenticated-route .chat-background-save {
+    position: relative;
+}
+
+.authenticated-route .comments {
+    width: 100%;
+    height: 180px;
+    margin: 10px 0;
+}
+
+.authenticated-route .account-error,
+.authenticated-route .request-error-message,
+.authenticated-route .error-message {
+    color: var(--merochat-red);
+}
+
+.authenticated-route .account-success {
+    color: var(--merochat-green);
+}
+
+.authenticated-route .board-position,
+.authenticated-route .name-karma,
+.authenticated-route .privilege-body,
+.authenticated-route .experiment-desc-head {
+    flex-direction: row;
+}
+
+.authenticated-route .name-karma,
+.authenticated-route .privilege-name-description,
+.authenticated-route .experiment-side-desc {
+    flex: 1;
+    min-width: 0;
+}
+
+.authenticated-route .board-position .name,
+.authenticated-route .board-position .duller {
+    color: var(--light-color);
+}
+
+.authenticated-route .privilege-quantity {
+    width: 80px;
+    padding-right: 20px;
+    flex-shrink: 0;
+}
+
+.authenticated-route .privilege-description {
+    width: 100%;
+}
+
+.authenticated-route .experiment-desc-head {
+    width: 100%;
+}
+
+.authenticated-route .show-button {
+    margin-left: 10px;
+}
+
+.authenticated-route .paper-input {
+    height: 100px;
+}
+
+.authenticated-route .paper-thrown-entry,
+.authenticated-route .flying-by,
+.authenticated-route .debate-topic {
+    width: 100%;
+}
+
+.authenticated-route #chat-experiments .modal-part {
+    border-bottom-color: var(--text-color);
+}
+
+.authenticated-route .modal-select,
+.authenticated-route .modal-select text {
+    color: var(--text-color);
+    background-color: transparent;
+}
+
+.authenticated-route .modal-input {
+    background-color: var(--light-color);
+}
+
+.authenticated-route .modal-input text {
+    color: var(--input-text-color);
+}
+
+.authenticated-route .leaderboard-name-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.authenticated-route .name-karma {
+    align-items: center;
+    min-height: 54px;
+}
+
+.authenticated-route .board-position .name text {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.authenticated-route .position {
+    flex: none;
+    padding: 0 10px;
+}
+
+.authenticated-route .position-number {
+    width: 33px;
+    height: 33px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.authenticated-route .avatar-leaderboard-div {
+    z-index: 1;
+    flex-shrink: 0;
+}
+
+.authenticated-route .modal-screen-header {
+    color: var(--text-color);
+    justify-content: flex-start;
+}
+
+.authenticated-route #chat-experiments .modal-section,
+.authenticated-route #chat-experiments .modal-part {
+    align-self: stretch;
+}
+
+.authenticated-route .help .public-heading text {
+    font-weight: bold;
+}
+
+.modal-screen-back svg {
+    width: 100%;
+    height: 100%;
+    color: var(--text-color);
+}
+
+.authenticated-route #feedback-form .error-message {
+    visibility: visible;
+}
+
+.authenticated-route #settings-edition,
+.authenticated-route #chat-experiments,
+.authenticated-route #karma-leaderboard,
+.authenticated-route #feedback-form,
+.authenticated-route #internal-help,
+.authenticated-route #backer {
+    height: auto;
+    max-height: none;
+    margin-top: 0;
+    overflow: visible;
+    z-index: 0;
+}
+
+.authenticated-route .privilege-quantity svg {
+    color: var(--merochat-green);
 }

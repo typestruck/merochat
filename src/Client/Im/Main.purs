@@ -25,6 +25,7 @@ import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Connection (WebSocket)
 import Client.Im.WebSocket.Events as CIWE
 import Client.Location as CL
+import Client.Lynx.Keyboard as CLK
 import Client.Lynx.Room as CLR
 import Client.Network (routes)
 import Client.Network as CN
@@ -125,6 +126,7 @@ application = do
                   , temporaryPassword: Nothing
                   , enableNotificationsVisible: false
                   , messageEnter: false
+                  , keyboardHeight: 0.0
                   , editing: Nothing
                   , showLargeAvatar: false
                   , imageCaption: Nothing
@@ -178,7 +180,8 @@ application = do
             { model
             , view: SIV.view true
             , subscribe:
-                    [ --FSD.onClick' ToggleUserContextMenu
+                    [ CLK.onChange SetKeyboardHeight
+                    --FSD.onClick' ToggleUserContextMenu
                     --   --possible workaround for a firefox bug
                     --   , onBeforeUnload $ CloseWebSocket Desktop
                     --   --we need focus blur and visibility change to handle all case of when the window is active or not
@@ -197,6 +200,7 @@ update st model =
             --chat
             DropFile event → CICH.catchFile event model
             ResizeChatInput event → SR.resizeInputFrom event model
+            SetKeyboardHeight height → model { keyboardHeight = height } /\ []
             PrepareSelectedImage event → CICH.prepareSelectedImage event model
             EnterSendMessage elementId event → CICH.enterSendMessage elementId event model
             ForceSendMessage elementId → CICH.forceSendMessage elementId model

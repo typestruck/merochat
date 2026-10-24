@@ -90,8 +90,8 @@ view model@{ top10, inBetween10, userPosition, toggleBoard, privileges, stats: {
             HE.div [ HA.class' $ "board-position" <> if user.position == userPosition then " user" else "" ]
                   [ HE.div [ HA.class' "avatar-leaderboard-div" ] [ SA.image user [ HA.class' "avatar-leaderboard", HA.src $ SA.fromAvatar user ] ]
                   , HE.div [ HA.class' "name-karma" ]
-                          [ HE.div_
-                                  [ HE.div [ HA.class' "name" ] [ HE.text user.name ]
+                          [ HE.div [ HA.class' "leaderboard-name-details" ]
+                                  [ HE.div [ HA.class' "name" ] [ HE.text $ user.name <> if user.position == userPosition then " (You!)" else "" ]
                                   , HE.span [ HA.class' "duller" ] [ HE.text $ SI.thousands user.karma ]
                                   ]
                           , HE.div [ HA.class' "position" ]

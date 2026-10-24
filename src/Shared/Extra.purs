@@ -10,6 +10,9 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)
 
+flatten ∷ ∀ message. Boolean → NodeData message
+flatten = HA.createAttribute "flatten" <<< show
+
 br ∷ ∀ message. Html message
 br = HE.div' [ HA.class' "line-break" ]
 
@@ -104,3 +107,9 @@ li attributes children = HE.div [ HA.class' "public-list-item" ] [ HE.div attrib
 
 li_ ∷ ∀ message. Array (Html message) → Html message
 li_ = li []
+
+checkbox ∷ ∀ message. Boolean → message → String → Html message
+checkbox selected message label = HE.div [ HA.class' "inline-control lynx-checkbox", HA.onClick message ]
+      [ HE.createElement "text" [ HA.class' { "checkbox-mark": true, "checkbox-selected": selected } ] [ HE.text $ if selected then "✓" else "" ]
+      , HE.createElement "text" [ HA.class' "checkbox-label" ] [ HE.text label ]
+      ]

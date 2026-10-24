@@ -4,8 +4,9 @@ import Prelude
 
 import Server.KarmaPrivileges.Database as SLD
 import Server.Effect (ServerEffect)
+import Shared.KarmaPrivileges.Types (KarmaPrivilegesData)
 
-leaderboard ∷ Int → ServerEffect _
+leaderboard ∷ Int → ServerEffect KarmaPrivilegesData
 leaderboard loggedUserId = do
       top10 ← SLD.fetchTop10
       userPosition ← SLD.userPosition loggedUserId

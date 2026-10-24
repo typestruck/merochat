@@ -7,6 +7,10 @@ import './src/Client/css/profile.css';
 import './src/Client/css/landing.css';
 import './src/Client/css/help.css';
 import './src/Client/css/backer.css';
+import './src/Client/css/settings.css';
+import './src/Client/css/karmaPrivileges.css';
+import './src/Client/css/experiments.css';
+import './src/Client/css/feedback.css';
 import './src/Client/css/lynx.css';
 
 main();

@@ -9,6 +9,7 @@ import Server.Experiments.Action as SEA
 import Server.Experiments.Template as SET
 import Shared.Experiments.Types (Match, PaperPlane, Question)
 import Shared.Html (Html)
+import Shared.Experiments.Types (ExperimentsData)
 
 experiments ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
 experiments { guards: { loggedUserId } } = do
@@ -45,3 +46,6 @@ pass routes = do
 flying ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array PaperPlane)
 flying routes = SEA.flyingPlanes routes.guards.loggedUserId
 
+
+initialize ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect ExperimentsData
+initialize = SEA.experiments <<< _.guards.loggedUserId

@@ -2,20 +2,27 @@ module Client.InternalBacker.Main where
 
 import Prelude
 
-import Client.InternalBacker.Update as CIHU
-import Data.Maybe (Maybe(..))
+import Client.AppId (internalBackerAppId)
+import Client.Lynx.Screen as CLS
+import Client.InternalBacker.Update as CIBU
 import Effect (Effect)
-import Web.DOM.ParentNode (QuerySelector(..))
+import Effect.Aff (Aff)
+import Effect.Aff as EA
+import Effect.Class as EC
+import Flame (Application)
 import Flame as F
-import Flame.Subscription as FS
-import Client.EventTypes (modalVisible)
-import Shared.Backer.Types (BackerMessage(..))
-import Shared.Backer.View as SIHV
+import Shared.Backer.Types (BackerMessage, BackerModel)
+import Shared.Backer.View as SBV
 
 main ∷ Effect Unit
-main = pure unit
-      -- void $ F.resumeMount_ (QuerySelector "#backer")
-      --       { view: SIHV.view
-      --       , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
-      --       , update: CIHU.update
-      --       }
+main = EA.launchAff_ $ application >>= EC.liftEffect <<< F.mount internalBackerAppId
+
+application ∷ Aff (Application BackerModel BackerMessage)
+application = do
+      let model = { visible: true }
+      pure
+            { model
+            , view: SBV.view >>> pure >>> CLS.view internalBackerAppId
+            , update: CIBU.update
+            , subscribe: []
+            }

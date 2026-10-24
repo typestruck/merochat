@@ -5,6 +5,7 @@ import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Dropdown as SDRO
 import Shared.Experiments.Types (DebateSection(..), ExperimentsMessage(..), ExperimentsModel)
 import Shared.Extra as SE
 import Shared.Options.Debate (maxStatementCharacters)
@@ -44,35 +45,34 @@ new ∷ ExperimentsModel → Html ExperimentsMessage
 new model =
       HE.div [ HA.class' "new-throw" ]
             [ HE.label [] [ HE.text "Topic for debate" ]
-            , HE.div [ HA.class' "modal-select debate-topic" ]
-                    [ SE.choice (DM.isNothing model.debate.topic) (SetDebateTopic "") "Select a topic"
-                    , SE.choice (model.debate.topic == Just "Capitalism should be replaced by a different economic system") (SetDebateTopic "Capitalism should be replaced by a different economic system") "Capitalism should be replaced by a different economic system"
-                    , SE.choice (model.debate.topic == Just "Alcohol should be illegal") (SetDebateTopic "Alcohol should be illegal") "Alcohol should be illegal"
-                    , SE.choice (model.debate.topic == Just "All drugs should be decriminalized") (SetDebateTopic "All drugs should be decriminalized") "All drugs should be decriminalized"
-                    , SE.choice (model.debate.topic == Just "Summer is the best season of the year") (SetDebateTopic "Summer is the best season of the year") "Summer is the best season of the year"
-                    , SE.choice (model.debate.topic == Just "God exists") (SetDebateTopic "God exists") "God exists"
-                    , SE.choice (model.debate.topic == Just "Eating meat is unethical") (SetDebateTopic "Eating meat is unethical") "Eating meat is unethical"
-                    , SE.choice (model.debate.topic == Just "Morality is objective") (SetDebateTopic "Morality is objective") "Morality is objective"
-                    , SE.choice (model.debate.topic == Just "Pineapple belongs on pizza") (SetDebateTopic "Pineapple belongs on pizza") "Pineapple belongs on pizza"
-                    , SE.choice (model.debate.topic == Just "Taylor Swift is a bigger pop star than Michael Jackson") (SetDebateTopic "Taylor Swift is a bigger pop star than Michael Jackson") "Taylor Swift is a bigger pop star than Michael Jackson"
-                    , SE.choice (model.debate.topic == Just "Science can solve all of our problems") (SetDebateTopic "Science can solve all of our problems") "Science can solve all of our problems"
-                    , SE.choice (model.debate.topic == Just "Billionaires should not exist") (SetDebateTopic "Billionaires should not exist") "Billionaires should not exist"
-                    , SE.choice (model.debate.topic == Just "Cats are better than dogs") (SetDebateTopic "Cats are better than dogs") "Cats are better than dogs"
-                    , SE.choice (model.debate.topic == Just "Memes are a form of art") (SetDebateTopic "Memes are a form of art") "Memes are a form of art"
-                    , SE.choice (model.debate.topic == Just "AI will destroy the world") (SetDebateTopic "AI will destroy the world") "AI will destroy the world"
-                    , SE.choice (model.debate.topic == Just "Short form content is bad for mental health") (SetDebateTopic "Short form content is bad for mental health") "Short form content is bad for mental health"
-                    , SE.choice (model.debate.topic == Just "Climate change is the most urgent scientific issue") (SetDebateTopic "Climate change is the most urgent scientific issue") "Climate change is the most urgent scientific issue"
-                    , SE.choice (model.debate.topic == Just "Cars dependency is bad for society") (SetDebateTopic "Cars dependency is bad for society") "Cars dependency is bad for society"
-                    , SE.choice (model.debate.topic == Just "All countries should have open borders") (SetDebateTopic "All countries should have open borders") "All countries should have open borders"
-                    , SE.choice (model.debate.topic == Just "We are living in a simulation") (SetDebateTopic "We are living in a simulation") "We are living in a simulation"
-                    , SE.choice (model.debate.topic == Just "Aliens exist") (SetDebateTopic "Aliens exist") "Aliens exist"
-                    , SE.choice (model.debate.topic == Just "Living forever would be a good thing") (SetDebateTopic "Living forever would be a good thing") "Living forever would be a good thing"
-                    ]
+            , SDRO.dropdown SelectDropdown "Topic for debate" model.debate.topic (DM.fromMaybe "Select a topic" model.debate.topic) SetDebateTopic $
+                    map (\topic → { value: topic, name: topic })
+                          [ "Capitalism should be replaced by a different economic system"
+                          , "Alcohol should be illegal"
+                          , "All drugs should be decriminalized"
+                          , "Summer is the best season of the year"
+                          , "God exists"
+                          , "Eating meat is unethical"
+                          , "Morality is objective"
+                          , "Pineapple belongs on pizza"
+                          , "Taylor Swift is a bigger pop star than Michael Jackson"
+                          , "Science can solve all of our problems"
+                          , "Billionaires should not exist"
+                          , "Cats are better than dogs"
+                          , "Memes are a form of art"
+                          , "AI will destroy the world"
+                          , "Short form content is bad for mental health"
+                          , "Climate change is the most urgent scientific issue"
+                          , "Cars dependency is bad for society"
+                          , "All countries should have open borders"
+                          , "We are living in a simulation"
+                          , "Aliens exist"
+                          , "Living forever would be a good thing"
+                          ]
             , HE.label [] [ HE.text "Is your position pro or against?" ]
-            , HE.div [ HA.class' "modal-select debate-topic" ]
-                    [ HE.text "Select your position"
-                    , SE.choice (model.debate.inFavor == Just true) (SetInFavor "true") $ "Yes, I agree with: " <> DM.fromMaybe "" model.debate.topic
-                    , SE.choice (model.debate.inFavor == Just false) (SetInFavor "false") $ "No, I DO NOT agree with: " <> DM.fromMaybe "" model.debate.topic
+            , SDRO.dropdown SelectDropdown "Position" (show <$> model.debate.inFavor) (DM.maybe "Select your position" (\pro → if pro then "Pro" else "Against") model.debate.inFavor) SetInFavor
+                    [ { value: "true", name: "Pro" }
+                    , { value: "false", name: "Against" }
                     ]
 
             , HE.div [ HA.class' { "arguing debate-topic": true, hidden: DM.isNothing model.debate.inFavor } ]
@@ -90,13 +90,7 @@ new model =
             , if model.debate.loading then
                     HE.div' [ HA.class' "loading" ]
               else
-                    HE.input
-                          [ HA.type' "button"
-                          , HA.onClick StartDebate
-                          , HA.disabled $ DM.isNothing model.debate.topic || DM.isNothing model.debate.inFavor || DM.isNothing model.debate.statement
-                          , HA.class' "green-button"
-                          , HA.value "Start debate"
-                          ]
+                    HE.button [ HA.onClick StartDebate, HA.disabled $ DM.isNothing model.debate.topic || DM.isNothing model.debate.inFavor || DM.isNothing model.debate.statement, HA.class' "green-button" ] [ HE.text $ "Start debate" ]
             ]
 
 mine ∷ ExperimentsModel → Html ExperimentsMessage

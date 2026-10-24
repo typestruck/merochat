@@ -11,6 +11,7 @@ import Server.Settings.Action as SSA
 import Server.Settings.Database as SSD
 import Server.Settings.Template as SST
 import Shared.Html (Html)
+import Shared.Settings.Types (UserSettings)
 import Shared.Settings.Types (PrivacySettings)
 
 settings ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
@@ -40,3 +41,6 @@ changePrivacy { guards: { loggedUserId }, body } = do
 
 background ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { ownBackground ∷ Boolean, image ∷ Maybe String } } → ServerEffect String
 background routes = SSA.saveChatBackground routes.guards.loggedUserId routes.body.ownBackground routes.body.image
+
+initialize ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect UserSettings
+initialize = SSD.userSettings <<< _.guards.loggedUserId

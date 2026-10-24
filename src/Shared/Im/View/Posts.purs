@@ -101,7 +101,7 @@ postForm model =
               [ if not model.posts.freeToSend then
                       HE.div' [ HA.class' "loading" ]
                 else if not model.showSuggestionsPostForm || model.user.totalPosts == 0 then
-                      HE.input [ HA.disabled $ DM.isNothing model.posts.text && DM.isNothing model.posts.link && DM.isNothing model.posts.image, HA.type' "button", HA.class' "green-button post-button build", HA.value "Post", HA.onClick SendPost ]
+                      HE.button [ HA.disabled $ DM.isNothing model.posts.text && DM.isNothing model.posts.link && DM.isNothing model.posts.image, HA.class' { "green-button post-button build": true, "native-disabled": DM.isNothing model.posts.text && DM.isNothing model.posts.link && DM.isNothing model.posts.image }, HA.onClick SendPost ] [ HE.text "Post" ]
                 else
                       HE.span_ [ HE.text "Posted!" ]
               ]

@@ -3,7 +3,7 @@ module Client.Profile.Update where
 import Prelude
 
 import Client.AppId (imAppId)
-import Client.Lynx.ChoicePicker as CLC
+import Shared.Dropdown as SDRO
 import Client.Lynx.DatePicker as CLD
 import Client.Lynx.Image as CLI
 import Client.Lynx.Room as CLR
@@ -334,7 +334,7 @@ selectChoice ∷ String → Maybe String → Array { value ∷ String, name ∷ 
 selectChoice title initial options select model = model /\ [ selectIt ]
       where
       selectIt = do
-            result ← EA.attempt $ CLC.pick title initial options
+            result ← EA.attempt $ SDRO.pick title initial options
             pure $ case result of
                   Right value → map select value
                   Left error → Just <<< SetPField $ _ { updateRequestStatus = Just <<< Failure $ EE.message error }

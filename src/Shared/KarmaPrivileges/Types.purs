@@ -19,14 +19,20 @@ type LeaderboardUser =
       , name ∷ String
       }
 
-type KarmaPrivilegesModel =
-      { top10 ∷ Array LeaderboardUser
+type KarmaPrivilegesData = Record KD
+
+type KD =
+      ( top10 ∷ Array LeaderboardUser
       , inBetween10 ∷ Array LeaderboardUser
       , userPosition ∷ Int
-      , visible ∷ Boolean
-      , toggleBoard ∷ ToggleBoard
       , privileges ∷ Array PrivilegeUser
       , stats ∷ KarmaStats
+      )
+
+type KarmaPrivilegesModel =
+      { visible ∷ Boolean
+      , toggleBoard ∷ ToggleBoard
+      | KD
       }
 
 type KarmaStats =

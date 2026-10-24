@@ -20,6 +20,7 @@ import Shared.Avatar (defaultAvatar)
 import Shared.Avatar as SA
 import Shared.Change as SC
 import Shared.DateTime as SD
+import Shared.Dropdown as SDRO
 import Shared.Element (ElementId(..))
 import Shared.Extra as SE
 import Shared.Im.Svg (contextMenuElements, closeElements)
@@ -121,7 +122,7 @@ edit model =
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Avatar" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your profile picture" ]
-              , HE.div [ HA.class' "fit" ]
+              , HE.div [ HA.class' "fit profile-avatar-controls" ]
                       [ SA.imagePath model.avatarInputed [ HA.onClick SelectAvatar, HA.class' "avatar-profile-edition", HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed ]
                       , SIC.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
                               [ HE.title [ HE.text "Reset profile picture" ]
@@ -243,5 +244,4 @@ preview model =
 
 
 dropdown ∷ String → Maybe String → String → (String → ProfileMessage) → Array { value ∷ String, name ∷ String } → Html ProfileMessage
-dropdown title selected label select options = HE.div [ HA.class' "profile-choice" ]
-      [ HE.button [ HA.class' "modal-select", HA.onClick $ SelectChoice title selected options select ] [ HE.text label ] ]
+dropdown = SDRO.dropdown SelectChoice

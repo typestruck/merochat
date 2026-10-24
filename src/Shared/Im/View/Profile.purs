@@ -20,6 +20,7 @@ import Effect (Effect)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Extra as SE
 import Shared.Icon as SICN
 import Flame.Html.Event (Event)
 import Flame.Types (NodeData)
@@ -111,7 +112,7 @@ compactProfile contact model =
                             [ HE.div [ HA.class' "contact-name-badge inline-control" ] $ HE.h1 [ HA.class' "contact-name" ] ([ HE.text contact.user.name ]) : badges contact.user.badges
                             ] <> typingAvailability
                     , HE.div [ HA.class' "profile-contact-deets" ]
-                            [ HE.div [ HA.class' "outer-user-menu" ] [ SIS.contextMenu $ show CompactProfileContextMenu ]
+                            [ HE.div [ HA.class' "outer-user-menu" ] [ SIS.contextMenu (show CompactProfileContextMenu) $ SetContextMenuToggle ShowCompactProfileContextMenu ]
                             ]
                     , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] contextMenu
                     , SIS.closeX [ HA.class' "svg-close-profile", HA.onClick ResumeSuggesting ]
@@ -141,7 +142,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
       profileMenu = HE.div [ HA.class' "profile-top-menu" ]
             [ SIS.arrow [ HA.class' "svg-back-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
             , HE.div [ HA.class' { "outer-user-menu": true, hidden: model.showLargeAvatar } ]
-                    [ SIS.contextMenu $ show FullProfileContextMenu
+                    [ SIS.contextMenu (show FullProfileContextMenu) $ SetContextMenuToggle ShowFullProfileContextMenu
                     ]
             , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu user true
             , SIS.closeX [ HA.class' "svg-close-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
@@ -277,7 +278,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                                             <> postsAsksCount suggestion
 
                                     )
-                            , HE.div [ HA.class' "outer-user-menu order-3" ] [ SIS.contextMenu $ show FullProfileContextMenu ]
+                            , HE.div [ HA.class' "outer-user-menu order-3" ] [ SIS.contextMenu (show FullProfileContextMenu) $ SetContextMenuToggle ShowFullProfileContextMenu ]
                             , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu suggestion false
                             , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideModal ]
                                     [ SIS.closeX []
@@ -339,9 +340,9 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                           if model.loadingContact == Just suggestion.id then
                                 [ HE.div' [ HA.class' "loading" ] ]
                           else if suggestion.isContact then
-                                [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ] ]
+                                [ HE.button [ HA.class' "see-profile-button see-chat", HA.onClick $ ResumeSuggestionChat suggestion.id ] [ HE.text "Open chat" ] ]
                           else if suggestion.id == backerId then
-                                [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "See donation options", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ] ]
+                                [ HE.button [ HA.class' "see-profile-button see-chat", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ] [ HE.text "See donation options" ] ]
                           else
                                 [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model ]
 
@@ -409,11 +410,11 @@ suggestionCards model =
                                 ]
                         , HE.div [ HA.class' "build-list" ] $ map check (DS.toUnfoldable completed) <> map uncheck (DS.toUnfoldable missing)
                         , HE.div [ HA.class' "see-profile-chat" ]
-                                [ HE.input [ HA.type' "button", HA.onClick HideBuildProfile, HA.class' "cancel", HA.value "Dismiss" ]
-                                , HE.input [ HA.type' "button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit), HA.class' "green-button bigger build", HA.value "Go to profile" ]
+                                [ HE.button [ HA.onClick HideBuildProfile, HA.class' "cancel" ] [ HE.text "Dismiss" ]
+                                , HE.button [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit), HA.class' "green-button bigger build" ] [ HE.text "Go to profile" ]
                                 ]
                         ]
-      check p = HE.div [ HA.class' "build-checked" ] [ SS.checked "", HE.text $ SPC.displayColumn p ]
+      check p = HE.div [ HA.class' "build-checked inline-control" ] [ SS.checked "", HE.text $ SPC.displayColumn p ]
       uncheck p = HE.div_ [ HE.text $ "➡ " <> show p ]
 
       moreCards
@@ -429,7 +430,7 @@ suggestionCards model =
                             [ HE.div' [ HA.class' "loading" ] ]
                     ]
       card suggestion =
-            HE.div [ HA.class' { "card": true, "backing-card": suggestion.id == backerId }, HA.createAttribute "flatten" "false" ]
+            HE.div [ HA.class' { "card": true, "backing-card": suggestion.id == backerId }, SE.flatten false ]
                   [ HE.div [ HA.class' "avatar-info" ]
                           [ HE.div (HA.class' "mini-avatar-info" : showProfile suggestion.id)
                                   [ SA.image suggestion $ if suggestion.unseenPosts > 0 then [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar newly-posted", HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts ] else [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar" ]
@@ -609,7 +610,7 @@ suggestionsFilter ∷ ImModel → Html ImMessage
 suggestionsFilter model =
       HE.div [ HA.class' { "suggestions-filter": true, hidden: model.user.profileVisibility == Nobody } ]
             [ HE.text $ "Showing: " <> filterName
-            , SIS.gear [ HA.id $ show SuggestionsFilterMenu, HA.class' "suggestions-filter-gear" ]
+            , SIS.gear [ HA.onClick $ SetContextMenuToggle ShowSuggestionsFilterMenu, HA.id $ show SuggestionsFilterMenu, HA.class' "suggestions-filter-gear" ]
             , HE.div [ HA.class' { "user-menu mini": true, visible: model.toggleContextMenu == ShowSuggestionsFilterMenu } ]
                     [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom /= OnlineOnly && model.user.suggestionsFrom /= ContactsOnly && model.user.suggestionsFrom /= FavoritesOnly }, HA.onClick $ ToggleSuggestionsFrom ThisWeek ] [ HE.text "New suggestions" ]
                     , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.user.suggestionsFrom == OnlineOnly }, HA.onClick $ ToggleSuggestionsFrom OnlineOnly ] [ HE.text "Online users" ]
@@ -659,7 +660,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                                                   , HE.path' [ HA.d "M8 13L13 13", HA.strokeWidth "2", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
                                                   ]
                                           , HE.div [ HA.class' "outer-user-menu" ]
-                                                  [ SIS.contextMenu $ show MiniSuggestionContextMenu
+                                                  [ SIS.contextMenu (show MiniSuggestionContextMenu) $ SetContextMenuToggle ShowMiniSuggestionContextMenu
                                                   , HE.div [ HA.class' { "user-menu mini menu-up": true, visible: model.toggleContextMenu == ShowMiniSuggestionContextMenu } ] $ profileContextMenu suggestion false
                                                   ]
                                           ]

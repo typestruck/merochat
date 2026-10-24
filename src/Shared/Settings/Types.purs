@@ -7,7 +7,6 @@ import Data.Argonaut.Decode.Generic as DADG
 import Data.Argonaut.Encode.Generic as DAEG
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
-import Flame.Html.Event (Event)
 import Shared.Modal (Modal)
 import Shared.Network (RequestStatus)
 import Shared.SuggestionsFrom (SuggestionsFrom)
@@ -22,6 +21,8 @@ type SM =
       , tab ∷ Tab
       , visible ∷ Boolean
       , requestStatus ∷ Maybe SettingsRequestStatus
+      , accountRequest ∷ Maybe { field ∷ String, status ∷ RequestStatus }
+      , accountLoading ∷ Boolean
       , confirmTermination ∷ Boolean
       | US
       )
@@ -62,11 +63,13 @@ data SettingsMessage
       | ChangePrivacySettings SettingRequest
       | ShowSuccess SettingRequest
       | ChangePassword
-      | BeforeSetChatBackground Event
+      | SelectChatBackground
+      | AfterAccountRequest String RequestStatus
       | SetChatBackground (Maybe String)
       | RemoveChatBackground
       | SaveChatBackground
       | AfterSaveChatBackground (Maybe String)
+      | SelectChoice String (Maybe String) (Array { value ∷ String, name ∷ String }) (String → SettingsMessage)
       | ToggleVisibility Modal
       | ToggleTerminateAccount
       | TerminateAccount --very bad

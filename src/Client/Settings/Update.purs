@@ -2,7 +2,10 @@ module Client.Settings.Update where
 
 import Prelude
 
-import Client.AppId (imAppId, settingsAppId)
+import Shared.Dropdown as SDRO
+import Client.AppId (imAppId)
+import Client.Lynx.Image as CLI
+import Client.Lynx.Session as CLS
 import Client.File as CF
 import Client.Navigation as CNA
 import Shared.External.Types as SET
@@ -12,14 +15,12 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
-import Data.Symbol (class IsSymbol)
-import Data.Symbol as DS
+import Data.Symbol as DSY
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class as EC
 import Flame (Update)
-import Flame.Html.Event (Event)
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
 import Payload.ResponseTypes (Response(..))
@@ -30,7 +31,7 @@ import Shared.Network (RequestStatus(..))
 import Shared.Resource (maxImageSize)
 import Shared.Routes (routesSpec)
 import Shared.Settings.Types (SettingRequest(..), SettingsMessage(..), SettingsModel, PrivacySettings)
-import Shared.Settings.View as SSV
+import Shared.Network as SN
 import Type.Proxy (Proxy(..))
 
 update ∷ Update SettingsModel SettingsMessage
@@ -41,13 +42,15 @@ update model message =
             ChangePassword → changePassword model
             ToggleTerminateAccount → toggleTerminateAccount model
             ShowSuccess operation → showSuccess operation model
-            BeforeSetChatBackground event → beforeSetChatBackground event model
+            SelectChatBackground → model /\ [ map (map $ SetChatBackground <<< Just) CLI.pick ]
+            AfterAccountRequest field status → afterAccountRequest field status model
             SetChatBackground image → setChatBackground image model
             AfterSaveChatBackground url → afterSaveChatBackground url model
             TerminateAccount → terminateAccount model
             RemoveChatBackground → removeChatBackground model
             SaveChatBackground → saveChatBackground model
             ChangePrivacySettings request → changePrivacySettings request model
+            SelectChoice title initial options select → model /\ [ map (map select) $ SDRO.pick title initial options ]
             ToggleVisibility modal → toggleVisibility model modal
 
 setIt ∷ (SettingsModel → SettingsModel) → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
@@ -88,34 +91,43 @@ toggleTerminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe 
 toggleTerminateAccount model = model { confirmTermination = not model.confirmTermination } /\ []
 
 changeEmail ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-changeEmail model = model /\ [ requestAndLogout (Proxy ∷ Proxy "email") $ routes.settings.account.email { body: { email: model.email } } ]
+changeEmail model = requestAndLogout "email" (routes.settings.account.email { body: { email: model.email } }) model
 
 changePassword ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-changePassword model = model /\ [ requestAndLogout (Proxy ∷ Proxy "password") $ routes.settings.account.password { body: { password: model.password } } ]
+changePassword model = requestAndLogout "password" (routes.settings.account.password { body: { password: model.password } }) model
 
-requestAndLogout ∷ ∀ v field. IsSymbol field ⇒ Proxy field → Aff (ClientResponse v) → Aff (Maybe SettingsMessage)
-requestAndLogout field aff = do
-      status ← CN.formRequest (SSV.formId field) aff
-      when (status == Success) $ do
-            EA.delay $ Milliseconds 3000.0
-            EC.liftEffect $ CNA.navigate SET.Login
-      pure Nothing
+requestAndLogout ∷ ∀ value. String → Aff (ClientResponse value) → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+requestAndLogout field request model
+      | model.accountLoading = model /\ []
+      | otherwise = model { accountLoading = true, accountRequest = Nothing } /\ [ send ]
+      where
+      send = do
+            result ← CN.request request
+            pure <<< Just <<< AfterAccountRequest field $ case result of
+                  Right _ → Success
+                  Left error → Failure $ SN.errorMessage error
+
+afterAccountRequest ∷ String → RequestStatus → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+afterAccountRequest field status model = model { accountLoading = status == Success, accountRequest = Just { field, status } } /\ effects
+      where
+      effects = case status of
+            Failure _ → []
+            Success → [ do
+                  EA.delay $ Milliseconds 3000.0
+                  EC.liftEffect do
+                        CLS.clear
+                        CNA.navigate SET.Login
+                  pure Nothing
+                  ]
 
 terminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-terminateAccount model = model /\ [ requestAndLogout (Proxy ∷ Proxy "confirmTermination") $ routes.settings.account.terminate { body: {} } ]
-
-beforeSetChatBackground ∷ Event → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-beforeSetChatBackground event model = model /\ [ before ]
-      where
-      before = do
-            CF.compressImage settingsAppId event true $ \_ _ b → SetChatBackground $ Just b
-            pure Nothing
+terminateAccount model = requestAndLogout "confirmTermination" (routes.settings.account.terminate { body: {} }) model
 
 setChatBackground ∷ Maybe String → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 setChatBackground image model =
       if isTooLarge $ DM.fromMaybe "" image then
             model
-                  { erroredFields = [ DS.reflectSymbol (Proxy ∷ Proxy "chatBackground") ]
+                  { erroredFields = [ DSY.reflectSymbol (Proxy ∷ Proxy "chatBackground") ]
                   } /\ []
       else
             model

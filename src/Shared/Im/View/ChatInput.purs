@@ -99,7 +99,7 @@ chatBarInput eid elementId model = HE.div [ HA.class' "chat-composer" ]
                       ]
               , HE.div [ HA.class' "chat-input-area" ]
                       [ emojiButton model
-                      , HE.div [ HA.class' "chat-input-frame", HA.createAttribute "flatten" "false" ]
+                      , HE.div [ HA.class' "chat-input-frame", SE.flatten false ]
                               [ HE.textarea'
                                       ( typingStatus
                                               <> filterEnterKeydown
@@ -150,7 +150,7 @@ emojiButton model
                     ]
 
 imageButton ∷ Html ImMessage
-imageButton = SI.svg [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Chat ShowSelectedImage, HA.class' "attachment-button", HA.viewBox "0 0 16 16" ]
+imageButton = SI.filled [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Chat ShowSelectedImage, HA.class' "attachment-button", HA.viewBox "0 0 16 16" ]
       $ imageButtonElements "Send image"
 
 imageButtonElements ∷ String → Array (Html ImMessage)
@@ -160,7 +160,7 @@ imageButtonElements title =
       ]
 
 audioButton ∷ Array (NodeData ImMessage) → Html ImMessage
-audioButton actions = SI.svg (actions <> [ HA.class' "attachment-button audio-button", HA.viewBox "0 0 512 512" ])
+audioButton actions = SI.filled (actions <> [ HA.class' "attachment-button audio-button", HA.viewBox "0 0 512 512" ])
       [ HE.g_
               [ HE.path' [ HA.class' "strokeless", HA.d "m439.5,236c0-11.3-9.1-20.4-20.4-20.4s-20.4,9.1-20.4,20.4c0,70-64,126.9-142.7,126.9-78.7,0-142.7-56.9-142.7-126.9 0-11.3-9.1-20.4-20.4-20.4s-20.4,9.1-20.4,20.4c0,86.2 71.5,157.4 163.1,166.7v57.5h-23.6c-11.3,0-20.4,9.1-20.4,20.4 0,11.3 9.1,20.4 20.4,20.4h88c11.3,0 20.4-9.1 20.4-20.4 0-11.3-9.1-20.4-20.4-20.4h-23.6v-57.5c91.6-9.3 163.1-80.5 163.1-166.7z" ]
               , HE.path' [ HA.class' "strokeless", HA.d "m256,323.5c51,0 92.3-41.3 92.3-92.3v-127.9c0-51-41.3-92.3-92.3-92.3s-92.3,41.3-92.3,92.3v127.9c0,51 41.3,92.3 92.3,92.3zm-52.3-220.2c0-28.8 23.5-52.3 52.3-52.3s52.3,23.5 52.3,52.3v127.9c0,28.8-23.5,52.3-52.3,52.3s-52.3-23.5-52.3-52.3v-127.9z" ]
@@ -173,7 +173,7 @@ sendButton elementId model
       | otherwise =
               [ HE.div
                       [ HA.class' "send-button-div", HA.onClick $ ForceSendMessage elementId ]
-                      [ SI.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message" ]
+                      [ SI.filled [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message" ]
               ]
 
 sendButtonElements ∷ ∀ message. String → Array (Html message)

@@ -52,7 +52,7 @@ askForm model user =
                     , HA.value $ DM.fromMaybe "" model.asks.question
                     ]
             , if model.asks.freeToSend then
-                    HE.input [ HA.disabled $ DM.isNothing model.asks.question, HA.type' "button", HA.class' "green-button post-button build ask-button", HA.value "Ask!", HA.onClick $ SendAsk user.id ]
+                    HE.button [ HA.disabled $ DM.isNothing model.asks.question, HA.class' { "green-button post-button build ask-button": true, "native-disabled": DM.isNothing model.asks.question }, HA.onClick $ SendAsk user.id ] [ HE.text "Ask!" ]
               else
                     HE.div' [ HA.class' "loading" ]
             ]

@@ -1,25 +1,29 @@
--- | Entry point of the feedback modal page
-
 module Client.Feedback.Main where
 
 import Prelude
 
 import Client.AppId (feedbackAppId)
+import Client.Lynx.Screen as CLS
 import Client.Feedback.Update as CFU
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Aff (Aff)
+import Effect.Aff as EA
+import Effect.Class as EC
+import Flame (Application)
 import Flame as F
-import Flame.Subscription as FS
-import Shared.Element (ElementId(..))
-import Shared.Element as SE
-import Shared.Feedback.Types (FeedbackMessage(..))
+import Shared.Feedback.Types (FeedbackMessage, FeedbackModel)
 import Shared.Feedback.View as SFV
-import Client.EventTypes (modalVisible)
 
 main ∷ Effect Unit
-main = pure unit
-      -- void $ F.resumeMount (SE.toQuerySelector FeedbackForm) feedbackAppId
-      --       { view: SFV.view
-      --       , update: CFU.update
-      --       , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
-      --       }
+main = EA.launchAff_ $ application >>= EC.liftEffect <<< F.mount feedbackAppId
+
+application ∷ Aff (Application FeedbackModel FeedbackMessage)
+application = do
+      let model = { feedbackStatus: Nothing, screenshot: Nothing, visible: true, comments: "", loading: false }
+      pure
+            { model
+            , view: SFV.view >>> pure >>> CLS.view feedbackAppId
+            , update: CFU.update
+            , subscribe: []
+            }

@@ -105,6 +105,7 @@ handlers reading =
               }
       , settings:
               { get: runJson reading SSH.settings
+              , initialize: runJson reading SSH.initialize
               , chat:
                       { background: runJson reading SSH.background
                       }
@@ -122,6 +123,7 @@ handlers reading =
               }
       , internalHelp: runJson reading SIHH.internalHelp
       , leaderboard: runJson reading SLBH.leaderboard
+      , karmaInitialize: runJson reading SLBH.initialize
       , logout: runJson reading SLOH.logout
       , help: runHtml reading SHH.help
       , backer: runHtml reading (const SBH.backer)
@@ -133,6 +135,7 @@ handlers reading =
       , internalBacker: runJson reading SIBH.internalBacker
       , experiments:
               { get: runJson reading SEH.experiments
+              , initialize: runJson reading SEH.initialize
               , questions: runJson reading SEH.questions
               , matches: runJson reading SEH.matches
               , answer: runJson reading SEH.answer

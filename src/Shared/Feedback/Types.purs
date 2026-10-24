@@ -7,7 +7,6 @@ import Data.Argonaut.Decode.Generic as DADG
 import Data.Argonaut.Encode.Generic as DAEG
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
-import Flame.Html.Event (Event)
 import Shared.Modal (Modal)
 import Shared.Network (RequestStatus)
 
@@ -26,7 +25,7 @@ type FeedbackModel =
 
 data FeedbackMessage
       = SetComments String
-      | BeforeSetScreenshot Event
+      | SelectScreenshot
       | SetScreenshot String
       | ToggleVisibility Modal
       | SendFeedback

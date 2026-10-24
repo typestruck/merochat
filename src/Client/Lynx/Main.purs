@@ -2,19 +2,26 @@ module Client.Lynx.Main where
 
 import Prelude
 
-import Client.AppId (imAppId, landingAppId, loginAppId, profileAppId, helpAppId, termsAppId, privacyAppId, backerAppId, recoverAppId, bannedAppId)
+import Client.AppId (imAppId, landingAppId, loginAppId, profileAppId, helpAppId, termsAppId, privacyAppId, backerAppId, recoverAppId, bannedAppId, settingsAppId, karmaPrivilegesAppId, experimentsAppId, feedbackAppId, internalHelpAppId, internalBackerAppId)
 import Client.Backer.Main as CBAM
 import Client.Banned.Main as CBNM
 import Client.Help.Main as CHM
 import Client.Im.Main as CIM
 import Client.Landing.Main as CLAM
 import Client.Login.Main as CLM
+import Client.Lynx.Keyboard as CLK
 import Client.Lynx.Room as CLR
 import Client.Lynx.Session as CLS
 import Client.Privacy.Main as CPRM
 import Client.Profile.Main as CPM
 import Client.Recover.Main as CRM
 import Client.Terms.Main as CTM
+import Client.Settings.Main as CSM
+import Client.KarmaPrivileges.Main as CKM
+import Client.Experiments.Main as CEM
+import Client.Feedback.Main as CFM
+import Client.InternalHelp.Main as CIHM
+import Client.InternalBacker.Main as CIBM
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
@@ -30,6 +37,7 @@ import Shared.User (User)
 main ∷ Effect Unit
 main = EA.launchAff_ do
       EC.liftEffect ST.initialize
+      EC.liftEffect CLK.initialize
       authenticated ← EC.liftEffect do
             CLS.initialize
             CLS.isAuthenticated
@@ -40,6 +48,12 @@ main = EA.launchAff_ do
             F.mountRoutes $
                   [ F.makeGuardedRoute loginAppId (pure CLM.nativeApplication) $ redirectLogged imAppId
                   , F.makeGuardedRoute imAppId CIM.application (redirectAnonymous loginAppId)
+                  , F.makeGuardedRoute settingsAppId CSM.application (redirectAnonymous loginAppId)
+                  , F.makeGuardedRoute karmaPrivilegesAppId CKM.application (redirectAnonymous loginAppId)
+                  , F.makeGuardedRoute experimentsAppId CEM.application (redirectAnonymous loginAppId)
+                  , F.makeGuardedRoute feedbackAppId CFM.application (redirectAnonymous loginAppId)
+                  , F.makeGuardedRoute internalHelpAppId CIHM.application (redirectAnonymous loginAppId)
+                  , F.makeGuardedRoute internalBackerAppId CIBM.application (redirectAnonymous loginAppId)
                   , F.makeGuardedRoute profileAppId CPM.application (redirectAnonymous loginAppId)
                   , F.makeGuardedRoute landingAppId (pure CLAM.application) $ redirectLogged imAppId
                   , F.makeGuardedRoute helpAppId (pure CHM.application) $ redirectLogged imAppId

@@ -13,6 +13,7 @@ import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Extra as SE
 import Shared.App.Banner as SAB
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (ImMessage(..), ImModel)
@@ -29,7 +30,7 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
 
 view ∷ Boolean → ImModel → Html ImMessage
-view isClientRender model = HE.div [ HA.id "im", HA.createAttribute "flatten" "false", ST.onLayoutChange "im", HA.class' { collapsed: model.collapsedSidebar } ]
+view isClientRender model = HE.div [ HA.id "im", HA.style1 "--keyboard-height" $ show model.keyboardHeight <> "px", SE.flatten false, ST.onLayoutChange "im", HA.class' { collapsed: model.collapsedSidebar } ]
       [ HE.div [ HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen } ]
               $ (if isClientRender && not isWeb then [] else [ SAB.banner ]) <>
               [ SIVU.userMenu model

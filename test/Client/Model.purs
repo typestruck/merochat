@@ -79,6 +79,7 @@ model =
       , erroredFields: []
       , selectedImage: Nothing
       , messageEnter: true
+      , keyboardHeight: 0.0
       , blockedUsers: []
       , modal: HideModal
       , enableNotificationsVisible: false

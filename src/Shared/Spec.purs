@@ -11,16 +11,17 @@ import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (EmailCaptcha, EmailPassword, EmailPasswordCaptcha, ResetPassword)
 import Shared.Ask (Ask)
 import Shared.Changelog (Changelog)
-import Shared.Experiments.Types (Match, PaperPlane, PaperPlaneStatus, Question)
+import Shared.Experiments.Types (ExperimentsData, Match, PaperPlane, PaperPlaneStatus, Question)
 import Shared.Html (Html)
 import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion)
+import Shared.KarmaPrivileges.Types (KarmaPrivilegesData)
 import Shared.Login.Types (LoginResponse)
 import Shared.SuggestionsFrom (SuggestionsFrom)
 import Shared.Post (PostPayload, Post)
 import Shared.Praise (Praise, PraisedFor, PraiseDisplay)
 import Shared.Profile.Mode (ProfileMode)
 import Shared.Profile.Types (GeneratedInput, ProfileData, SavedFields)
-import Shared.Settings.Types (PrivacySettings)
+import Shared.Settings.Types (PrivacySettings, UserSettings)
 import Shared.User (ProfileTab)
 
 -- types other than Html and Empty are serialized as json
@@ -278,6 +279,7 @@ spec ∷
                                           GET "/"
                                                 { response ∷ Html
                                                 }
+                                  , initialize ∷ GET "/initialize" { response ∷ UserSettings }
                                   , chat ∷
                                           Routes "/chat"
                                                 { background ∷
@@ -333,6 +335,11 @@ spec ∷
                                   { guards ∷ Guards ("loggedUserId" : "loggedUserToken" : Nil)
                                   , response ∷ Empty
                                   }
+                    , karmaInitialize ∷
+                            GET "/leaderboard/initialize"
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
+                                  , response ∷ KarmaPrivilegesData
+                                  }
                     , leaderboard ∷
                             GET "/leaderboard"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
@@ -367,6 +374,11 @@ spec ∷
                                           GET "/"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
                                                 , response ∷ Html
+                                                }
+                                  , initialize ∷
+                                          GET "/initialize"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , response ∷ ExperimentsData
                                                 }
                                   , questions ∷
                                           GET "/questions"

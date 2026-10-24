@@ -32,7 +32,7 @@ foreign import parse ∷ ∀ v w. String → (v → w) → String
 foreign import lexer ∷ String → Array Token
 
 markdown ∷ ∀ message. Array (NodeData message) → String → Html message
-markdown attributes content = HE.createElement "markdown" (attributes <> [ HA.createAttribute "image-sync-load" "true", HA.createAttribute "content" $ imageContent content ]) []
+markdown attributes content = HE.div attributes [ profileMarkdown content ]
 
 newtype PreviewToken = PreviewToken
       { "type" ∷ String
@@ -131,13 +131,22 @@ escapeImageText = DS.replaceAll (Pattern "\\") (Replacement "\\\\")
 
 
 profileMarkdown ∷ ∀ message. String → Html message
-profileMarkdown = previewLexer >>> map profileBlock >>> HE.div [ HA.class' "profile-markdown" ]
+profileMarkdown = previewLexer >>> map themedBlock >>> HE.div [ HA.class' "profile-markdown" ]
+
+themedBlock ∷ ∀ message. PreviewToken → Html message
+themedBlock token@(PreviewToken value)
+      | (value."type" == "paragraph" || value."type" == "html") && hasNativeMedia token =
+              HE.createElement "markdown" [ HA.createAttribute "image-sync-load" "true", HA.createAttribute "content" $ imageContent value.raw ] []
+      | otherwise = profileBlock token
+
+hasNativeMedia ∷ PreviewToken → Boolean
+hasNativeMedia (PreviewToken part) = part."type" == "image" || part."type" == "html" || DA.any hasNativeMedia (DM.fromMaybe [] $ DN.toMaybe part.tokens)
 
 profileBlock ∷ ∀ message. PreviewToken → Html message
 profileBlock token@(PreviewToken value) = case value."type" of
       "space" → HE.div_ []
-      "list" → HE.div_ $ DA.mapWithIndex item (DM.fromMaybe [] $ DN.toMaybe value.items)
-      "blockquote" → HE.div [ HA.class' "markdown-quote" ] $ map profileBlock tokens
+      "list" → HE.div [ HA.class' "markdown-list" ] $ DA.mapWithIndex item (DM.fromMaybe [] $ DN.toMaybe value.items)
+      "blockquote" → HE.div [ HA.class' "markdown-quote" ] $ map themedBlock tokens
       "table" → HE.div_ $
             [ tableRow true $ DM.fromMaybe [] (DN.toMaybe value.header) ] <> map (tableRow false) (DM.fromMaybe [] $ DN.toMaybe value.rows)
       "code" → HE.createElement "text" [ HA.class' "markdown-paragraph markdown-code" ] [ HE.text text ]
@@ -152,7 +161,7 @@ profileBlock token@(PreviewToken value) = case value."type" of
       item index (PreviewToken entry) = HE.div [ HA.class' "markdown-list-item" ]
             [ HE.createElement "text" [ HA.class' "markdown-list-marker" ]
                     [ HE.text $ if DM.fromMaybe false (DN.toMaybe value.ordered) then show (index + DM.fromMaybe 1 (DN.toMaybe value.start)) <> "." else "•" ]
-            , HE.div [ HA.class' "markdown-list-content" ] $ map profileBlock (DM.fromMaybe [] $ DN.toMaybe entry.tokens)
+            , HE.div [ HA.class' "markdown-list-content" ] $ map themedBlock (DM.fromMaybe [] $ DN.toMaybe entry.tokens)
             ]
 
 profileInline ∷ ∀ message. PreviewToken → Array (Html message)

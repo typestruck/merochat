@@ -65,7 +65,7 @@ praiseForm model user =
                     , HA.value $ DM.fromMaybe "" model.praise.other
                     ]
             , if model.praise.freeToSave then
-                    HE.input [ HA.disabled $ DM.isNothing model.praise.selected || hasOtherPraise && DM.isNothing model.praise.other, HA.type' "button", HA.class' "green-button post-button build ask-button", HA.value "Save", HA.onClick SavePraise ]
+                    HE.button [ HA.disabled $ DM.isNothing model.praise.selected || hasOtherPraise && DM.isNothing model.praise.other, HA.class' { "green-button post-button build ask-button": true, "native-disabled": DM.isNothing model.praise.selected || hasOtherPraise && DM.isNothing model.praise.other }, HA.onClick SavePraise ] [ HE.text "Save" ]
               else
                     HE.div' [ HA.class' "loading" ]
             ]

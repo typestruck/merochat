@@ -52,6 +52,7 @@ template payload =
             , temporaryPassword: Nothing
             , enableNotificationsVisible: false
             , messageEnter: true
+            , keyboardHeight: 0.0
             , editing: Nothing
             , highlighted: Nothing
             , showLargeAvatar: false
