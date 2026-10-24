@@ -2,7 +2,7 @@ module Client.Im.ModalsMenu where
 
 import Prelude
 
-import Client.AppId (imAppId, loginAppId, profileAppId)
+import Client.AppId (imAppId, loginAppId, profileAppId, bannedAppId)
 import Client.Ui.Document as CUD
 import Client.Ui.Element as CUE
 import Client.EventTypes (modalVisible)
@@ -62,7 +62,9 @@ logout after model = model /\ [ out ]
             void $ routes.logout { body: {} }
             EC.liftEffect do
                   native ← CLS.isNativeSession
-                  if native then F.navigate loginAppId
+                  if native then case after of
+                        LoginPage → F.navigate loginAppId
+                        Banned → F.navigate bannedAppId
                   else CL.setLocation $ case after of
                         LoginPage → routesSpec.login.get {}
                         Banned → routesSpec.banned {}
@@ -79,11 +81,11 @@ modal toggled model =
             Screen ShowBacker → showModal routes.internalBacker {} ShowBacker InternalBacker BackerRoot
             Screen ShowFeedback → showModal routes.feedback.get {} ShowFeedback Feedback FeedbackRoot
             Special ShowPostForm → model { modal = toggled, showSuggestionsPostForm = false } /\ []
-            Special (ShowSuggestionCard id) → F.noMessages model
+            Special (ShowSuggestionCard id) → model
                   { modal = toggled
                   , showCollapsedMiniSuggestions = true
                   , suggesting = Just id
-                  }
+                  } /\ []
             Chat c → CIC.modal c model
             t →
                   model

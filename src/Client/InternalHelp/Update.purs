@@ -8,7 +8,6 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff)
 import Effect.Class as EC
 import Flame (Update)
-import Flame as F
 import Flame.Subscription as FS
 import Shared.InternalHelp.Types (InternalHelpMessage(..), InternalHelpModel)
 import Shared.Im.Types as SIT
@@ -18,9 +17,9 @@ update ∷ Update InternalHelpModel InternalHelpMessage
 update model =
       case _ of
             ToggleVisibility modal → toggleVisibility model modal
-            ToggleHelpSection toggle → F.noMessages $ model
+            ToggleHelpSection toggle → model
                   { toggleHelp = toggle
-                  }
+                  } /\ []
 
 toggleVisibility ∷ InternalHelpModel → Modal → InternalHelpModel /\ Array (Aff (Maybe InternalHelpMessage))
 toggleVisibility model = case _ of

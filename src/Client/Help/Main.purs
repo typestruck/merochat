@@ -1,14 +1,21 @@
 module Client.Help.Main where
 
 import Prelude
-import Shared.Im.Types
 
+import Data.Tuple.Nested ((/\))
+import Client.Location as CCL
+import Client.Navigation as CN
 import Client.Ui.Document as CUD
 import Client.Ui.Event as CUEV
-import Client.Location as CCL
 import Data.Traversable as DT
 import Effect (Effect)
+import Data.Void (Void)
+import Flame (Application)
 import Shared.Element (ElementId(..))
+import Shared.External as SE
+import Shared.External.Types (Page(..))
+import Shared.Faq (faq)
+import Shared.Help.View as SHV
 import Web.DOM.Element as WDE
 import Web.Event.EventTarget as WET
 import Web.HTML as WH
@@ -50,3 +57,11 @@ main = do
       WET.addEventListener hashchange hashListener false $ WHW.toEventTarget window
 
       showTab hash
+
+application ∷ Application Unit Void
+application =
+      { model: unit
+      , view: const $ SE.view CN.navigate ExternalHelpRoot $ [ SHV.view CN.navigate Help faq ]
+      , update: \model _ → model /\ []
+      , subscribe: []
+      }

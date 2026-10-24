@@ -535,3 +535,105 @@
     width: 24px;
     height: 25px;
 }
+
+.public-route .public-content,
+.public-route .backer {
+    width: 100%;
+    padding: 24px 20px;
+    align-items: stretch;
+}
+
+.public-route .public-tabs {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.public-route .public-tab {
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.public-route .public-tab.selected {
+    background-color: var(--external-accent);
+}
+
+.public-route .help {
+    width: 100%;
+}
+
+.public-title text {
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.public-heading text,
+.public-subheading text {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.public-heading,
+.public-subheading {
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+
+.public-paragraph,
+.public-list-item {
+    margin: 8px 0;
+}
+
+.public-list {
+    padding-left: 12px;
+}
+
+.public-route .modal-screen-back {
+    display: none;
+}
+
+.donation-button,
+.public-route .public-guest {
+    padding: 14px;
+    margin: 12px 0;
+    border-radius: 8px;
+    background-color: var(--external-accent);
+}
+
+.public-route .public-success text {
+    color: var(--merochat-green);
+}
+
+.public-route .sign-up-form input {
+    margin-bottom: 16px;
+}
+
+.public-route .landing,
+.public-route .features,
+.public-route .feature-blurb,
+.public-route .feature-blurb-left,
+.public-route .feature-blurb-right,
+.public-route .blurb {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    transform: none;
+    margin: 0;
+}
+
+.public-route .feature-blurb {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 20px;
+}
+
+.public-route .feature-blurb svg {
+    width: 100%;
+    height: 180px;
+}
+
+.public-route .app-step image {
+    width: 100%;
+    height: 300px;
+}

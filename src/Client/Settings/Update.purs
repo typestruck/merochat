@@ -4,7 +4,8 @@ import Prelude
 
 import Client.AppId (imAppId, settingsAppId)
 import Client.File as CF
-import Client.Location as CL
+import Client.Navigation as CNA
+import Shared.External.Types as SET
 import Client.Network (routes)
 import Client.Network as CN
 import Data.Either (Either(..))
@@ -97,7 +98,7 @@ requestAndLogout field aff = do
       status ← CN.formRequest (SSV.formId field) aff
       when (status == Success) $ do
             EA.delay $ Milliseconds 3000.0
-            EC.liftEffect <<< CL.setLocation $ routesSpec.login.get {}
+            EC.liftEffect $ CNA.navigate SET.Login
       pure Nothing
 
 terminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))

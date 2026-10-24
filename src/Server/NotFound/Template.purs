@@ -1,6 +1,10 @@
 module Server.NotFound.Template where
 
+import Shared.Extra as SX
+
 import Prelude
+
+import Flame as F
 
 import Effect (Effect)
 import Flame.Html.Attribute as HA
@@ -16,12 +20,13 @@ template = do
       contents ← ST.template externalDefaultParameters { content = content }
       -- Html <$> FRS.render contents
       pure $ Html ""
-      where
-      content =
-            [ HE.div [ HA.class' "green-box" ]
-                    [ HE.div [ HA.class' "error-page" ]
-                            [ HE.div [ HA.class' "error-page-code" ] [ HE.text "404" ]
-                            , HE.div_ [ HE.text "The requested page could not be found" ]
-                            ]
-                    ]
-            ]
+
+content ∷ ∀ message. Array (F.Html message)
+content =
+      [ HE.div [ HA.class' "green-box" ]
+              [ HE.div [ HA.class' "error-page" ]
+                      [ HE.div [ HA.class' "error-page-code" ] [ HE.text "404" ]
+                      , HE.div_ [ HE.text "The requested page could not be found" ]
+                      ]
+              ]
+      ]

@@ -1,6 +1,10 @@
 module Server.InternalError.Template where
 
+import Shared.Extra as SX
+
 import Prelude
+
+import Flame as F
 
 import Effect (Effect)
 import Flame.Html.Attribute as HA
@@ -12,16 +16,17 @@ import Server.Template as ST
 
 template ∷ String → Effect String
 template reason = do
-      contents ← ST.template externalDefaultParameters { content = content }
+      contents ← ST.template externalDefaultParameters { content = content reason }
       -- FRS.render contents
       pure ""
-      where
-      content =
-            [ HE.div [ HA.class' "green-box" ]
-                    [ HE.div [ HA.class' "error-page" ]
-                            [ HE.div [ HA.class' "error-page-code" ] [ HE.text "500" ]
-                            , HE.div_ [ HE.text "An internal error occurred. We will look into it." ]
-                            , HE.div [ HA.class' "reason" ] [ HE.text reason ]
-                            ]
-                    ]
-            ]
+
+content ∷ ∀ message. String → Array (F.Html message)
+content reason =
+      [ HE.div [ HA.class' "green-box" ]
+              [ HE.div [ HA.class' "error-page" ]
+                      [ HE.div [ HA.class' "error-page-code" ] [ HE.text "500" ]
+                      , HE.div_ [ HE.text "An internal error occurred. We will look into it." ]
+                      , HE.div [ HA.class' "reason" ] [ HE.text reason ]
+                      ]
+              ]
+      ]

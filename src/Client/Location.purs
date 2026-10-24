@@ -2,6 +2,7 @@ module Client.Location where
 
 import Prelude
 
+import Client.Navigation as CN
 import Data.Function.Uncurried (Fn2)
 import Data.Function.Uncurried as DF
 import Data.Maybe (Maybe(..))
@@ -15,10 +16,7 @@ import Web.HTML.Window as WHW
 foreign import getParameter_ ∷ Fn2 String String String
 
 setLocation ∷ String → Effect Unit
-setLocation route = do
-      window ← WH.window
-      location ← WHW.location window
-      WHL.setHref route location
+setLocation = CN.openExternal
 
 search ∷ Effect String
 search = do

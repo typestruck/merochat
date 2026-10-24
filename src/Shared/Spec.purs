@@ -38,15 +38,17 @@ spec ∷
                                   , response ∷ Html
                                   }
                     , temporary ∷
-                            POST "/temporary"
+                            POST "/temporary?boot=<boot>"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
-                                  , response ∷ Empty
+                                  , query ∷ { boot ∷ Boolean }
+                                  , response ∷ LoginResponse
                                   }
                     , register ∷
-                            POST "/register"
+                            POST "/register?boot=<boot>"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
                                   , body ∷ EmailPasswordCaptcha
-                                  , response ∷ Empty
+                                  , query ∷ { boot ∷ Boolean }
+                                  , response ∷ LoginResponse
                                   }
                     , unsubscribe ∷
                             GET "/unsubscribe?email_id=<token>"

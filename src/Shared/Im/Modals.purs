@@ -206,7 +206,7 @@ modalMenu model =
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowHelp, HA.class' { entry: true, selected: model.modal == Screen ShowHelp } ] [ HE.text $ show ShowHelp ]
                       , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowFeedback, HA.class' { entry: true, selected: model.modal == Screen ShowFeedback } ] [ HE.text $ show ShowFeedback ]
                       , HE.div [ HA.class' "entry theme-modal" ]
-                              [ SS.sun [ ST.event "im" "bindtap" ], SS.moon [ ST.event "im" "bindtap" ] ]
+                              [ SS.sun [ ST.runThemeEvent "im" "bindtap" ], SS.moon [ ST.runThemeEvent "im" "bindtap" ] ]
                       , if model.user.temporary then
                               HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmTerminationTemporaryUser ] [ HE.text "Delete my data" ]
                         else

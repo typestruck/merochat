@@ -55,6 +55,14 @@ data ElementId
       | AvatarFileInput
       | TemporaryUserSignUpForm
       | KarmaPrivilegesRoot
+      | LoginRoot
+      | LandingRoot
+      | RecoverRoot
+      | ExternalHelpRoot
+      | TermsRoot
+      | PrivacyRoot
+      | ExternalBackerRoot
+      | BannedRoot
 
 toQuerySelector ∷ ElementId → QuerySelector
 toQuerySelector id = QuerySelector $ "#" <> show id
@@ -111,5 +119,13 @@ instance Show ElementId where
             PasswordInput → "password-input"
             KarmaPrivilegesRoot → "karma-privileges-root"
             AvatarFileInput → "avatar-file-input"
+            LoginRoot → "login"
+            LandingRoot → "landing"
+            RecoverRoot → "recover"
+            ExternalHelpRoot → "help"
+            TermsRoot → "terms-page"
+            PrivacyRoot → "privacy-page"
+            ExternalBackerRoot → "support"
+            BannedRoot → "banned"
 
 derive instance Eq ElementId

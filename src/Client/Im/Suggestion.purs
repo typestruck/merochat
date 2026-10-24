@@ -19,7 +19,6 @@ import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
 import Effect.Class as EC
 import Effect.Timer as ET
-import Flame as F
 import Flame.Subscription as FS
 import Shared.Availability (Availability(..))
 import Shared.Backer.Contact (backerId)
@@ -141,20 +140,20 @@ displayMoreSuggestions webSocket suggestions model =
 
 -- | Show or hide full user profile
 toggleSuggestionChatInput ∷ Int → ImModel → NoMessages
-toggleSuggestionChatInput id model = F.noMessages model
+toggleSuggestionChatInput id model = model
       { showSuggestionChatInput = Just id
       , suggesting = Just id
-      }
+      } /\ []
 
 toggleContactProfile ∷ ImModel → NoMessages
-toggleContactProfile model = F.noMessages model
+toggleContactProfile model = model
       { fullContactProfileVisible = not model.fullContactProfileVisible
-      }
+      } /\ []
 
 toggleCollapsedMiniSuggestions ∷ ImModel → NoMessages
-toggleCollapsedMiniSuggestions model = F.noMessages model
+toggleCollapsedMiniSuggestions model = model
       { showCollapsedMiniSuggestions = not model.showCollapsedMiniSuggestions
-      }
+      } /\ []
 
 toggleLargeAvatar ∷ ImModel → NoMessages
 toggleLargeAvatar model =

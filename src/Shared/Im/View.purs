@@ -4,6 +4,7 @@ import Prelude
 
 import Shared.Theme as ST
 
+import Client.Platform (isWeb)
 import Control.Alt ((<|>))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -12,7 +13,7 @@ import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.App.Banner (banner)
+import Shared.App.Banner as SAB
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (ImMessage(..), ImModel)
 import Shared.Im.View.ChatHistory as SIVCH
@@ -28,10 +29,10 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
 
 view ∷ Boolean → ImModel → Html ImMessage
-view isClientRender model = HE.div [ HA.id "im", ST.event "im" "bindlayoutchange", HA.class' { collapsed: model.collapsedSidebar } ]
+view isClientRender model = HE.div [ HA.id "im", ST.onLayoutChange "im", HA.class' { collapsed: model.collapsedSidebar } ]
       [ HE.div [ HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen } ]
-              [ banner
-              , SIVU.userMenu model
+              $ (if isClientRender && not isWeb then [] else [ SAB.banner ]) <>
+              [ SIVU.userMenu model
               , HE.div [ HA.class' { "suggestion-box-error": true, flexed: model.smallScreen && not (DS.null model.errorMessage) } ] [ HE.text model.errorMessage ]
               , SIVN.reloadPage model.imUpdated
               , SIVN.prompt model.enableNotificationsVisible

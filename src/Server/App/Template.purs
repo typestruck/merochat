@@ -2,6 +2,8 @@ module Server.App.Template where
 
 import Prelude
 
+import Flame as F
+
 import Data.Either (Either(..))
 import Effect (Effect)
 import Flame.Html.Attribute as HA
@@ -36,39 +38,43 @@ template = do
                    window.location.href =  `https://play.google.com/store/apps/details?id=chat.mero.twa`; """
                     ]
             ]
-      content =
-            [ HE.div [ HA.class' "pastel-area" ]
-                    [ HE.div [ HA.id "other", HA.class' "sign-up-form form-up" ]
-                            [ HE.h2 [] [ HE.text "iOS" ]
-                            , HE.div [ HA.class' "lynx-inline" ]
-                                    [ HE.text "Apple charges 400 usd per year so MeroChat isn't on the App Store yet. "
-                                    , SE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Wink, wink, donate" ]
-                                    ]
 
-                            , HE.b [ HA.class' "app-step" ] [ HE.text "However, you can add the site to your home screen, which works the same as an app! Step by step:" ]
-                            , HE.div [ HA.class' "app-step" ]
-                                    [ HE.h3 [] [ HE.text "1. Find the share button" ]
-                                    , HE.img [ HA.src $ SR.resourcePath (Left AppShare) Png ]
-                                    ]
-                            , HE.div [ HA.class' "app-step" ]
-                                    [ HE.h3 [] [ HE.text """2. Tap "More" """ ]
-                                    , HE.img [ HA.src $ SR.resourcePath (Left AppMore) Png ]
-                                    ]
-                            , HE.div [ HA.class' "app-step" ]
-                                    [ HE.h3 [] [ HE.text """3. Tap "Add to Home Screen" """ ]
-                                    , HE.img [ HA.src $ SR.resourcePath (Left AppHome) Png ]
-                                    ]
-                            , HE.div [ HA.class' "app-step" ]
-                                    [ HE.h3 [] [ HE.text """4. Tap "Add" """ ]
-                                    , HE.img [ HA.src $ SR.resourcePath (Left AppAdd) Png ]
-                                    ]
-                            , HE.div [ HA.class' "app-step" ]
-                                    [ HE.h3 [] [ HE.text """5. Open it from your home screen and tap "Get notified of new messages" to allow notifications""" ]
-                                    , HE.img [ HA.src $ SR.resourcePath (Left AppGet) Png ]
-                                    ]
-                            , HE.div [ HA.class' "app-step" ]
-                                    [ HE.h3 [] [ HE.text """Done! Now you can use MeroChat like any other app""" ]
-                                    ]
-                            ]
-                    ]
-            ]
+content ∷ ∀ message. Array (F.Html message)
+content =
+      [ HE.div [ HA.class' "pastel-area" ]
+              [ HE.div [ HA.id "other", HA.class' "sign-up-form form-up" ]
+                      [ SE.h2 [] [ HE.text "Android" ]
+                      , SE.a [ HA.href "https://play.google.com/store/apps/details?id=chat.mero.twa", SE.externalLink "https://play.google.com/store/apps/details?id=chat.mero.twa", HA.class' "donation-button" ] [ HE.text "Open in Google Play" ]
+                      , SE.h2 [] [ HE.text "iOS" ]
+                      , HE.div [ HA.class' "lynx-inline" ]
+                              [ HE.text "Apple charges 400 usd per year so MeroChat isn't on the App Store yet. "
+                              , SE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Wink, wink, donate" ]
+                              ]
+
+                      , HE.b [ HA.class' "app-step" ] [ HE.text "However, you can add the site to your home screen, which works the same as an app! Step by step:" ]
+                      , HE.div [ HA.class' "app-step" ]
+                              [ SE.h3 [] [ HE.text "1. Find the share button" ]
+                              , HE.img [ HA.src $ SR.resourcePath (Left AppShare) Png ]
+                              ]
+                      , HE.div [ HA.class' "app-step" ]
+                              [ SE.h3 [] [ HE.text """2. Tap "More" """ ]
+                              , HE.img [ HA.src $ SR.resourcePath (Left AppMore) Png ]
+                              ]
+                      , HE.div [ HA.class' "app-step" ]
+                              [ SE.h3 [] [ HE.text """3. Tap "Add to Home Screen" """ ]
+                              , HE.img [ HA.src $ SR.resourcePath (Left AppHome) Png ]
+                              ]
+                      , HE.div [ HA.class' "app-step" ]
+                              [ SE.h3 [] [ HE.text """4. Tap "Add" """ ]
+                              , HE.img [ HA.src $ SR.resourcePath (Left AppAdd) Png ]
+                              ]
+                      , HE.div [ HA.class' "app-step" ]
+                              [ SE.h3 [] [ HE.text """5. Open it from your home screen and tap "Get notified of new messages" to allow notifications""" ]
+                              , HE.img [ HA.src $ SR.resourcePath (Left AppGet) Png ]
+                              ]
+                      , HE.div [ HA.class' "app-step" ]
+                              [ SE.h3 [] [ HE.text """Done! Now you can use MeroChat like any other app""" ]
+                              ]
+                      ]
+              ]
+      ]

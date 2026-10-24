@@ -20,8 +20,11 @@ foreign import systemTheme ∷ Effect String
 
 foreign import handleEvent ∷ String → Event → Effect Unit
 
-event ∷ ∀ message. String → EventName → NodeData message
-event root name = FHE.createRawEvent name $ \value → handleEvent root value $> Nothing
+runThemeEvent ∷ ∀ message. String → EventName → NodeData message
+runThemeEvent root name = FHE.createRawEvent name $ \value → handleEvent root value $> Nothing
+
+onLayoutChange ∷ ∀ message. String → NodeData message
+onLayoutChange root = runThemeEvent root "bindlayoutchange"
 
 initialize ∷ Effect Unit
 initialize = do

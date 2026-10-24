@@ -31,7 +31,6 @@ import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Effect.Timer (IntervalId)
 import Effect.Timer as ET
-import Flame as FL
 import Flame.Subscription as FS
 import Foreign as F
 import Foreign.Index as FI
@@ -244,9 +243,9 @@ receiveStatusChange received model =
 
 -- | Move status from 'sending' to 'sent' and update message id
 receiveAcknowledgement ∷ { id ∷ Int, previousId ∷ Int, userId ∷ Int } → ImModel → NoMessages
-receiveAcknowledgement received model = FL.noMessages model
+receiveAcknowledgement received model = model
       { contacts = updateHistory model.contacts received.userId updateIdStatus
-      }
+      } /\ []
       where
       updateIdStatus history
             | history.id == received.previousId = history { id = received.id, status = Received }
@@ -254,9 +253,9 @@ receiveAcknowledgement received model = FL.noMessages model
 
 -- | Remove a message from contact's history
 receiveDeletedMessage ∷ DeletedMessagePayload → ImModel → NoMessages
-receiveDeletedMessage deleted model = FL.noMessages model
+receiveDeletedMessage deleted model = model
       { contacts = rm <$> model.contacts
-      }
+      } /\ []
       where
       rm contact
             | contact.user.id == deleted.userId = contact { history = DA.filter ((deleted.id /= _) <<< _.id) contact.history }
@@ -266,7 +265,7 @@ receiveDeletedMessage deleted model = FL.noMessages model
 receiveIncomingMessage ∷ WebSocket → Boolean → ClientMessagePayload → ImModel → NextMessage
 receiveIncomingMessage webSocket isFocused payload model =
       if DA.elem userId model.blockedUsers then
-            FL.noMessages model --prevents messages already in flight to deliver after block
+            model /\ [] --prevents messages already in flight to deliver after block
       else
             case fromIncomingMessage payload unsuggestedModel of
                   Left id →
@@ -298,7 +297,7 @@ receiveIncomingMessage webSocket isFocused payload model =
 receiveEditedMessage ∷ WebSocket → Boolean → EditedMessagePayload → ImModel → NextMessage
 receiveEditedMessage webSocket isFocused payload model =
       if DA.elem userId model.blockedUsers then
-            FL.noMessages model
+            model /\ []
       else if model.user.id == payload.senderId then
             updatedModel /\ [ EC.liftEffect (CIN.updateTabCount model updatedModel.contacts) *> pure Nothing ]
       else
@@ -342,9 +341,9 @@ receivePrivileges received model =
 
 -- | When the site updates the bundle file hashes change
 receiveHash ∷ String → ImModel → NoMessages
-receiveHash newHash model = FL.noMessages model
+receiveHash newHash model = model
       { imUpdated = newHash /= model.hash
-      }
+      } /\ []
 
 receiveUnavailable ∷ _ → ImModel → NextMessage
 receiveUnavailable received model =
@@ -360,23 +359,23 @@ receiveUnavailable received model =
 
 -- | Message sent was unsanitary
 receiveBadMessage ∷ _ → ImModel → NoMessages
-receiveBadMessage received model = FL.noMessages model
+receiveBadMessage received model = model
       { contacts = case received.temporaryMessageId of
               Nothing → model.contacts
               Just id → markErroredMessage model.contacts received.userId id
-      }
+      } /\ []
 
 receivePayloadError ∷ { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError } → ImModel → NoMessages
 receivePayloadError received model = case received.origin of
-      OutgoingMessage msg → FL.noMessages model
+      OutgoingMessage msg → model
             { contacts =
                     --assume that it is because the other user no longer exists
                     if received.context == Just MissingForeignKey then
                           setContactUnavailable model.contacts msg.userId
                     else
                           markErroredMessage model.contacts msg.userId msg.id
-            }
-      _ → FL.noMessages model
+            } /\ []
+      _ → model /\ []
 
 -- | Block, ban or account termination
 setContactUnavailable ∷ Array Contact → Int → Array Contact

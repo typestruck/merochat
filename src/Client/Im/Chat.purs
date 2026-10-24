@@ -37,7 +37,6 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class as EC
 import Effect.Now as EN
-import Flame as F
 import Flame.Html.Event (Event)
 import Safe.Coerce as SC
 import Shared.Content (Content(..))
@@ -96,7 +95,7 @@ messageContent elementId model = do
 -- | Prepare and send a message via web socket
 prepareSendMessage ∷ ElementId → Content → DateTimeWrapper → WebSocket → ImModel → MoreMessages
 prepareSendMessage elementId content dt webSocket model = case content of
-      Text message | DS.null $ DS.trim message → F.noMessages model
+      Text message | DS.null $ DS.trim message → model /\ []
       _ → sendMessage (SU.fromJust updatedModel.chatting) model.user.name shouldFetchHistory content dt webSocket updatedModel
       where
       --the user messaged could be in both the contacts and suggestions
@@ -327,7 +326,7 @@ sendTyping text now webSocket model =
       if DS.length text > minimumLength && enoughTime model.lastTyping then
             model { lastTyping = DateTimeWrapper now } /\ [ setIt ]
       else
-            F.noMessages model
+            model /\ []
       where
       minimumLength = 7
       enoughTime (DateTimeWrapper dt) = let (Milliseconds ms) = DD.diff now dt in ms >= 800.0
@@ -345,14 +344,14 @@ toggleTyping userId tId model = model { contacts = upd <$> model.contacts }
             | otherwise = contact
 
 toggleMessageEnter ∷ ImModel → NoMessages
-toggleMessageEnter model = F.noMessages model
+toggleMessageEnter model = model
       { messageEnter = not model.messageEnter
-      }
+      } /\ []
 
 toggleMiniChatInput ∷ ImModel → NoMessages
-toggleMiniChatInput model = F.noMessages model
+toggleMiniChatInput model = model
       { showMiniChatInput = not model.showMiniChatInput
-      }
+      } /\ []
 
 -- | Show or hide chat modals
 modal ∷ ChatModal → ImModel → MoreMessages

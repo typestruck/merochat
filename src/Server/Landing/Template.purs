@@ -2,6 +2,7 @@ module Server.Landing.Template where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Environment (production)
 import Flame as F
@@ -10,11 +11,10 @@ import Flame.Html.Element as HE
 import Server.Landing.Svg (feature1, feature2, feature3, feature4, feature5, feature6, feature7, invertedLogo)
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
-import Shared.Element (ElementId(..))
 import Shared.Extra (br)
 import Shared.Extra as SE
 import Shared.Html (Html(..))
-import Shared.Options.Profile (passwordMaxCharacters, passwordMinCharacters)
+import Shared.Landing.View as SLV
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SR
 
@@ -40,12 +40,16 @@ template = do
             [ SE.script' [ HA.type' "text/javascript", HA.src $ SR.bundlePath Landing Js ]
             ]
 
-content ∷ ∀ message. Array (F.Html message)
-content =
+content ∷ Array (F.Html Unit)
+content = contentWithForm <<< void $ SLV.view
+      { email: Nothing, password: Nothing, loading: false, error: Nothing }
+
+contentWithForm ∷ ∀ message. F.Html message → Array (F.Html message)
+contentWithForm form =
       [ HE.div [ HA.class' "landing" ]
               [ HE.div [ HA.class' "pastel-area" ]
                       [ HE.div [ HA.class' "blurb" ]
-                              [ HE.strong_ [ HE.text "Feeling chatty? In search of new friends? Bored?" ]
+                              [ HE.strong [] [ HE.text "Feeling chatty? In search of new friends? Bored?" ]
                               , br
                               , HE.span [ HA.class' "lynx-inline" ]
                                       [ HE.strong [] [ HE.text "MeroChat" ]
@@ -62,24 +66,12 @@ content =
                                       , HE.strong [] [ HE.text " strictly platonic" ]
                                       ]
                               ]
-                      , HE.div [ HA.class' "sign-up-form form-up" ]
-                              [ HE.div_
-                                      [ HE.input [ HA.id $ show EmailInput, HA.type' "text", HA.autocomplete "new-email", HA.placeholder "Email" ]
-                                      , HE.div [ HA.class' "error-message" ] [ HE.text "Please enter a valid email" ]
-                                      ]
-                              , HE.div_
-                                      [ HE.input [ HA.id $ show PasswordInput, HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.placeholder "Password" ]
-                                      , HE.div [ HA.class' "error-message" ] [ HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more" ]
-                                      ]
-                              , HE.input [ HA.id $ show CreateAccount, HA.class' "shadow", HA.type' "button", HA.value "Create account" ]
-                              , SE.a [ HA.id $ show TemporaryUserSignUp ] [ HE.text "Or continue as a guest →" ]
-                              , HE.span' [ HA.class' "request-error-message error-message" ]
-                              ]
+                      , form
                       ]
               , HE.div [ HA.class' "features skew-left" ]
                       [ HE.div [ HA.class' "feature-blurb" ]
                               [ HE.div [ HA.class' "feature-blurb-left" ]
-                                      [ HE.h1_ [ HE.text "Safe and friendly" ]
+                                      [ SE.h1_ [ HE.text "Safe and friendly" ]
                                       , HE.text "Strict moderation and a"
                                       , br
                                       , HE.text "Karma system = friendly chats."
@@ -92,7 +84,7 @@ content =
                               ]
                       , HE.div [ HA.class' "feature-blurb" ]
                               [ HE.div [ HA.class' "feature-blurb-left" ]
-                                      [ HE.h1_ [ HE.text "Privacy first" ]
+                                      [ SE.h1_ [ HE.text "Privacy first" ]
                                       , HE.text "No ads or data harvesting."
                                       , br
                                       , HE.text "Take a break or delete"
@@ -110,8 +102,8 @@ content =
                                       [ feature3
                                       ]
                               , HE.div [ HA.class' "feature-blurb-left" ]
-                                      [ HE.h1_ [ HE.text "Anonymously you" ]
-                                      , HE.span_ [ HE.text "Share as much (or as little)" ]
+                                      [ SE.h1_ [ HE.text "Anonymously you" ]
+                                      , HE.span [] [ HE.text "Share as much (or as little)" ]
                                       , br
                                       , HE.text "as you want. Your data belongs to you!"
                                       ]
@@ -121,10 +113,10 @@ content =
                                       [ feature4
                                       ]
                               , HE.div [ HA.class' "feature-blurb-left" ]
-                                      [ HE.h1_ [ HE.text "Human only" ]
-                                      , HE.span_ [ HE.text "No bots, AI or spammers." ]
+                                      [ SE.h1_ [ HE.text "Human only" ]
+                                      , HE.span [] [ HE.text "No bots, AI or spammers." ]
                                       , br
-                                      , HE.span_ [ HE.text "MeroChat is solely for human beings!" ]
+                                      , HE.span [] [ HE.text "MeroChat is solely for human beings!" ]
                                       ]
 
                               ]
@@ -132,10 +124,10 @@ content =
               , HE.div [ HA.class' "features" ]
                       [ HE.div [ HA.class' "feature-blurb" ]
                               [ HE.div [ HA.class' "feature-blurb-left" ]
-                                      [ HE.h1_ [ HE.text "Smart matching" ]
-                                      , HE.span_ [ HE.text "Ultra-fancy algorithms pair you" ]
+                                      [ SE.h1_ [ HE.text "Smart matching" ]
+                                      , HE.span [] [ HE.text "Ultra-fancy algorithms pair you" ]
                                       , br
-                                      , HE.span_ [ HE.text "with interesting people!" ]
+                                      , HE.span [] [ HE.text "with interesting people!" ]
                                       ]
                               , HE.div [ HA.class' "feature-blurb-right" ]
                                       [ feature5
@@ -143,10 +135,10 @@ content =
                               ]
                       , HE.div [ HA.class' "feature-blurb" ]
                               [ HE.div [ HA.class' "feature-blurb-left" ]
-                                      [ HE.h1_ [ HE.text "Privileged features" ]
-                                      , HE.span_ [ HE.text "ImageOnly, audio, and experimental" ]
+                                      [ SE.h1_ [ HE.text "Privileged features" ]
+                                      , HE.span [] [ HE.text "ImageOnly, audio, and experimental" ]
                                       , br
-                                      , HE.span_ [ HE.text "features for trusted users!" ]
+                                      , HE.span [] [ HE.text "features for trusted users!" ]
                                       ]
                               , HE.div [ HA.class' "feature-blurb-right" ]
                                       [ feature6
@@ -157,11 +149,11 @@ content =
                       [ HE.div [ HA.class' "logo-name" ]
                               [ invertedLogo
                               , HE.div [ HA.class' "tagline-name" ]
-                                      [ HE.h1 [ HA.class' "name-again" ] [ HE.text "MeroChat" ]
+                                      [ SE.h1 [ HA.class' "name-again" ] [ HE.text "MeroChat" ]
                                       , HE.span [ HA.class' "subtagline-again" ] [ HE.text "The friendliest place to chat on the internet" ]
                                       ]
                               ]
-                      , SE.a [ HA.class' "try-it shadow", HA.href "#header" ] [ HE.text "Try it now!" ]
+                      , SE.a [ HA.class' "try-it shadow", HA.href "#header", SE.anchor "header" ] [ HE.text "Try it now!" ]
                       ]
               , HE.div [ HA.class' "features-again" ]
                       [ HE.div [ HA.class' "feature-blurb" ]
@@ -173,33 +165,33 @@ content =
                                       , br
                                       , HE.span [ HA.class' "green-call" ] [ HE.text "— without the dreaded “ASL” questions or creeps" ]
                                       , HE.div [ HA.class' "after-green-call" ]
-                                              [ HE.p_
+                                              [ SE.p_
                                                       [ HE.text "Our formula is a little different. Whereas other chat apps are completly anonymous,"
                                                       , br
                                                       , HE.text "video based, or geared towards instantaneousness, MeroChat offers you a more grounded experience"
                                                       ]
-                                              , HE.p_
+                                              , SE.p_
                                                       [ HE.text "We want to encourage substantial (or at least fun!) conversations, and for that reason your profile"
                                                       , br
                                                       , HE.text " on MeroChat can be personalized with as much info as you want. Conversation starters! A bit of personality."
                                                       , br
                                                       , HE.text "Blank screens with a text box are no fun"
                                                       ]
-                                              , HE.p_
+                                              , SE.p_
                                                       [ HE.text "While we can't exactly predict who you will click with, hopefully it is everyone."
                                                       , br
                                                       , HE.text "Chat suggestions can be skipped, but not filtered by gender, age, location, etc. Text based communication"
                                                       , br
                                                       , HE.text "is better for quality since it allows users to reply at their own time, without the possible nastiness of video calls"
                                                       ]
-                                              , HE.p_
+                                              , SE.p_
                                                       [ HE.text "Speaking of which, MeroChat is for friendly conversation only. To ensure that, besides traditional moderation, "
                                                       , br
                                                       , HE.text "we have a Karma system. The idea is pretty simple: the more the community trusts you, the more features you"
                                                       , br
                                                       , HE.text "can use on the app. The likelier a feature is to be abused (say, image sharing) the more Karma you need to unlock it"
                                                       ]
-                                              , HE.p_ [ HE.text "Finally, MeroChat is completly free! It exists for the fun of it, not to sell ads, train AI, or be a startup. Give it a try :)" ]
+                                              , SE.p_ [ HE.text "Finally, MeroChat is completly free! It exists for the fun of it, not to sell ads, train AI, or be a startup. Give it a try :)" ]
                                               ]
                                       ]
                               ]

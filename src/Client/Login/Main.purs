@@ -2,10 +2,11 @@ module Client.Login.Main where
 
 import Prelude
 
-import Shared.Theme as ST
+import Shared.Element (ElementId(LoginRoot))
 
 import Client.AppId (imAppId, loginAppId)
 import Client.Location as CL
+import Client.Navigation as CNA
 import Client.Lynx.Room as CLR
 import Client.Network (routes)
 import Client.Network as CN
@@ -22,8 +23,6 @@ import Effect.Class as EC
 import Effect.Exception as EE
 import Flame (Application, Update)
 import Flame as F
-import Flame.Html.Attribute as HA
-import Flame.Html.Element as HE
 import Payload.Client (ClientError(..))
 import Shared.Account (EmailPassword)
 import Shared.Login.Types (LoginModel, LoginMessage(..), LoginResponse)
@@ -39,18 +38,14 @@ initialModel = { email: Nothing, password: Nothing, loading: false, error: Nothi
 application ∷ (EmailPassword → Aff Unit) → Application LoginModel LoginMessage
 application authenticate =
       { model: initialModel
-      , view: SLV.view
+      , view: SLV.viewWithNavigation CNA.navigate
       , update: update authenticate
       , subscribe: []
       }
 
 nativeApplication ∷ Application LoginModel LoginMessage
 nativeApplication = (application authenticateNative)
-      { view = \model → HE.scrollView [ HA.id "login", ST.event "login" "bindlayoutchange", HA.class' "public-route", HA.scrollOrientation "vertical" ]
-              [ SPL.header "login"
-              , SLV.view model
-              , SPL.footer
-              ]
+      { view = \model → SPL.view CNA.navigate LoginRoot [ SLV.viewWithNavigation CNA.navigate model ]
       }
 
 update ∷ (EmailPassword → Aff Unit) → Update LoginModel LoginMessage
@@ -63,34 +58,34 @@ update authenticate model message = case message of
       Submit → submit authenticate model
 
 reset ∷ LoginModel → LoginModel /\ Array (Aff (Maybe LoginMessage))
-reset _ = F.noMessages initialModel
+reset _ = initialModel /\ []
 
 setEmail ∷ Maybe String → LoginModel → LoginModel /\ Array (Aff (Maybe LoginMessage))
-setEmail email model = F.noMessages $ model { email = email }
+setEmail email model = model { email = email } /\ []
 
 setPassword ∷ Maybe String → LoginModel → LoginModel /\ Array (Aff (Maybe LoginMessage))
-setPassword password model = F.noMessages $ model { password = password }
+setPassword password model = model { password = password } /\ []
 
 failed ∷ String → LoginModel → LoginModel /\ Array (Aff (Maybe LoginMessage))
-failed error model = F.noMessages $ model { loading = false, error = Just error }
+failed error model = model { loading = false, error = Just error } /\ []
 
 keyPressed ∷ (EmailPassword → Aff Unit) → String → LoginModel → LoginModel /\ Array (Aff (Maybe LoginMessage))
 keyPressed authenticate key model = case key of
       "Enter" → submit authenticate model
-      _ → F.noMessages model
+      _ → model /\ []
 
 submit ∷ (EmailPassword → Aff Unit) → LoginModel → LoginModel /\ Array (Aff (Maybe LoginMessage))
 submit authenticate model
-      | model.loading = F.noMessages model
+      | model.loading = model /\ []
       | otherwise =
               let
                     email = DS.trim $ DM.fromMaybe "" model.email
                     password = DM.fromMaybe "" model.password
               in
                     if DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email) then
-                          F.noMessages $ model { error = Just "Please enter a valid email" }
+                          model { error = Just "Please enter a valid email" } /\ []
                     else if DS.length password < passwordMinCharacters then
-                          F.noMessages $ model { error = Just $ "Password must be " <> show passwordMinCharacters <> " characters or more" }
+                          model { error = Just $ "Password must be " <> show passwordMinCharacters <> " characters or more" } /\ []
                     else model { loading = true, error = Nothing } /\
                           [ do
                                   result ← EA.attempt $ authenticate { email, password }

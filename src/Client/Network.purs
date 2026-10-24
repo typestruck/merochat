@@ -103,7 +103,7 @@ silentRequest aff = do
       result ← aff
       case result of
             Right r → pure (coerceResponse r).body
-            Left err → CMEC.throwError <<< EE.error $ "Response error: " <> show err
+            Left err → CMEC.throwError <<< EE.error $ SN.errorMessage err
 
 -- | Performs a request
 request ∷ ∀ r. Aff (ClientResponse r) → Aff (Either ClientError r)

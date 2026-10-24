@@ -18,7 +18,6 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame (Update)
-import Flame as F
 import Flame.Subscription as FS
 import Shared.Experiment (Experiment)
 import Shared.Im.Types (ReportReason(..))
@@ -34,14 +33,14 @@ update model =
       case _ of
             ToggleVisibility modal → toggleVisibility model modal
             RedirectKarma → redirectKarma model
-            UpdatePrivileges { privileges } → F.noMessages model { user { privileges = privileges } }
+            UpdatePrivileges { privileges } → model { user { privileges = privileges } } /\ []
             SetCurrentExperiment experiment → setCurrentExperiment experiment model
 
             ResumeQuestions → resumeQuestions model
             DisplayQuestions questions → displayQuestions questions model
             SelectChoice question choice → selectChoice question choice model
             AnswerQuestion → answerQuestion model
-            ToggleDoppelgangerSection section → F.noMessages model { doppelganger = model.doppelganger { section = section } }
+            ToggleDoppelgangerSection section → model { doppelganger = model.doppelganger { section = section } } /\ []
             AfterAnswerQuestion → afterAnswerQuestion model
             FetchMatches → fetchMatches model
             DisplayMatches matches → displayMatches matches model

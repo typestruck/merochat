@@ -23,7 +23,6 @@ import Data.Maybe as DM
 import Data.Set as DS
 import Data.Tuple.Nested ((/\))
 import Effect.Class as EC
-import Flame as F
 import Flame.Html.Event (Event)
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
@@ -35,9 +34,9 @@ import Shared.Unsafe as SU
 resumeChat ∷ Int → ImModel → MoreMessages
 resumeChat userId model =
       if model.chatting == Just userId then
-            F.noMessages model
+            model /\ []
       else case SIC.findContact userId model.contacts of
-            Nothing → F.noMessages model
+            Nothing → model /\ []
             Just chatting →
                   model
                         { chatting = Just userId
@@ -77,7 +76,7 @@ setReadStatus ∷ Maybe Int → WebSocket → ImModel → MoreMessages
 setReadStatus userId webSocket model =
       case userId <|> model.chatting of
             Just chatting → setMessageStatus webSocket chatting Read model
-            Nothing → F.noMessages model
+            Nothing → model /\ []
 
 -- | Update status of messages with the given contact
 setMessageStatus ∷ WebSocket → Int → MessageStatus → ImModel → MoreMessages
@@ -115,7 +114,7 @@ setMessageStatus webSocket userId newStatus model =
 setDeliveredStatus ∷ WebSocket → ImModel → NoMessages
 setDeliveredStatus webSocket model@{ contacts, user: { id: loggedUserId } } =
       if DA.null ids then
-            F.noMessages model
+            model /\ []
       else updatedModel /\
             [ EC.liftEffect do
                     CIW.sendPayload webSocket $ ChangeStatus
@@ -152,7 +151,7 @@ updateDraft userId draft model = model { contacts = map update model.contacts } 
 checkFetchContacts ∷ Event → ImModel → MoreMessages
 checkFetchContacts event model
       | model.freeToFetchContactList = model /\ [ Just <<< SpecialRequest <<< FetchContacts <$> EC.liftEffect (CIS.isScrolledDown event) ]
-      | otherwise = F.noMessages model
+      | otherwise = model /\ []
 
 fetchContacts ∷ Boolean → ImModel → MoreMessages
 fetchContacts shouldFetch model@{ contacts }
@@ -160,7 +159,7 @@ fetchContacts shouldFetch model@{ contacts }
               model
                     { freeToFetchContactList = false
                     } /\ [ CN.retryableRequest (FetchContacts true) DisplayContacts $ routes.im.contacts { query: { skip: DA.length contacts } } ]
-      | otherwise = F.noMessages model
+      | otherwise = model /\ []
 
 --paginated contacts
 displayContacts ∷ Array Contact → ImModel → MoreMessages
@@ -228,7 +227,7 @@ deleteChat userId model =
                         , contacts = DA.filter ((userId /= _) <<< _.id <<< _.user) model.contacts
                         , chatting = if model.chatting == Just userId then Nothing else model.chatting
                         } /\ [ delete id, track ]
-            Nothing → F.noMessages model
+            Nothing → model /\ []
       where
       lastMessageId = SIC.findContact userId model.contacts >>= (map _.id <<< DA.last <<< _.history)
 

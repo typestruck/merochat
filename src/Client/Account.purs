@@ -29,7 +29,7 @@ formSelector ∷ String
 formSelector = ".form-up"
 
 buttonSelector ∷ String
-buttonSelector = formSelector <> " input[type=button]"
+buttonSelector = formSelector <> " input[type=button], " <> formSelector <> " button[type=button]:not(#" <> show TemporaryUserSignUp <> ")"
 
 validateEmailPassword ∷ Aff (Maybe EmailPassword)
 validateEmailPassword = do

@@ -71,7 +71,7 @@ application = do
                   }
       pure
             { model
-            , view: \current → HE.scrollView [ HA.id "profile", ST.event "profile" "bindlayoutchange", HA.class' "profile-route", HA.scrollOrientation "vertical" ]
+            , view: \current → HE.scrollView [ HA.id "profile", ST.onLayoutChange "profile", HA.class' "profile-route", HA.scrollOrientation "vertical" ]
                     [ SPV.view current
                     ]
             , update: CPU.update

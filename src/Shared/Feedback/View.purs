@@ -44,9 +44,9 @@ view model =
                     [ br
                     , HE.span [ HA.class' "lynx-inline" ]
                             [ HE.span_ [ HE.text "You can also reach out at " ]
-                            , SE.a [ HA.href "https://reddit.com/r/MeroChat", HA.target "_blank" ] [ HE.text "r/MeroChat" ]
+                            , SE.a [ HA.href "https://reddit.com/r/MeroChat", SE.externalLink "https://reddit.com/r/MeroChat", HA.target "_blank" ] [ HE.text "r/MeroChat" ]
                             , HE.span_ [ HE.text " and " ]
-                            , SE.a [ HA.href "https://twitter.com/MeroChat", HA.target "_blank" ] [ HE.text "@MeroChat" ]
+                            , SE.a [ HA.href "https://twitter.com/MeroChat", SE.externalLink "https://twitter.com/MeroChat", HA.target "_blank" ] [ HE.text "@MeroChat" ]
                             ]
                     ]
             ]

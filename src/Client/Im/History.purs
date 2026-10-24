@@ -16,7 +16,6 @@ import Data.Maybe as DM
 import Data.String as DS
 import Data.Tuple.Nested ((/\))
 import Effect.Class as EC
-import Flame as F
 import Flame.Html.Event (Event)
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (HistoryMessage, ImMessage(..), ImModel, ReactWith(..), RetryableRequest(..), ShowContextMenu(..))
@@ -29,7 +28,7 @@ fetchHistory ∷ Int → Boolean → ImModel → MoreMessages
 fetchHistory userId shouldFetch model
       | model.freeToFetchChatHistory && shouldFetch =
               case SIC.findContact userId model.contacts of
-                    Nothing → F.noMessages model
+                    Nothing → model /\ []
                     Just contact →
                           model
                                 { freeToFetchChatHistory = false
@@ -39,7 +38,7 @@ fetchHistory userId shouldFetch model
                                         (DisplayHistory contact.user.id)
                                         (routes.im.history { query: { with: contact.user.id, skip: if contact.shouldFetchChatHistory then 0 else DA.length contact.history } })
                                 ]
-      | otherwise = F.noMessages model
+      | otherwise = model /\ []
 
 displayHistory ∷ Int → Array HistoryMessage → ImModel → NoMessages
 displayHistory userId history model =

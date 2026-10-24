@@ -1,5 +1,8 @@
 module Client.Im.Main (main, application) where
 
+import Client.Navigation as CNA
+import Shared.External.Types as SET
+
 import Prelude
 
 import Client.AppId (imAppId, profileAppId)
@@ -213,7 +216,7 @@ update st model =
             ToggleSuggestionChatInput id → CISU.toggleSuggestionChatInput id model
             DeleteMessage id → CICH.deleteMessage id webSocket model
             SetTyping text → CICH.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
-            ToggleTyping userId tId → F.noMessages $ CICH.toggleTyping userId tId model
+            ToggleTyping userId tId → CICH.toggleTyping userId tId model /\ []
             MessageFromExperiment userId message → CICH.messageFromExperiment userId message webSocket model
 
             --contacts
@@ -324,11 +327,11 @@ update st model =
             Refocus e → refocus e st.lastActiveRef webSocket model
             SetChatBackgroundFromProfile toggle url → setChatBackgroundFromProfile toggle url model
             HighlightMessage id → highlightMessage id model
-            ClearHighlightedMessage → F.noMessages $ model { highlighted = Nothing }
+            ClearHighlightedMessage → model { highlighted = Nothing } /\ []
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
-            SetField setter → F.noMessages $ setter model
-            SetPrivateNote note → F.noMessages $ model { privateNote = note }
+            SetField setter → setter model /\ []
+            SetPrivateNote note → model { privateNote = note } /\ []
             ToggleFortune isVisible → toggleFortune isVisible model
             ToggleScrollChatDown scroll userId → toggleScrollChatDown scroll userId model
             DisplayFortune sequence → displayFortune sequence model
@@ -391,7 +394,7 @@ setChatBackgroundFromProfile ∷ Boolean → Maybe String → ImModel → NoMess
 setChatBackgroundFromProfile toggle url model = model { user { ownBackground = toggle, chatBackground = url } } /\ []
 
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
-toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
+toggleContextMenu toggle model = model { toggleContextMenu = toggle } /\ []
 
 setRegistered ∷ ImModel → NoMessages
 setRegistered model = model { user { temporary = false } } /\
@@ -428,9 +431,9 @@ refocus focusEvent lastActiveRef webSocket model =
 registerUser ∷ ImModel → MoreMessages
 registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
       if invalidEmail then
-            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DSY.reflectSymbol (Proxy ∷ _ "temporaryEmail") }
+            model { erroredFields = DA.snoc erroredFields $ DSY.reflectSymbol (Proxy ∷ _ "temporaryEmail") } /\ []
       else if invalidPassword then
-            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DSY.reflectSymbol (Proxy ∷ _ "temporaryPassword") }
+            model { erroredFields = DA.snoc erroredFields $ DSY.reflectSymbol (Proxy ∷ _ "temporaryPassword") } /\ []
       else
             model { erroredFields = [] } /\
                   [ do
@@ -449,14 +452,14 @@ terminateAccount model = model /\
               status ← CN.formRequest (show ConfirmAccountTerminationForm) $ routes.settings.account.terminate { body: {} }
               when (status == Success) do
                     EA.delay $ Milliseconds 3000.0
-                    EC.liftEffect <<< CL.setLocation $ routesSpec.login.get {}
+                    EC.liftEffect $ CNA.navigate SET.Login
               pure Nothing
       ]
 
 checkUserExpiration ∷ ImModel → MoreMessages
 checkUserExpiration model@{ user: { temporary, joined } }
       | temporary && SUS.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen (ShowProfile Edit) ]
-      | otherwise = F.noMessages model
+      | otherwise = model /\ []
 
 setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
 setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps, lastMessageOnContactList, suggestionsFrom } model =
@@ -541,7 +544,7 @@ report userId webSocket model = case model.reportReason of
                           , reportComment = Nothing
                           }
                   ) /\ [ reportIt rs, track ]
-      Nothing → F.noMessages model
+      Nothing → model /\ []
       where
       reportIt rs = do
             result ← CN.request $ routes.im.report { body: { userId, reason: rs, comment: model.reportComment } }
@@ -588,7 +591,7 @@ toggleAskNotification model =
 toggleUserContextMenu ∷ Event → ImModel → MoreMessages
 toggleUserContextMenu event model
       | model.toggleContextMenu /= HideContextMenu =
-              F.noMessages model { toggleContextMenu = HideContextMenu }
+              model { toggleContextMenu = HideContextMenu } /\ []
       | otherwise =
               model /\
                     [
@@ -640,25 +643,25 @@ handleRequestFailure failure model =
 toggleFortune ∷ Boolean → ImModel → MoreMessages
 toggleFortune isVisible model
       | isVisible = model /\ [ Just <<< DisplayFortune <$> CN.silentRequest (routes.im.fortune {}) ]
-      | otherwise = F.noMessages $ model
+      | otherwise = model
               { fortune = Nothing
-              }
+              } /\ []
 
 toggleScrollChatDown ∷ Boolean → Int → ImModel → MoreMessages
 toggleScrollChatDown scroll userId model =
       --avoid unnecessary ui updates since this event could be high frequence (scroll)
       case SIC.findContact userId model.contacts of
-            Just contact | contact.scrollChatDown /= scroll → F.noMessages model { contacts = map upd model.contacts }
-            _ → F.noMessages model
+            Just contact | contact.scrollChatDown /= scroll → model { contacts = map upd model.contacts } /\ []
+            _ → model /\ []
       where
       upd contact
             | contact.user.id == userId = contact { scrollChatDown = scroll }
             | otherwise = contact
 
 displayFortune ∷ String → ImModel → NoMessages
-displayFortune sequence model = F.noMessages $ model
+displayFortune sequence model = model
       { fortune = Just sequence
-      }
+      } /\ []
 
 fetchMissedContacts ∷ ImModel → MoreMessages
 fetchMissedContacts model = model /\ [ fetchIt ]

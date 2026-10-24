@@ -1,7 +1,7 @@
 module Server.Landing.Action where
 
 import Prelude
-import Server.Effect
+import Server.Effect (ServerEffect)
 
 import Data.Maybe (Maybe(..))
 import Server.AccountValidation as SA
@@ -10,7 +10,7 @@ import Server.Generate as SB
 import Server.Token as ST
 import Shared.Account (EmailPasswordCaptcha)
 
-registerRegularUser ∷ EmailPasswordCaptcha → ServerEffect String
+registerRegularUser ∷ EmailPasswordCaptcha → ServerEffect { token ∷ String, userId ∷ Int }
 registerRegularUser epc = do
       email ← SA.validateEmail epc.email
       hash ← SA.validatePassword epc.password
@@ -27,9 +27,10 @@ registerRegularUser epc = do
             , description
             , temporary: false
             }
-      ST.createToken id
+      token ← ST.createToken id
+      pure { token, userId: id }
 
-registerTemporaryUser ∷ ServerEffect String
+registerTemporaryUser ∷ ServerEffect { token ∷ String, userId ∷ Int }
 registerTemporaryUser = do
       name ← SB.generateName
       headline ← SB.generateHeadline
@@ -42,4 +43,5 @@ registerTemporaryUser = do
             , description
             , temporary: true
             }
-      ST.createToken id
+      token ← ST.createToken id
+      pure { token, userId: id }

@@ -4,9 +4,12 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Effect (Effect)
 import Flame (Html)
+import Flame.Types (NodeData)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.External.Types (Page(..))
 import Shared.Element (ElementId(..))
 import Shared.Change as SC
 import Shared.Extra as SE
@@ -15,7 +18,13 @@ import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwo
 import Shared.Routes (routesSpec)
 
 view ∷ LoginModel → Html LoginMessage
-view model = HE.div_
+view = viewWithEvents $ const []
+
+viewWithNavigation ∷ (Page → Effect Unit) → LoginModel → Html LoginMessage
+viewWithNavigation = viewWithEvents <<< (<<<) (pure <<< SE.onClick)
+
+viewWithEvents ∷ (Page → Array (NodeData LoginMessage)) → LoginModel → Html LoginMessage
+viewWithEvents events model = HE.div_
       [ HE.div [ HA.class' "pastel-area" ]
               [ HE.div [ HA.class' "sign-up-form form-up" ]
                       [ HE.div [ HA.class' "input" ]
@@ -31,9 +40,9 @@ view model = HE.div_
                               , HE.span [ HA.class' "login-error" ] [ HE.text $ DM.fromMaybe "" model.error ]
                               ]
                       , HE.div [ HA.class' "forgot-sign-up lynx-inline" ]
-                              [ SE.a [ HA.href $ routesSpec.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] [ HE.text "Forgot your password?" ]
+                              [ SE.a ([ HA.href $ routesSpec.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] <> events Recover) [ HE.text "Forgot your password?" ]
                               , HE.span [ HA.class' "or" ] [ HE.text "or" ]
-                              , SE.a [ HA.href $ routesSpec.landing {}, HA.class' "question-link" ] [ HE.text "Don't have an account?" ]
+                              , SE.a ([ HA.href $ routesSpec.landing {}, HA.class' "question-link" ] <> events Landing) [ HE.text "Don't have an account?" ]
                               ]
                       ]
               ]

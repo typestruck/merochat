@@ -2,10 +2,10 @@ module Client.Im.SmallScreen where
 
 import Prelude
 
+import Data.Tuple.Nested ((/\))
 import Client.Ui.Window as CUW
 import Client.Im.Flame (NoMessages)
 import Effect (Effect)
-import Flame as F
 import Flame.Subscription as FS
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.Im.Types
@@ -21,7 +21,7 @@ sendSmallScreen ∷ Effect Unit
 sendSmallScreen = FS.send imAppId SetSmallScreen
 
 setSmallScreen ∷ ImModel → NoMessages
-setSmallScreen model = F.noMessages model
+setSmallScreen model = model
       { messageEnter = false
       , smallScreen = true
-      }
+      } /\ []
