@@ -38,8 +38,8 @@ closeElements =
 
 backArrow ∷ Html ImMessage
 backArrow = SI.svg [ HA.class' "svg-55", HA.viewBox "0 0 16 16" ]
-      [ HE.circle' [ HA.class' "strokeless light-circle", HA.cx "8", HA.cy "8", HA.r "8" ]
-      , HE.polygon' [ HA.class' "fillless strokeless red-polygon", HA.points "4.88 7.99 9.37 3.5 10.29 4.42 6.73 7.99 10.32 11.58 9.39 12.5 5.81 8.91 5.8 8.91 4.88 7.99" ]
+      [ HE.circle' [ HA.class' "strokeless light-circle", HA.stroke "none", HA.cx "8", HA.cy "8", HA.r "8" ]
+      , HE.polygon' [ HA.class' "fillless strokeless red-polygon", HA.fill "#327B4F", HA.stroke "none", HA.points "4.88 7.99 9.37 3.5 10.29 4.42 6.73 7.99 10.32 11.58 9.39 12.5 5.81 8.91 5.8 8.91 4.88 7.99" ]
       ]
 
 nextArrow ∷ Html ImMessage

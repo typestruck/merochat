@@ -235,7 +235,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                   ]
 
 individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
-individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "backing-card": suggestion.id == backerId } ] $
+individualSuggestion suggestion model = HE.scrollView [ HA.class' { "big-card": true, "backing-card": suggestion.id == backerId }, HA.scrollOrientation "vertical" ] $
       if model.showLargeAvatar then
             [ HE.div [ HA.class' "avatar-info full" ]
                     [ HE.div [ HA.class' "big-suggestion-header" ]
@@ -245,7 +245,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                                     ]
                             ]
                     , HE.div [ HA.class' "big-avatar-info big-avatar-center" ]
-                            [ SA.image suggestion [ HA.title "Close avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "bigger-suggestion-avatar" ]
+                            [ SA.image suggestion [ HA.title "Close avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "bigger-suggestion-avatar", HA.createAttribute "mode" "aspectFit" ]
                             ]
                     ]
             ]

@@ -56,7 +56,7 @@ view model =
 
 privacySection ∷ SettingsModel → Html SettingsMessage
 privacySection model = HE.div [ HA.id $ show PrivacySettings ]
-      [ HE.label_ [ HE.text "Profile visibility" ]
+      [ HE.label [ HA.class' "modal-label" ] [ HE.text "Profile visibility" ]
       , SDRO.choices SelectChoice "Profile visibility" model.profileVisibility (\value → SetSField $ _ { profileVisibility = value })
               [ { value: Everyone, name: "Show profile (default)" }
               , { value: NoTemporaryUsers, name: "Show profile only to registered users" }
@@ -77,7 +77,7 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               ]
       , HE.div [ HA.class' { duller: true, hidden: model.profileVisibility /= Nobody } ] [ HE.text "No one can see your profile or message you" ]
 
-      , HE.label_ [ HE.text "Posts visibility" ]
+      , HE.label [ HA.class' "modal-label" ] [ HE.text "Posts visibility" ]
       , SDRO.choices SelectChoice "Posts visibility" model.postsVisibility (\value → SetSField $ _ { postsVisibility = value })
               [ { value: Everyone, name: "Show posts (default)" }
               , { value: NoTemporaryUsers, name: "Show posts only to registered users" }
@@ -91,7 +91,7 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               Nobody → [ HE.text "No one can see your profile or message you" ]
               TemporarilyBanned → []
 
-      , HE.label_ [ HE.text "Asks" ]
+      , HE.label [ HA.class' "modal-label" ] [ HE.text "Asks" ]
       , SDRO.choices SelectChoice "Asks" model.asksVisibility (\value → SetSField $ _ { asksVisibility = value })
               [ { value: Everyone, name: "Allow asks from everyone" }
               , { value: NoTemporaryUsers, name: "Allow asks only from registered users (default)" }
@@ -105,7 +105,7 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
               Nobody → [ HE.text "No one can send you asks" ]
               TemporarilyBanned → []
 
-      , HE.label_ [ HE.text "Show:" ]
+      , HE.label [ HA.class' "modal-label" ] [ HE.text "Show:" ]
       , SE.checkbox model.readReceipts (SetSField $ _ { readReceipts = not model.readReceipts }) $ "Read receipts"
       , SE.checkbox model.onlineStatus (SetSField $ _ { onlineStatus = not model.onlineStatus }) $ "Online status"
       , SE.checkbox model.messageTimestamps (SetSField $ _ { messageTimestamps = not model.messageTimestamps }) $ "Message timestamps"
@@ -126,7 +126,7 @@ accountSection model = HE.div_
       ]
       where
       terminate = HE.div [ HA.id <<< formId $ (Proxy ∷ Proxy "confirmTermination") ]
-            [ HE.label_ [ HE.text "Permanently delete all my data and close my account" ]
+            [ HE.label [ HA.class' "modal-label" ] [ HE.text "Permanently delete all my data and close my account" ]
             , HE.div [ HA.class' "section-buttons margined" ]
                     [ HE.button [ HA.class' "green-button danger", HA.onClick ToggleTerminateAccount ] [ HE.text $ "Terminate account" ]
                     , accountStatus "confirmTermination" model
@@ -144,7 +144,7 @@ accountSection model = HE.div_
 
 chatsSection ∷ SettingsModel → Html SettingsMessage
 chatsSection model = HE.div [ HA.id $ show ChatSettings ]
-      [ HE.label_ [ HE.text "Initial suggestions screen" ]
+      [ HE.label [ HA.class' "modal-label" ] [ HE.text "Initial suggestions screen" ]
       , SDRO.choices SelectChoice "Initial suggestions screen" model.suggestionsFrom (\value → SetSField $ _ { suggestionsFrom = value })
               [ { value: ThisWeek, name: "New suggestions" }
               , { value: OnlineOnly, name: "Online users" }
@@ -188,12 +188,12 @@ fieldConfirmationSection ∷ ∀ field fieldConfirmation r t. IsSymbol field ⇒
 fieldConfirmationSection model field inputType maxChars validator fieldErrorMessage message =
       HE.div [ HA.id $ formId field ]
             [ HE.div [ HA.class' { errored: hasErrors } ]
-                    [ HE.label_ [ HE.text capitalizedStringField ]
+                    [ HE.label [ HA.class' "modal-label" ] [ HE.text capitalizedStringField ]
                     , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.class' "modal-input", HA.value fieldValue, onChangeValue <<< setValidatedField validator $ field, HA.autocomplete $ "new-" <> stringField ]
                     , HE.div [ HA.class' "error-message" ] [ HE.text fieldErrorMessage ]
                     ]
             , HE.div [ HA.class' { errored: hasConfirmationErrors } ]
-                    [ HE.label_ [ HE.text $ "Confirm " <> stringField ]
+                    [ HE.label [ HA.class' "modal-label" ] [ HE.text $ "Confirm " <> stringField ]
                     , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.autocomplete $ "new-" <> stringField, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue <<< setValidatedField (_ == fieldValue) $ fieldConfirmation ]
                     , HE.div [ HA.class' "error-message" ] [ HE.text $ capitalizedStringField <> " confirmation must match " <> stringField ]
                     ]

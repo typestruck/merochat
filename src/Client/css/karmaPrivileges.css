@@ -16,7 +16,7 @@
 
 }
 
-.name {
+.board-position .name {
     font-size: 1em;
     color: var(--light-color)
 }
@@ -132,7 +132,7 @@
         flex-grow: 1;
     }
 
-    .name {
+    .board-position .name {
         max-width: 150px;
         white-space: nowrap;
         overflow: hidden;

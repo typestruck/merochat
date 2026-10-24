@@ -45,14 +45,14 @@ faq =
             , SE.h2 [ HA.id "mero" ] [ HE.text "What does Mero in MeroChat stand for?" ]
             , SE.p_ [ HE.text "Until someone finds a backronym, it is the Guarani word for (water)melons. Not surprisingly, the app is full of them" ]
             , SE.h2_ [ HE.text "Recommend me some music" ]
-            , SE.p [ HA.class' "lynx-inline" ]
+            , SE.nestedText [ HA.class' "public-paragraph" ]
                     [ HE.text "Listen to "
-                    , SE.a [ HA.href "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q", SE.externalLink "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q", HA.target "_blank" ] [ HE.text "Metá Metá" ]
+                    , SE.textLink [ HA.href "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q", SE.externalLink "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q", HA.target "_blank" ] [ HE.text "Metá Metá" ]
                     ]
             , SE.h2 [ HA.id "canihelp" ] [ HE.text "Wow, I love it. How can I help?" ]
-            , SE.p [ HA.class' "lynx-inline" ]
+            , SE.nestedText [ HA.class' "public-paragraph" ]
                     [ HE.text "Right?! If you can spare some, consider backing MeroChat. The entire "
-                    , SE.a [ HA.href "https://github.com/typestruck/merochat", SE.externalLink "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "source code" ]
+                    , SE.textLink [ HA.href "https://github.com/typestruck/merochat", SE.externalLink "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "source code" ]
                     , HE.text " is also freely avaible in case this is your thing. That being said, just letting others know about MeroChat is already a huge help. Reporting bugs, bad user behavior or other issues is also highly appreciated"
                     ]
             ]

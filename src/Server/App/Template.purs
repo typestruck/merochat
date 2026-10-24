@@ -46,9 +46,9 @@ content =
                       [ SE.h2 [] [ HE.text "Android" ]
                       , SE.a [ HA.href "https://play.google.com/store/apps/details?id=chat.mero.twa", SE.externalLink "https://play.google.com/store/apps/details?id=chat.mero.twa", HA.class' "donation-button" ] [ HE.text "Open in Google Play" ]
                       , SE.h2 [] [ HE.text "iOS" ]
-                      , HE.div [ HA.class' "lynx-inline" ]
+                      , SE.nestedText []
                               [ HE.text "Apple charges 400 usd per year so MeroChat isn't on the App Store yet. "
-                              , SE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Wink, wink, donate" ]
+                              , SE.textLink [ HA.href $ routesSpec.backer {} ] [ HE.text "Wink, wink, donate" ]
                               ]
 
                       , HE.b [ HA.class' "app-step" ] [ HE.text "However, you can add the site to your home screen, which works the same as an app! Step by step:" ]

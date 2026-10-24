@@ -172,7 +172,7 @@ profileInline (PreviewToken value) = case value."type" of
       "codespan" → [ styled "font-family" "monospace" [ HE.text text ] ]
       "br" → [ HE.text "\n" ]
       "link" → case DN.toMaybe value.href of
-            Just href → [ HE.createElement "text" [ HA.class' "markdown-link", SE.externalLink href ] children ]
+            Just href → [ SE.textLink [ SE.externalLink href ] children ]
             Nothing → children
       "image" → case DN.toMaybe value.href of
             Just href → [ HE.createElement "inline-image"

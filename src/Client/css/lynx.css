@@ -265,7 +265,8 @@ page {
     linear-orientation: vertical;
     height: 100vh;
     width: 100%;
-    padding: 12px;
+    padding: 45px 0 0;
+    box-sizing: border-box;
     background-color: var(--im-background-color);
 }
 
@@ -285,16 +286,28 @@ page {
 }
 
 .modal-screen-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 20;
+    box-sizing: border-box;
+    height: 45px;
     display: flex;
     flex-direction: row;
     align-items: center;
     width: 100%;
+    justify-content: flex-start;
+    align-self: flex-start;
     padding: 10px;
-    margin-bottom: 10px;
-    background-color: transparent;
+    margin: 0;
+    background-color: var(--im-background-color);
+    text-align: left;
 }
 
 .modal-screen-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--text-color);
     width: 25px;
     height: 25px;
@@ -309,7 +322,7 @@ page {
 }
 
 .profile-edition > .green-tab {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     width: 100%;
     justify-content: space-between;
 }
@@ -326,7 +339,8 @@ page {
     height: auto;
     width: 100%;
     margin-top: 0;
-    padding: 0;
+    padding: 20px;
+    box-sizing: border-box;
     overflow: visible;
     flex-shrink: 0;
 }
@@ -428,6 +442,7 @@ page {
 }
 
 .public-route .name {
+    width: 100%;
     font-family: var(--heading-font);
     font-size: 3.3em;
     margin: 0;
@@ -475,6 +490,8 @@ page {
 }
 
 .public-route .name text {
+    width: 100%;
+    white-space: nowrap;
     color: var(--merochat-red);
     font-weight: bold;
     text-align: center;
@@ -667,6 +684,10 @@ page {
 .public-route .help .public-heading text,
 .public-route .help .bulleted text {
     font-weight: bold;
+}
+
+.help .bulleted.terms-restrictions text {
+    font-weight: normal;
 }
 
 .public-route .backer .modal-screen-header {
@@ -888,9 +909,13 @@ textarea {
     font-family: monospace;
 }
 
-.profile-markdown .markdown-link {
-    color: var(--merochat-green);
+.text-link {
     text-decoration: underline;
+}
+
+.profile-markdown .text-link,
+.matches .text-link {
+    color: var(--merochat-green);
 }
 
 .profile-markdown .markdown-table-row {
@@ -1113,6 +1138,11 @@ textarea {
     z-index: 6;
 }
 
+#im .profile-top-menu {
+    top: 0;
+    flex-shrink: 0;
+}
+
 #im .profile-contact-header {
     color: var(--light-color);
 }
@@ -1128,7 +1158,8 @@ textarea {
     linear-orientation: vertical;
     height: 100vh;
     width: 100%;
-    padding: 12px;
+    padding: 45px 0 0;
+    box-sizing: border-box;
     background-color: var(--im-background-color);
     color: var(--text-color);
     font-family: var(--text-font);
@@ -1171,8 +1202,9 @@ textarea {
 
 .authenticated-route .section-buttons {
     width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .authenticated-route .green-button {
@@ -1366,10 +1398,12 @@ textarea {
     font-weight: bold;
 }
 
-.modal-screen-back svg {
-    width: 100%;
-    height: 100%;
-    color: var(--text-color);
+.modal-screen-chevron {
+    width: 12px;
+    height: 12px;
+    border-left: 2px solid var(--text-color);
+    border-bottom: 2px solid var(--text-color);
+    transform: rotate(45deg);
 }
 
 .authenticated-route #feedback-form .error-message {
@@ -1391,4 +1425,173 @@ textarea {
 
 .authenticated-route .privilege-quantity svg {
     color: var(--merochat-green);
+}
+
+.authenticated-route #internal-help,
+.authenticated-route #backer {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.authenticated-route .green-tab {
+    max-width: 100%;
+}
+
+.authenticated-route .modal-label {
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+
+.authenticated-route .modal-label:first-child {
+    margin-top: 0;
+}
+
+.authenticated-route .paper-thrown-entry,
+.authenticated-route #feedback-form .buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.authenticated-route .paper-thrown-message {
+    flex: 1;
+    min-width: 0;
+}
+
+.authenticated-route .help .public-title {
+    font-size: 1.7em;
+    margin-bottom: 50px;
+}
+
+.authenticated-route .help .public-heading {
+    font-size: 1em;
+    margin: 30px 0 5px;
+}
+
+.authenticated-route .help .public-list {
+    padding: 0;
+}
+
+.authenticated-route .help .public-list-item {
+    margin: 0;
+    padding: 7px 0;
+}
+
+.authenticated-route .help .public-paragraph {
+    margin: 0 0 16px;
+}
+
+.authenticated-route .backer {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    align-items: stretch;
+}
+
+.authenticated-route .backer .public-paragraph {
+    width: 100%;
+    margin: 12px 0;
+}
+
+.authenticated-route .backer .public-subheading {
+    margin: 20px 0 10px;
+    text-align: center;
+}
+
+.authenticated-route .backer .donation-button {
+    color: var(--merochat-green);
+    padding: 0;
+    background-color: transparent;
+    text-decoration: underline;
+    align-self: center;
+}
+
+.authenticated-route .backer .patreon-button {
+    align-self: center;
+}
+
+.authenticated-route .backer .patreon-button text {
+    color: var(--light-color);
+}
+
+.modal-placeholder-overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.big-card {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    display: linear;
+    linear-orientation: vertical;
+}
+
+.big-card .back-filter {
+    position: relative;
+    width: 100%;
+    align-items: flex-start;
+}
+
+.big-card .svg-back-profile {
+    align-self: flex-start;
+}
+
+.big-card .suggestion-arrow-mobile {
+    position: absolute;
+    top: 90px;
+    left: 15px;
+    width: calc(100% - 30px);
+    margin-top: 0;
+    flex-direction: row;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.big-card .suggestion-arrow,
+.big-card .suggestion-arrow.next-arrow {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin: 0;
+    flex-shrink: 0;
+    pointer-events: auto;
+}
+
+.big-card .avatar-info,
+.big-card .big-avatar-info {
+    width: 100%;
+}
+
+.big-card .see-profile-chat {
+    position: relative;
+    width: 100%;
+}
+
+.big-card .big-avatar-info {
+    margin-top: 0;
+}
+
+.big-card .big-suggestion-header {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+}
+
+.big-card .big-card-name.grown {
+    flex: 1;
+}
+
+.big-card .bigger-suggestion-avatar {
+    width: 100%;
+    height: calc(100vh - 80px);
+    object-fit: contain;
+}
+
+.contact {
+    align-items: center;
 }

@@ -39,9 +39,9 @@ privacy =
             , SE.p_ [ HE.text "MeroChat only uses session cookies. These have the function of keeping you logged in after you register or log in on the Site." ]
             , HE.div [ HA.class' "hide-internal" ]
                     [ SE.h2_ [ HE.text "Contact" ]
-                    , SE.p [ HA.class' "lynx-inline" ]
+                    , SE.nestedText [ HA.class' "public-paragraph" ]
                             [ HE.text "You may contact MeroChat about these policies or any other issues by sending an email to contact. Alternatively, MeroChat entire source code can be viewed at "
-                            , SE.a [ HA.href "https://github.com/typestruck/merochat", SE.externalLink "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "https://github.com/typestruck/merochat" ]
+                            , SE.textLink [ HA.href "https://github.com/typestruck/merochat", SE.externalLink "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "https://github.com/typestruck/merochat" ]
                             ]
                     ]
             ]

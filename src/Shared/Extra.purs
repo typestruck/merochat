@@ -21,6 +21,12 @@ fragment = HE.div_
 a ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
 a = HE.div
 
+nestedText ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
+nestedText = HE.createElement "text"
+
+textLink ∷ ∀ message. Array (NodeData message) → Array (Html message) → Html message
+textLink attributes = nestedText $ [ HA.class' "text-link" ] <> attributes
+
 onClick ∷ ∀ message. Effect Unit → NodeData message
 onClick action = FHE.createRawEvent "bindtap" $ const $ action $> Nothing
 

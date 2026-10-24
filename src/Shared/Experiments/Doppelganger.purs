@@ -23,15 +23,15 @@ view model = HE.div [ HA.class' "word-chain duller" ]
                           HE.button [ HA.onClick ResumeQuestions, HA.class' "green-button" ] [ HE.text $ "Take quiz" ]
       ]
       where
-      matchLink match = SE.a [ HA.title "Send message to user", HA.onClick $ MessageFromExperiment match.id ] [ HE.text match.name ]
+      matchLink match = SE.textLink [ HA.title "Send message to user", HA.onClick $ MessageFromExperiment match.id ] [ HE.text match.name ]
 
       showMatches
             | DA.null model.doppelganger.matches = HE.div [] [ HE.text "No evil clones found. Yet." ]
             | otherwise = HE.div [ HA.class' "matches" ]
                     [ HE.div [] [ HE.text "You have evil clones!" ]
-                    , HE.div [ HA.class' "lynx-inline" ]
+                    , SE.nestedText []
                             [ HE.text "You and "
-                            , HE.span [ HA.class' "lynx-inline" ] <<< DA.intersperse (HE.text ", ") $ map matchLink model.doppelganger.matches
+                            , SE.nestedText [] <<< DA.intersperse (HE.text ", ") $ map matchLink model.doppelganger.matches
                             , HE.text " have chosen the exact same 9 answers"
                             ]
                     ]

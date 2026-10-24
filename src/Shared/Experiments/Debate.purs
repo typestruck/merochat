@@ -44,7 +44,7 @@ view model = HE.div [ HA.class' "paper-plane duller" ]
 new ∷ ExperimentsModel → Html ExperimentsMessage
 new model =
       HE.div [ HA.class' "new-throw" ]
-            [ HE.label [] [ HE.text "Topic for debate" ]
+            [ HE.label [ HA.class' "modal-label" ] [ HE.text "Topic for debate" ]
             , SDRO.dropdown SelectDropdown "Topic for debate" model.debate.topic (DM.fromMaybe "Select a topic" model.debate.topic) SetDebateTopic $
                     map (\topic → { value: topic, name: topic })
                           [ "Capitalism should be replaced by a different economic system"
@@ -69,7 +69,7 @@ new model =
                           , "Aliens exist"
                           , "Living forever would be a good thing"
                           ]
-            , HE.label [] [ HE.text "Is your position pro or against?" ]
+            , HE.label [ HA.class' "modal-label" ] [ HE.text "Is your position pro or against?" ]
             , SDRO.dropdown SelectDropdown "Position" (show <$> model.debate.inFavor) (DM.maybe "Select your position" (\pro → if pro then "Pro" else "Against") model.debate.inFavor) SetInFavor
                     [ { value: "true", name: "Pro" }
                     , { value: "false", name: "Against" }

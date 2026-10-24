@@ -19,6 +19,13 @@ public final class ThemedSvg extends LynxUISVG {
     setColor(String.format(Locale.ROOT, "#%06X", color & 0xffffff));
   }
 
+  @Override
+  public void onNodeReady() {
+    if (getWidth() > 0 && getHeight() > 0) {
+      super.onNodeReady();
+    }
+  }
+
   public static Behavior behavior() {
     return new Behavior("svg") {
       @Override

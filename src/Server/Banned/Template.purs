@@ -33,13 +33,13 @@ content =
                       , HE.div_ [ HE.text " a place to spread hate speech" ]
                       , HE.div_ [ HE.text " a marketplace" ]
                       ]
-              , SE.p [ HA.class' "lynx-inline" ]
+              , SE.nestedText [ HA.class' "public-paragraph" ]
                       [ HE.text "To restore your account, please reach us at "
-                      , SE.a [ HA.href "mailto:contact@mero.chat", SE.externalLink "mailto:contact@mero.chat" ] [ HE.text "contact@mero.chat" ]
+                      , SE.textLink [ HA.href "mailto:contact@mero.chat", SE.externalLink "mailto:contact@mero.chat" ] [ HE.text "contact@mero.chat" ]
                       , HE.text ", "
-                      , SE.a [ HA.href "https://reddit.com/r/MeroChat", SE.externalLink "https://reddit.com/r/MeroChat", HA.target "_blank" ] [ HE.text "r/MeroChat" ]
+                      , SE.textLink [ HA.href "https://reddit.com/r/MeroChat", SE.externalLink "https://reddit.com/r/MeroChat", HA.target "_blank" ] [ HE.text "r/MeroChat" ]
                       , HE.text " or "
-                      , SE.a [ HA.href "https://twitter.com/MeroChat", SE.externalLink "https://twitter.com/MeroChat", HA.target "_blank" ] [ HE.text "@MeroChat" ]
+                      , SE.textLink [ HA.href "https://twitter.com/MeroChat", SE.externalLink "https://twitter.com/MeroChat", HA.target "_blank" ] [ HE.text "@MeroChat" ]
                       ]
               ]
       ]
