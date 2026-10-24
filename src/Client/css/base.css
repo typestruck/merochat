@@ -2,6 +2,9 @@
     --background-color: #FBFEFB;
     --light-color: #FBFEFB;
     --text-color: #1B1F3B;
+    --placeholder-color: #808080;
+    --input-text-color: #1B1F3B;
+    --feature-heading-color: #4BC9AC;
     --heading-font: Alef, serif;
     --text-font: Inter, sans-serif;
     --merochat-red: #DB5A5D;
@@ -29,12 +32,14 @@ body {
 }
 
 #light-theme-switch path {
-    stroke: var(--text-color);
+    color: var(--text-color);
+    stroke: currentColor;
 }
 
 #light-theme-switch circle,
 #dark-theme-switch path {
-    fill: var(--text-color);
+    color: var(--text-color);
+    fill: currentColor;
 }
 
 .hidden {
@@ -217,7 +222,7 @@ svg {
 
 .sign-up-form input[type=text],
 .sign-up-form input[type=password] {
-    color: #1B1F3B;
+    color: var(--input-text-color);
     background-color: var(--light-color);
 }
 

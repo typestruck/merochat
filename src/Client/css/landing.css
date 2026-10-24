@@ -33,7 +33,7 @@
 }
 
 .features h1 {
-      color: #4BC9AC
+      color: var(--feature-heading-color)
 }
 
 .feature-blurb {

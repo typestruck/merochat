@@ -11,7 +11,7 @@ import Flame.Html.Element as HE
 import Flame.Types (NodeData)
 
 br ∷ ∀ message. Html message
-br = HE.text "\n"
+br = HE.div' [ HA.class' "line-break" ]
 
 fragment = HE.div_
 

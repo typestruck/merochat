@@ -19,8 +19,9 @@ strong {
 }
 
 svg {
-    stroke: var(--light-color);
-    fill: var(--light-color);
+    color: var(--light-color);
+    stroke: currentColor;
+    fill: currentColor;
     cursor: pointer;
 }
 
@@ -491,10 +492,11 @@ textarea {
 }
 
 .svg-back-suggestions {
+    color: var(--im-text-color);
     width: 25px;
     height: 25px;
     stroke: none;
-    fill: var(--im-text-color);
+    fill: currentColor;
     margin-right: 15px;
 }
 
@@ -616,13 +618,15 @@ blockquote {
 }
 
 .outgoing-message .message-context-menu.outer-user-menu svg {
-    fill: var(--text-color);
+    color: var(--text-color);
+    fill: currentColor;
     stroke: var(--text-color);
 }
 
 .mini-suggestions .outer-user-menu svg,
 .svg-text-color {
-    fill: var(--text-color);
+    color: var(--text-color);
+    fill: currentColor;
     stroke: none;
 }
 
@@ -780,10 +784,11 @@ a {
 
 .svg-back-card,
 .svg-back-profile {
+    color: var(--light-color);
     stroke: none;
     width: 25px;
     height: 25px;
-    fill: var(--light-color);
+    fill: currentColor;
 }
 
 .notification-header {
@@ -813,7 +818,7 @@ a {
 .warning-temporary,
 .no-self-start,
 .not-enough-karma {
-    color: #db5a5d;
+    color: var(--merochat-red);
 }
 
 .modal-section {
@@ -1148,8 +1153,9 @@ img.emoji {
 }
 
 .see-all-home svg {
+    color: var(--text-color);
     margin-top: -5px;
-    fill: var(--text-color);
+    fill: currentColor;
     stroke: var(--text-color);
 }
 
@@ -1236,7 +1242,8 @@ svg.toolbar-action {
 }
 
 .suggestions-filter-gear {
-    fill: var(--text-color);
+    color: var(--text-color);
+    fill: currentColor;
 }
 
 .svg-55.emoji-access {
@@ -1591,7 +1598,7 @@ input:not(type=button):focus {
 }
 
 .backing-suggestion-call-enjoyer {
-    color: #db5a5d
+    color: var(--merochat-red)
 }
 
 .chatting-contact {
@@ -1687,7 +1694,7 @@ input:not(type=button):focus {
 }
 
 .changelog-count {
-    background: #db5a5d;
+    background: var(--merochat-red);
     font-size: 0.6em;
     padding: 0 4px;
     text-align: center;
@@ -1924,7 +1931,7 @@ input:not(type=button):focus {
 
 .cancel {
     color: var(--text-color);
-    background-color: var(--im-second-backgorund-color);
+    background-color: var(--im-second-background-color);
     border: 0;
     cursor: pointer;
     padding: 0 15px;
@@ -2035,7 +2042,8 @@ input:not(type=button):focus {
 }
 
 .send-image-button {
-    fill: var(--light-color);
+    color: var(--light-color);
+    fill: currentColor;
     stroke: var(--light-color);
 }
 
@@ -2047,11 +2055,12 @@ input:not(type=button):focus {
 }
 
 .emoji-access {
+    color: var(--text-color);
     width: 30px;
     height: 30px;
     padding-right: 8px;
-    stroke: var(--text-color);
-    fill: var(--text-color);
+    stroke: currentColor;
+    fill: currentColor;
 }
 
 .send-enter {
@@ -2119,10 +2128,11 @@ input:not(type=button):focus {
 }
 
 .retry-button svg {
+    color: red;
     vertical-align: middle;
     margin-left: 5px;
-    stroke: red;
-    fill: red;
+    stroke: currentColor;
+    fill: currentColor;
 }
 
 .retry-modal .retry:not(.hidden)~.loading {
@@ -2229,11 +2239,13 @@ input:not(type=button):focus {
 }
 
 .light-circle {
-    fill: var(--light-color);
+    color: var(--light-color);
+    fill: currentColor;
 }
 
 .red-polygon {
-    fill: var(--merochat-green);
+    color: var(--merochat-green);
+    fill: currentColor;
 }
 
 .suggestion-arrow.next-arrow {
@@ -2408,7 +2420,8 @@ input:not(type=button):focus {
 }
 
 .chat-right-buttons svg {
-    fill: var(--text-color);
+    color: var(--text-color);
+    fill: currentColor;
 }
 
 .mini-suggestion-cards .chat-input {
@@ -2526,8 +2539,9 @@ input:not(type=button):focus {
 }
 
 .svg-mini-chat {
-    stroke: var(--merochat-green);
-    fill: var(--merochat-green);
+    color: var(--merochat-green);
+    stroke: currentColor;
+    fill: currentColor;
     margin-right: 5px;
 }
 
@@ -2562,7 +2576,8 @@ input:not(type=button):focus {
 }
 
 .close-x {
-    stroke: var(--text-color);
+    color: var(--text-color);
+    stroke: currentColor;
 }
 
 .profile-name,
@@ -2580,12 +2595,14 @@ input:not(type=button):focus {
 }
 
 #light-theme-switch path {
-    stroke: var(--light-color);
+    color: var(--light-color);
+    stroke: currentColor;
 }
 
 #light-theme-switch circle,
 #dark-theme-switch path {
-    fill: var(--light-color);
+    color: var(--light-color);
+    fill: currentColor;
 }
 
 .profile-karma {
@@ -2603,11 +2620,12 @@ input:not(type=button):focus {
 }
 
 .imp {
-    color: #db5a5d
+    color: var(--merochat-red)
 }
 
 .svg-imp {
-    fill: #db5a5d !important
+    color: var(--merochat-red) !important;
+    fill: currentColor !important
 }
 
 .quick-sign-up {
@@ -2663,7 +2681,7 @@ input:not(type=button):focus {
 .impersonation-warning-history div,
 .contact-list .sign-up-call,
 .message-history .sign-up-call {
-    border: 1px solid #db5a5d;
+    border: 1px solid var(--merochat-red);
     padding: 10px 20px;
     margin-bottom: 10px;
 
@@ -2832,8 +2850,9 @@ label {
 }
 
 .big-card svg {
-    stroke: var(--text-color);
-    fill: var(--text-color);
+    color: var(--text-color);
+    stroke: currentColor;
+    fill: currentColor;
 }
 
 .contact-full-profile .user-menu {
@@ -2851,10 +2870,11 @@ label {
 
 .inbox-inverted-merochat-svg,
 .inverted-merochat-svg {
+    color: var(--text-color);
     width: 210px;
     height: 22px;
     cursor: initial;
-    fill: var(--text-color);
+    fill: currentColor;
     stroke: none;
 }
 
@@ -2863,9 +2883,10 @@ label {
 }
 
 .inbox-inverted-merochat-svg {
+    color: var(--light-color);
     width: 110px;
     height: 20px;
-    fill: var(--light-color);
+    fill: currentColor;
 }
 
 .svg-32.svg-user-menu-context {
@@ -3030,10 +3051,11 @@ label {
 }
 
 .post-input-tab-svg {
+    color: var(--text-color);
     width: 16px;
     padding-right: 5px;
     height: 16px;
-    fill: var(--text-color);
+    fill: currentColor;
 }
 
 .post-button {
@@ -3047,7 +3069,8 @@ label {
 }
 
 .selected-posts-input-tab svg {
-    fill: var(--merochat-green)
+    color: var(--merochat-green);
+    fill: currentColor
 }
 
 .post-card .attachment-button {
@@ -3186,7 +3209,8 @@ label {
 }
 
 .inbox-entry-action .svg-inbox-unread {
-    fill: var(--light-link-color);
+    color: var(--light-link-color);
+    fill: currentColor;
 }
 
 .backing-card {
@@ -3403,7 +3427,8 @@ label {
     }
 
     .back-filter .svg-back-profile {
-        fill: var(--text-color)
+        color: var(--text-color);
+        fill: currentColor
     }
 
     .profile-top-menu {
@@ -3569,7 +3594,7 @@ label {
     }
 
     .welcome-impersonation {
-        color: #db5a5d
+        color: var(--merochat-red)
     }
 
     .settings .user-menu {
@@ -3804,8 +3829,9 @@ label {
     }
 
     .modal-menu-mobile .svg-back-card {
+        color: var(--text-color);
         margin-right: 15px;
-        fill: var(--text-color);
+        fill: currentColor;
     }
 
     .suggestions-call {
@@ -3992,9 +4018,10 @@ label {
     }
 
     .modal-form .audio-button {
+        color: var(--text-color);
         width: 56px;
         height: 56px;
-        fill: var(--text-color);
+        fill: currentColor;
         margin-top: 10px;
     }
 
@@ -4007,7 +4034,8 @@ label {
     }
 
     .modal-form .audio-button:active {
-        fill: rgb(195, 211, 101);
+        color: rgb(195, 211, 101);
+        fill: currentColor;
     }
 
     .profile-contact-deets #compact-profile-context-menu {

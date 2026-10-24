@@ -59,7 +59,7 @@ contactList isClientRender model =
                                 ( if model.collapsedSidebar then
                                         [ HE.div [ HA.class' "collapsed-avatar-wrapper" ]
                                                 [ HE.div [ HA.class' "avatar-contact-list-div", HA.title contact.user.name ]
-                                                        [ HE.img
+                                                        [ SA.image contact.user
                                                                 ( if contact.user.unseenPosts > 0 then
                                                                         [ async
                                                                         , SA.decoding "lazy"
@@ -82,7 +82,7 @@ contactList isClientRender model =
                                         ]
                                   else
                                         [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && model.user.onlineStatus then show contact.user.availability else "" ]
-                                                [ HE.img
+                                                [ SA.image contact.user
                                                         ( if contact.user.unseenPosts > 0 then
                                                                 [ async
                                                                 , SA.decoding "lazy"
@@ -105,18 +105,18 @@ contactList isClientRender model =
                                                         , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.user.availability /= Online || not contact.user.onlineStatus || not model.user.onlineStatus } ]
                                                         ]
                                                 , if contact.typing && model.user.typingStatus && contact.user.typingStatus then
-                                                        HE.div [ HA.class' "contact-list-last-message duller typing" ] [ HE.p_ [ HE.text "Typing..." ] ]
+                                                        HE.div [ HA.class' "contact-list-last-message duller typing" ] [ HE.p [] [ HE.text "Typing..." ] ]
                                                   else if model.user.lastMessageOnContactList then
                                                         if not $ DS.null contact.draft then
                                                               SM.restrictedMarkdown [ HA.class' "contact-list-last-message duller message-draft" ] $ "Draft: " <> contact.draft
                                                         else
                                                               case lastHistoryEntry of
                                                                     Just entry → case entry.reaction of
-                                                                          Just reaction → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ "Reacted with " <> reaction ] ]
+                                                                          Just reaction → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i [ HA.class' "italic" ] [ HE.text $ "Reacted with " <> reaction ] ]
                                                                           Nothing → SM.restrictedMarkdown [ HA.class' "contact-list-last-message duller" ] entry.content
-                                                                    _ → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text "No messages yet" ] ]
+                                                                    _ → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i [ HA.class' "italic" ] [ HE.text "No messages yet" ] ]
                                                   else if model.user.onlineStatus && contact.user.onlineStatus then
-                                                        HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ show contact.user.availability ] ]
+                                                        HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i [ HA.class' "italic" ] [ HE.text $ show contact.user.availability ] ]
                                                   else
                                                         HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.text "" ]
 

@@ -4,7 +4,7 @@ import { pluginQRCode } from '@lynx-js/qrcode-rsbuild-plugin'
 import { pluginReactLynx } from '@lynx-js/react-rsbuild-plugin'
 import { pluginLynxConfig } from '@lynx-js/config-rsbuild-plugin'
 
-let apiUrl = process.env.LYNX_API_URL || 'https://mero.chat';
+let apiUrl = process.env.LYNX_API_URL || 'http://127.0.0.1:8000';
 let websocketPort = Number(process.env.LYNX_WEBSOCKET_PORT || 1339);
 
 function websocketUrl() {
@@ -21,7 +21,6 @@ export default defineConfig({
     source: {
         entry: './index.js',
         define: {
-            'process.env.PRODUCTION': true,
             'process.env.LYNX_WEBSOCKET_URL': JSON.stringify(websocketUrl()),
             'process.env.LYNX_WEBSOCKET_PORT': websocketPort,
             'process.env.LYNX_API_URL': JSON.stringify(apiUrl),
@@ -40,6 +39,7 @@ export default defineConfig({
         }),
         pluginReactLynx({
             engineVersion: '4.0',
+            enableCSSInheritance: true,
         }),
     ],
 })

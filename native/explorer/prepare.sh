@@ -27,10 +27,13 @@ sed -i \
   "$target_dir/AndroidManifest.xml"
 sed -z -i 's@      <activity\n        android:name="com\.tiktok\.sparkling\.[[:print:][:space:]]*    </application>@    </application>@' "$target_dir/AndroidManifest.xml"
 sed -i \
-  -e 's/import com.lynx.service.http.LynxHttpService;/import com.merochat.explorer.SessionHttpService;\nimport com.merochat.explorer.SessionModule;\nimport com.merochat.explorer.ThemeModule;\nimport com.merochat.explorer.LinksModule;\nimport com.merochat.explorer.RoomModule;\nimport com.merochat.explorer.ImageModule;\nimport com.merochat.explorer.DatePickerModule;\nimport com.merochat.explorer.SessionWebSocketModule;/g' \
+  -e 's/import com.lynx.service.http.LynxHttpService;/import com.merochat.explorer.SessionHttpService;\nimport com.merochat.explorer.SessionModule;\nimport com.merochat.explorer.ThemeModule;\nimport com.merochat.explorer.LinksModule;\nimport com.merochat.explorer.RoomModule;\nimport com.merochat.explorer.ImageModule;\nimport com.merochat.explorer.DatePickerModule;\nimport com.merochat.explorer.ChoicePickerModule;\nimport com.merochat.explorer.SessionWebSocketModule;/g' \
   -e 's/LynxHttpService.INSTANCE/new SessionHttpService(this)/g' \
-  -e 's/LynxModuleAdapter.getInstance().Init(this);/LynxModuleAdapter.getInstance().Init(this);\n    LynxEnv.inst().registerModule("MeroChatSession", SessionModule.class);\n    LynxEnv.inst().registerModule("MeroChatTheme", ThemeModule.class);\n    LynxEnv.inst().registerModule("MeroChatLinks", LinksModule.class);\n    LynxEnv.inst().registerModule("MeroChatRoom", RoomModule.class);\n    LynxEnv.inst().registerModule("MeroChatImage", ImageModule.class);\n    LynxEnv.inst().registerModule("MeroChatDatePicker", DatePickerModule.class);\n    LynxEnv.inst().registerModule("MeroChatWebSocket", SessionWebSocketModule.class);/g' \
+  -e 's/LynxModuleAdapter.getInstance().Init(this);/LynxModuleAdapter.getInstance().Init(this);\n    LynxEnv.inst().registerModule("MeroChatSession", SessionModule.class);\n    LynxEnv.inst().registerModule("MeroChatTheme", ThemeModule.class);\n    LynxEnv.inst().registerModule("MeroChatLinks", LinksModule.class);\n    LynxEnv.inst().registerModule("MeroChatRoom", RoomModule.class);\n    LynxEnv.inst().registerModule("MeroChatImage", ImageModule.class);\n    LynxEnv.inst().registerModule("MeroChatDatePicker", DatePickerModule.class);\n    LynxEnv.inst().registerModule("MeroChatChoicePicker", ChoicePickerModule.class);\n    LynxEnv.inst().registerModule("MeroChatWebSocket", SessionWebSocketModule.class);/g' \
   "$target_dir/java/com/lynx/explorer/ExplorerApplication.java"
+
+sed -i 's/builder.addBehaviors(new XElementBehaviors().create());/builder.addBehaviors(new XElementBehaviors().create());\n    builder.addBehavior(com.merochat.explorer.ThemedSvg.behavior());/g' \
+  "$target_dir/java/com/lynx/explorer/LynxViewShellActivity.java"
 
 if [[ ! -f "$apk" ]]; then
   curl --fail --location --output "$apk.download" 'https://github.com/lynx-family/lynx/releases/download/4.0.3/LynxExplorer-noasan-release.apk'

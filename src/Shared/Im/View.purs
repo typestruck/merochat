@@ -29,13 +29,13 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
 
 view ∷ Boolean → ImModel → Html ImMessage
-view isClientRender model = HE.div [ HA.id "im", ST.onLayoutChange "im", HA.class' { collapsed: model.collapsedSidebar } ]
+view isClientRender model = HE.div [ HA.id "im", HA.createAttribute "flatten" "false", ST.onLayoutChange "im", HA.class' { collapsed: model.collapsedSidebar } ]
       [ HE.div [ HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen } ]
               $ (if isClientRender && not isWeb then [] else [ SAB.banner ]) <>
               [ SIVU.userMenu model
               , HE.div [ HA.class' { "suggestion-box-error": true, flexed: model.smallScreen && not (DS.null model.errorMessage) } ] [ HE.text model.errorMessage ]
-              , SIVN.reloadPage model.imUpdated
-              , SIVN.prompt model.enableNotificationsVisible
+              ] <> (if isClientRender && not isWeb then [] else [ SIVN.reloadPage model.imUpdated ]) <>
+              [ SIVN.prompt model.enableNotificationsVisible
               , SIVCL.contactList isClientRender model
               , SIVL.logoMenu model
               , SIVM.modals model

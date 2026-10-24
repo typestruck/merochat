@@ -7,6 +7,7 @@ import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Icon as SIC
 import Flame.Types (NodeData)
 import Shared.Avatar as SA
 import Shared.Im.Svg as SIS
@@ -22,7 +23,7 @@ userMenu model =
       HE.div [ HA.class' { "settings": true, collapsed: model.collapsedSidebar } ] $
             if model.collapsedSidebar then
                   [ HE.div [ HA.class' "collapsed-user-menu", HA.onClick ToggleSidebar ]
-                          ( [ HE.img [ HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user, HA.title "Expand side bar" ]
+                          ( [ SA.image model.user [ HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user, HA.title "Expand side bar" ]
                             ] <> changelogs
                           )
                   ]
@@ -43,7 +44,7 @@ userMenu model =
                     , changelogCount model
                     ]
             | otherwise = []
-      collapseSvg = HE.svg [ HA.class' "svg-32 collapse-svg", HA.viewBox "0 0 200 200", HA.onClick ToggleSidebar ]
+      collapseSvg = SIC.svg [ HA.class' "svg-32 collapse-svg", HA.viewBox "0 0 200 200", HA.onClick ToggleSidebar ]
             [ HE.polygon' [ HA.points "100 44 172 100 100 156 28 100" ]
             ]
 
@@ -55,7 +56,7 @@ changelogCount model = HE.span [ HA.class' { "changelog-count": true, hidden: co
 changelogInbox ∷ ImModel → Html ImMessage
 changelogInbox model = HE.div [ HA.class' { "changelog-inbox": true, hidden: not model.showChangelogs } ]
       [ HE.div [ HA.class' "inbox-header" ]
-              [ SIS.invertedMerochat [ HA.class' "inbox-inverted-merochat-svg", HA.viewBox "0 0 122 22", HA.fill "none" ]
+              [ SIS.invertedMerochat [ HA.class' "inbox-inverted-merochat-svg", HA.viewBox "0 0 122 22" ]
               , HE.span [ HA.class' "inbox-updates" ] [ HE.text "Updates" ]
               , SIS.closeX [ HA.class' "svg-32", HA.onClick ToggleChangelog ]
               ]
@@ -71,7 +72,7 @@ changelogInbox model = HE.div [ HA.class' { "changelog-inbox": true, hidden: not
                     ]
 
 envelope ∷ Array (NodeData ImMessage) → Html ImMessage
-envelope attrs = HE.svg attrs
+envelope attrs = SIC.svg attrs
       [ HE.g_
               [ HE.path' [ HA.fillRule "evenodd", HA.clipRule "evenodd", HA.d "M61.058,65.992l24.224-24.221l36.837,36.836H73.673h-25.23H0l36.836-36.836 L61.058,65.992L61.058,65.992z M1.401,0l59.656,59.654L120.714,0H1.401L1.401,0z M0,69.673l31.625-31.628L0,6.42V69.673L0,69.673z M122.88,72.698L88.227,38.045L122.88,3.393V72.698L122.88,72.698z" ]
               ]
@@ -79,7 +80,7 @@ envelope attrs = HE.svg attrs
 
 header ∷ ImModel → Array (Html ImMessage)
 header model =
-      [ HE.img [ HA.onClick avatarAction, HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user, HA.title "Post to MeroChat" ]
+      [ SA.image model.user [ HA.onClick avatarAction, HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user, HA.title "Post to MeroChat" ]
       , HE.div [ HA.class' "settings-name" ]
               [ HE.strong [ HA.class' "contact-name" ] [ HE.text model.user.name ]
               , HE.div [ HA.class' "settings-karma lynx-inline", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.title "See your privileges and karma stats" ]

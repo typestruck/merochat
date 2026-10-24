@@ -3,6 +3,7 @@ module Client.Profile.Update where
 import Prelude
 
 import Client.AppId (imAppId)
+import Client.Lynx.ChoicePicker as CLC
 import Client.Lynx.DatePicker as CLD
 import Client.Lynx.Image as CLI
 import Client.Lynx.Room as CLR
@@ -45,6 +46,7 @@ import Type.Proxy (Proxy(..))
 update ∷ Update ProfileModel ProfileMessage
 update model = case _ of
       SetPField upd → setField model upd
+      SelectChoice title initial options select → selectChoice title initial options select model
       SelectAge → selectAge model
       SelectAvatar → selectAvatar model
       RefreshPosts → refreshPosts model
@@ -327,3 +329,12 @@ selectAvatar model = model { loading = true, updateRequestStatus = Nothing } /\ 
                   Right Nothing → current { loading = false }
                   Right (Just avatar) → current { loading = false, avatarInputed = Just avatar }
                   Left error → current { loading = false, updateRequestStatus = Just <<< Failure $ EE.message error }
+
+selectChoice ∷ String → Maybe String → Array { value ∷ String, name ∷ String } → (String → ProfileMessage) → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+selectChoice title initial options select model = model /\ [ selectIt ]
+      where
+      selectIt = do
+            result ← EA.attempt $ CLC.pick title initial options
+            pure $ case result of
+                  Right value → map select value
+                  Left error → Just <<< SetPField $ _ { updateRequestStatus = Just <<< Failure $ EE.message error }

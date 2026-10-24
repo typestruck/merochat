@@ -23,6 +23,7 @@ data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
       | SetLanguage String
       | SetAge String
+      | SelectChoice String (Maybe String) (Array { value ∷ String, name ∷ String }) (String → ProfileMessage)
       | SelectAge
       | SelectAvatar
       | Clear

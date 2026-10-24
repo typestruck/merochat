@@ -88,7 +88,7 @@ view model@{ top10, inBetween10, userPosition, toggleBoard, privileges, stats: {
 
       leaderboardEntry index user =
             HE.div [ HA.class' $ "board-position" <> if user.position == userPosition then " user" else "" ]
-                  [ HE.div [ HA.class' "avatar-leaderboard-div" ] [ HE.img [ HA.class' "avatar-leaderboard", HA.src $ SA.fromAvatar user ] ]
+                  [ HE.div [ HA.class' "avatar-leaderboard-div" ] [ SA.image user [ HA.class' "avatar-leaderboard", HA.src $ SA.fromAvatar user ] ]
                   , HE.div [ HA.class' "name-karma" ]
                           [ HE.div_
                                   [ HE.div [ HA.class' "name" ] [ HE.text user.name ]

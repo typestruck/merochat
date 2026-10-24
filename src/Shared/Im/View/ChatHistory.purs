@@ -13,6 +13,7 @@ import Effect.Uncurried as EU
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Icon as SI
 import Flame.Html.Event (Event)
 import Flame.Types (NodeData)
 import Safe.Coerce as SC
@@ -20,7 +21,6 @@ import Shared.Availability (Availability(Unavailable))
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Element as SE
-import Shared.Extra as SE
 import Shared.Im.Contact as SIC
 import Shared.Im.Scroll (scrollEventName)
 import Shared.Im.Types (ImMessage(..), ImModel, MessageStatus(..), ReactWith(..), RetryableRequest(..), ShowContextMenu(..))
@@ -138,14 +138,14 @@ chatHistory model =
                                                             else
                                                                   HE.div [ HA.class' "reaction-text" ]
                                                                         [ HE.input [ HA.id reactionTextId, HA.placeholder $ "Max " <> show maxReactionCharacters <> " characters", HA.maxlength maxReactionCharacters, HA.type' "text", HA.class' "reaction-input" ]
-                                                                        , HE.svg [ HA.class' "send-button", HA.onClick' (React contact.user.id entry.id $ Left reactionTextId), HA.viewBox "0 0 16 16" ] $ SIVC.sendButtonElements "React with text"
+                                                                        , SI.svg [ HA.class' "send-button", HA.onClick' (React contact.user.id entry.id $ Left reactionTextId), HA.viewBox "0 0 16 16" ] $ SIVC.sendButtonElements "React with text"
                                                                         ]
 
                                                           ]
                                                   , SM.markdown [] entry.content
                                                   , HE.div [ HA.class' "message-context-options" ]
                                                           [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
-                                                                  [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
+                                                                  [ SI.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
                                                                           [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
                                                                           ]
                                                                   , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history entry.id } ]

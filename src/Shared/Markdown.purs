@@ -15,6 +15,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)
+import Shared.Extra as SE
 
 newtype Token = Token
       { "type" ∷ String
@@ -41,6 +42,10 @@ newtype PreviewToken = PreviewToken
       , items ∷ Nullable (Array PreviewToken)
       , href ∷ Nullable String
       , title ∷ Nullable String
+      , ordered ∷ Nullable Boolean
+      , start ∷ Nullable Int
+      , header ∷ Nullable (Array PreviewToken)
+      , rows ∷ Nullable (Array (Array PreviewToken))
       }
 
 foreign import previewLexer ∷ String → Array PreviewToken
@@ -123,3 +128,55 @@ escapeImageText = DS.replaceAll (Pattern "\\") (Replacement "\\\\")
       >>> DS.replaceAll (Pattern "\"") (Replacement "\\\"")
       >>> DS.replaceAll (Pattern "[") (Replacement "\\[")
       >>> DS.replaceAll (Pattern "]") (Replacement "\\]")
+
+
+profileMarkdown ∷ ∀ message. String → Html message
+profileMarkdown = previewLexer >>> map profileBlock >>> HE.div [ HA.class' "profile-markdown" ]
+
+profileBlock ∷ ∀ message. PreviewToken → Html message
+profileBlock token@(PreviewToken value) = case value."type" of
+      "space" → HE.div_ []
+      "list" → HE.div_ $ DA.mapWithIndex item (DM.fromMaybe [] $ DN.toMaybe value.items)
+      "blockquote" → HE.div [ HA.class' "markdown-quote" ] $ map profileBlock tokens
+      "table" → HE.div_ $
+            [ tableRow true $ DM.fromMaybe [] (DN.toMaybe value.header) ] <> map (tableRow false) (DM.fromMaybe [] $ DN.toMaybe value.rows)
+      "code" → HE.createElement "text" [ HA.class' "markdown-paragraph markdown-code" ] [ HE.text text ]
+      "heading" → HE.createElement "text" [ HA.class' "markdown-heading" ] $ profileInline token
+      "hr" → HE.div [ HA.class' "tag-ruler" ] []
+      _ → HE.createElement "text" [ HA.class' "markdown-paragraph" ] $ profileInline token
+      where
+      tokens = DM.fromMaybe [] $ DN.toMaybe value.tokens
+      text = unescapePreview <<< DM.fromMaybe "" $ DN.toMaybe value.text
+      tableRow heading cells = HE.div [ HA.class' "markdown-table-row" ] $ map
+            (profileInline >>> HE.createElement "text" [ HA.class' { "markdown-table-cell": true, "bold": heading } ]) cells
+      item index (PreviewToken entry) = HE.div [ HA.class' "markdown-list-item" ]
+            [ HE.createElement "text" [ HA.class' "markdown-list-marker" ]
+                    [ HE.text $ if DM.fromMaybe false (DN.toMaybe value.ordered) then show (index + DM.fromMaybe 1 (DN.toMaybe value.start)) <> "." else "•" ]
+            , HE.div [ HA.class' "markdown-list-content" ] $ map profileBlock (DM.fromMaybe [] $ DN.toMaybe entry.tokens)
+            ]
+
+profileInline ∷ ∀ message. PreviewToken → Array (Html message)
+profileInline (PreviewToken value) = case value."type" of
+      "strong" → [ styled "font-weight" "bold" children ]
+      "em" → [ styled "font-style" "italic" children ]
+      "del" → [ styled "text-decoration" "line-through" children ]
+      "codespan" → [ styled "font-family" "monospace" [ HE.text text ] ]
+      "br" → [ HE.text "\n" ]
+      "link" → case DN.toMaybe value.href of
+            Just href → [ HE.createElement "text" [ HA.class' "markdown-link", SE.externalLink href ] children ]
+            Nothing → children
+      "image" → case DN.toMaybe value.href of
+            Just href → [ HE.createElement "inline-image"
+                  [ HA.src $ DM.maybe href _.url (imageDimensions href)
+                  , HA.class' "markdown-image"
+                  , SE.externalLink $ DM.maybe href _.url (imageDimensions href)
+                  ] [] ]
+            Nothing → [ HE.text text ]
+      "html" → []
+      _ → children
+      where
+      text = unescapePreview <<< DM.fromMaybe "" $ DN.toMaybe value.text
+      children = case DN.toMaybe value.tokens of
+            Just tokens → DA.concatMap profileInline tokens
+            Nothing → [ HE.text text ]
+      styled name value = HE.createElement "text" [ HA.style1 name value ]

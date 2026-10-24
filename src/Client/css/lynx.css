@@ -1,4 +1,19 @@
-/* Loaded only by the Lynx entry point. Browser inline flow stays unchanged. */
+:root {
+    --heading-font: sans-serif;
+    --text-font: sans-serif;
+}
+
+page,
+#im,
+.profile-route,
+.public-route {
+    color: var(--text-color);
+    font-family: var(--text-font);
+    font-size: 16px;
+    line-height: 1.51857143;
+    background-color: var(--background-color);
+}
+
 #im {
     height: 100vh;
 
@@ -266,21 +281,6 @@
     margin-bottom: 10px;
 }
 
-.profile-choice-options {
-    height: 200px;
-    width: 100%;
-}
-
-.profile-choice-options view {
-    padding: 10px;
-}
-
-.profile-route text,
-.profile-route input,
-.profile-route textarea {
-    color: var(--text-color);
-}
-
 .modal-screen-header {
     display: flex;
     flex-direction: row;
@@ -292,10 +292,11 @@
 }
 
 .modal-screen-back {
+    color: var(--text-color);
     width: 32px;
     height: 32px;
     margin-right: 15px;
-    fill: var(--text-color);
+    fill: currentColor;
 }
 
 .modal-screen-title {
@@ -337,10 +338,13 @@
 }
 
 .profile-remove-tag svg {
-    fill: var(--text-color);
+    color: var(--text-color);
+    fill: currentColor;
 }
 
 .public-route {
+    --public-control-height: 44px;
+    --public-form-padding: 20px;
     display: linear;
     linear-orientation: vertical;
     height: 100vh;
@@ -354,20 +358,21 @@
     flex-direction: column;
     align-items: center;
     margin: 0;
-    padding: 20px 16px;
+    padding: 32px 12px 20px;
 }
 
 .public-route .big-logo {
     display: flex;
     justify-content: center;
     width: 100%;
-    height: 90px;
-    margin: 0 0 12px;
+    height: 100px;
+    margin: 0 0 24px;
+    padding: 0;
 }
 
 .public-route .big-logo svg {
-    width: 100px;
-    height: 90px;
+    width: 147px;
+    height: 100px;
 }
 
 .public-route .menu-merochat {
@@ -377,21 +382,23 @@
 }
 
 .public-route .menu {
+    --public-menu-gap: 6px;
+    column-gap: var(--public-menu-gap);
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
     align-self: center;
 }
 
 .public-route .menu > view {
-    padding: 8px;
+    padding: 5px;
+    flex-shrink: 0;
 }
 
-.public-route .menu text,
-.public-route .footer text,
-.public-route .question-link text {
+.public-route .menu,
+.public-route .question-link {
     color: var(--text-color);
 }
 
@@ -399,54 +406,61 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin: 0;
+    margin: 0 0 0 calc(var(--public-menu-gap) + var(--public-menu-gap));
     border-radius: 24px;
-    background-color: #EFE5DC;
+    background-color: var(--external-accent);
 }
 
 .public-route .theme-switcher svg {
-    width: 32px;
-    height: 32px;
-    margin: 0 4px;
+    width: 20px;
+    height: 20px;
+    margin: 0 2px;
+    flex-shrink: 0;
 }
 
 .public-route .merochat {
-    margin: 12px 0 0;
+    margin: 24px 0 0;
     text-align: center;
 }
 
 .public-route .name {
-    font-size: 36px;
+    font-family: var(--heading-font);
+    font-size: 3.3em;
     margin: 0;
     color: var(--text-color);
 }
 
 .public-route .tagline {
-    font-size: 16px;
+    font-size: 1.2em;
     margin: 8px 0 0;
     color: var(--text-color);
 }
 
 .public-route .pastel-area {
-    padding: 24px 20px;
+    padding: 24px var(--public-form-padding);
 }
 
 .public-route .sign-up-form {
+    box-sizing: border-box;
+    align-self: center;
+    align-items: stretch;
     width: 100%;
     padding: 0;
     margin: 0;
 }
 
 .public-route .sign-up-form input {
+    height: var(--public-control-height);
+    box-sizing: border-box;
     width: 100%;
-    color: var(--text-color);
-    background-color: var(--background-color);
+    color: var(--input-text-color);
+    background-color: var(--light-color);
 }
 
 .public-route .footer {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     margin: 0;
     padding: 20px 12px;
@@ -456,13 +470,8 @@
     padding: 10px;
 }
 
-.public-route text {
-    color: var(--text-color);
-}
-
 .public-route .name text {
     color: var(--merochat-red);
-    font-size: 36px;
     font-weight: bold;
     text-align: center;
 }
@@ -474,19 +483,29 @@
 
 .public-route .tagline text {
     text-align: center;
-    font-size: 16px;
 }
 
 .public-route .login-button {
+    align-self: stretch;
+    height: var(--public-control-height);
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
     width: 100%;
-    padding: 12px;
+    margin: 8px 0;
+    padding: 10px;
+    border: 1px solid var(--merochat-red);
     border-radius: 10px;
     background-color: var(--merochat-red);
 }
 
+.public-route .landing .login-button {
+    width: calc(100vw - var(--public-form-padding) - var(--public-form-padding));
+}
+
 .public-route .login-button text,
 .public-route .login-link text {
-    color: #FBFEFB;
+    color: var(--light-color);
     text-align: center;
     font-weight: bold;
 }
@@ -504,10 +523,6 @@
     padding: 24px 16px;
 }
 
-.confirmation text {
-    color: var(--text-color);
-}
-
 .confirmation .buttons {
     display: flex;
     flex-direction: row;
@@ -522,7 +537,7 @@
 }
 
 .confirmation .green-button text {
-    color: #FBFEFB;
+    color: var(--light-color);
     font-weight: bold;
 }
 
@@ -545,9 +560,9 @@
 
 .public-route .public-tabs {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
 }
 
 .public-route .public-tab {
@@ -556,21 +571,24 @@
 }
 
 .public-route .public-tab.selected {
-    background-color: var(--external-accent);
+    color: var(--background-color);
+    background-color: var(--merochat-red);
 }
 
 .public-route .help {
     width: 100%;
 }
 
-.public-title text {
-    font-size: 26px;
+.public-title {
+    font-family: var(--heading-font);
+    font-size: 1.5em;
     font-weight: bold;
 }
 
-.public-heading text,
-.public-subheading text {
-    font-size: 20px;
+.public-heading,
+.public-subheading {
+    font-family: var(--heading-font);
+    font-size: 1.17em;
     font-weight: bold;
 }
 
@@ -593,8 +611,7 @@
     display: none;
 }
 
-.donation-button,
-.public-route .public-guest {
+.donation-button {
     padding: 14px;
     margin: 12px 0;
     border-radius: 8px;
@@ -606,15 +623,57 @@
 }
 
 .public-route .sign-up-form input {
-    margin-bottom: 16px;
+    margin: 8px 0;
+}
+
+.public-route .sign-up-form > view,
+.public-route .sign-up-form .input {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.public-route .public-disabled {
+    pointer-events: none;
+}
+
+.public-route .sign-up-form .hidden {
+    display: none;
+}
+
+.public-route .sign-up-form .public-guest {
+    width: auto;
+    align-self: flex-end;
+    padding: 0;
+    margin: 10px 0 0;
+    background-color: transparent;
+}
+
+.public-route .public-guest text {
+    color: var(--merochat-red);
+    font-weight: bold;
+    text-align: right;
+}
+
+.public-route .landing .blurb {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.public-route .blurb .bold,
+.public-route .help .public-heading text,
+.public-route .help .bulleted text {
+    font-weight: bold;
+}
+
+.public-route .backer .modal-screen-header {
+    display: none;
 }
 
 .public-route .landing,
 .public-route .features,
 .public-route .feature-blurb,
 .public-route .feature-blurb-left,
-.public-route .feature-blurb-right,
-.public-route .blurb {
+.public-route .feature-blurb-right {
     width: 100%;
     max-width: 100%;
     height: auto;
@@ -636,4 +695,213 @@
 .public-route .app-step image {
     width: 100%;
     height: 300px;
+}
+
+.public-route .footer,
+.public-route .question-link {
+    font-weight: bold;
+}
+
+.public-route .public-tab {
+    width: 100%;
+    text-align: center;
+    font-family: var(--heading-font);
+    font-weight: bold;
+}
+
+.public-route .donation-button {
+    color: var(--merochat-green);
+    padding: 0;
+    background-color: transparent;
+    text-decoration: underline;
+}
+
+.public-route .patreon-button {
+    color: var(--light-color);
+}
+
+.public-route .features .public-title {
+    color: var(--feature-heading-color);
+}
+
+.public-route .sign-up-again {
+    color: var(--background-color);
+}
+
+.public-route .tagline-name {
+    color: var(--light-color);
+}
+
+.public-route .try-it {
+    color: var(--merochat-red);
+}
+
+.profile-route .ask-list {
+    width: auto;
+}
+
+#light-theme-switch,
+#dark-theme-switch {
+    color: var(--text-color);
+}
+
+#im .theme-modal #light-theme-switch,
+#im .theme-modal #dark-theme-switch {
+    color: var(--light-color);
+}
+
+.public-route .help .public-title {
+    font-size: 1.7em;
+    margin-bottom: 50px;
+}
+
+.public-route .help .public-heading {
+    font-size: 1em;
+    margin: 30px 0 5px;
+}
+
+.public-route .backer .public-subheading {
+    margin-top: 20px;
+}
+
+input,
+textarea {
+    -x-placeholder-color: var(--placeholder-color);
+}
+
+.line-break {
+    width: 100%;
+    height: 0;
+    flex-shrink: 0;
+}
+
+.profile-route .profile-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.profile-route .profile-buttons .green-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 44px;
+    background-color: var(--merochat-green);
+}
+
+.profile-route .profile-buttons .green-button text {
+    color: var(--light-color);
+    font-weight: bold;
+}
+
+.profile-route .profile-buttons .cancel {
+    padding: 10px 15px;
+    background-color: transparent;
+}
+
+.profile-route .profile-buttons .cancel text {
+    color: var(--text-color);
+}
+
+.profile-route .big-avatar-info {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.profile-route .big-suggestion-avatar {
+    flex-shrink: 0;
+}
+
+.profile-route .big-suggestion-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-route .big-suggestion-info.auto-left {
+    flex: none;
+    width: 100%;
+    margin: 10px 0 0;
+}
+
+.profile-route .big-card-name text {
+    font-weight: bold;
+}
+
+.profile-route .full-card-headline-tags,
+.profile-route .card-description {
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+}
+
+.tag-ruler {
+    width: 100%;
+    height: 1px;
+    flex-shrink: 0;
+    background-color: var(--light-color);
+}
+
+.profile-markdown {
+    width: 100%;
+    color: var(--text-color);
+}
+
+.profile-markdown .markdown-paragraph {
+    margin: 0 0 12px;
+}
+
+.profile-markdown .markdown-heading {
+    font-family: var(--heading-font);
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 12px 0 8px;
+}
+
+.profile-markdown .markdown-list-item {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 8px;
+}
+
+.profile-markdown .markdown-list-marker {
+    margin-right: 8px;
+}
+
+.profile-markdown .markdown-list-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-markdown .markdown-quote {
+    padding-left: 12px;
+    border-left: 2px solid var(--text-color);
+    margin-bottom: 12px;
+}
+
+.profile-markdown .markdown-code {
+    font-family: monospace;
+}
+
+.profile-markdown .markdown-link {
+    color: var(--merochat-green);
+    text-decoration: underline;
+}
+
+.profile-markdown .markdown-table-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.profile-markdown .markdown-table-cell {
+    flex: 1;
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid var(--text-color);
+}
+
+.profile-markdown .markdown-image {
+    width: 120px;
+    height: 120px;
 }

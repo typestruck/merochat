@@ -3,6 +3,7 @@ module Client.Im.WebSocket.Events (createWebSocketState, startWebSocket, updateW
 import Prelude
 
 import Client.AppId (experimentsAppId, imAppId, profileAppId)
+import Client.Platform (isWeb)
 import Client.Ui.Document as CUD
 import Client.Im.Contacts as CIC
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
@@ -117,8 +118,7 @@ handleOpen webSocketStateRef _ = do
       newPingId ← ET.setInterval pingDelay <<< ping $ state.webSocket
       ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId }) webSocketStateRef
       FS.send imAppId $ UpdateWebSocketStatus Connected
-      --check if the page needs to be reloaded
-      CIW.sendPayload state.webSocket UpdateHash
+      when isWeb $ CIW.sendPayload state.webSocket UpdateHash
       --when the connection is open and the user is on the page serialize their availability
       setOnline state.webSocket
       where

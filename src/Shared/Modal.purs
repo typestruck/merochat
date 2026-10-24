@@ -10,6 +10,7 @@ import Data.Maybe (Maybe)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Icon as SI
 import Shared.Experiment (Experiment)
 import Shared.Profile.Mode (ProfileMode)
 
@@ -108,7 +109,7 @@ derive instance Generic ScreenModal _
 
 header ∷ ∀ message. String → message → Html message
 header title close = HE.button [ HA.class' "modal-screen-header", HA.onClick close ]
-      [ HE.svg [ HA.class' "modal-screen-back", HA.viewBox "0 0 16 16" ]
+      [ SI.svg [ HA.class' "modal-screen-back", HA.viewBox "0 0 16 16" ]
               [ HE.polygon' [ HA.points "6.43 2.05 7.42 3.12 2.17 8 7.42 12.88 6.43 13.95 0.03 8 6.43 2.05" ] ]
       , HE.span [ HA.class' "modal-screen-title" ] [ HE.text title ]
       ]

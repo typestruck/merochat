@@ -7,6 +7,7 @@ import Shared.Modal as SM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Icon as SI
 import Shared.Backer.Types (BackerMessage(..), BackerModel)
 import Shared.Extra as SE
 
@@ -24,7 +25,7 @@ view model = HE.div [ HA.id "backer" ]
               , SE.a [ HA.href "https://liberapay.com/merochat/donate", SE.externalLink "https://liberapay.com/merochat/donate", HA.target "_blank", HA.class' "donation-button" ] [ HE.text "Donate with Liberapay" ]
               , SE.h3_ [ HE.text "Become a backer on Patreon" ]
               , SE.a [ HA.href "https://www.patreon.com/bePatron?u=41075080", SE.externalLink "https://www.patreon.com/bePatron?u=41075080", HA.target "_blank", HA.class' "patreon-button inline-control" ]
-                      [ HE.svg [ HA.viewBox "0 0 569 546", HA.class' "svg-patreon" ]
+                      [ SI.svg [ HA.viewBox "0 0 569 546", HA.class' "svg-patreon" ]
                               [ HE.g_
                                       [ HE.circle' [ HA.cx "362.589996", HA.cy "204.589996", HA.r "204.589996" ]
                                       , HE.rect' [ HA.height "545.799988", HA.width "100", HA.x "0", HA.y "0" ]

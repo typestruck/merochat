@@ -9,7 +9,9 @@ import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Set (Set)
 import Data.Set as DS
-import Environment (production)
+import Data.String (Pattern(..))
+import Data.String as DST
+import Environment (production, apiUrl)
 
 allowedMediaTypes ∷ HashMap String String
 allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:image/jpeg;base64", "data:image/tiff;base64", "data:image/bmp;base64", "data:image/gif;base64", audioMediaType, videoMediaType ] $ DS.toUnfoldable allowedExtensions
@@ -37,6 +39,13 @@ onlineBasePath = "https://static.mero.chat/file/"
 
 localBasePath ∷ String
 localBasePath = "file/"
+
+resourceBasePath ∷ String → String
+resourceBasePath url
+      | production = onlineBasePath
+      | otherwise = case DA.take 3 $ DST.split (Pattern "/") url of
+              [ scheme, "", authority ] → scheme <> "//" <> authority <> "/" <> localBasePath
+              _ → localBasePath
 
 uploadFolder ∷ String
 uploadFolder = "upload/"
@@ -102,9 +111,7 @@ resourcePath res tp = path <> named <> replaced <> resourceType tp
       where
       named = resourceName res
       replaced = DE.either (const "") (flip replacement tp) res
-      basePath
-            | production = onlineBasePath
-            | otherwise = localBasePath
+      basePath = resourceBasePath apiUrl
       path
             | tp == Js || tp == Css =
                     basePath <> bundleFolder

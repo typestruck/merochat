@@ -12,6 +12,7 @@ import Shared.Modal as SM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Icon as SIC
 import Shared.Countries as SCO
 import Shared.Languages as SL
 import Shared.Availability (Availability(..))
@@ -24,13 +25,13 @@ import Shared.Extra as SE
 import Shared.Im.Svg (contextMenuElements, closeElements)
 import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SIVC
-import Shared.Im.View.Posts as SIVP
-import Shared.Im.View.Praise as SIVP
+import Shared.Im.View.Posts as SIVPO
+import Shared.Im.View.Praise as SIVPR
 import Shared.Im.View.Profile (separator)
 import Shared.Im.View.Profile as SIVP
 import Shared.Intl as SI
 import Shared.Keydown as SK
-import Shared.Markdown as SM
+import Shared.Markdown as SMA
 import Shared.Network (RequestStatus(..))
 import Shared.Options.Ask (maxAskCharacters)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
@@ -84,7 +85,7 @@ asks model = case model.asks of
                                 [ HE.div' [ HA.class' "loading" ] ]
                           else
                                 [ HE.div [ HA.class' "outer-user-menu" ]
-                                        [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 16 16", HA.id $ show AskContextMenu <> show ask.id, HA.onClick <<< ToggleAskMenu $ Just ask.id ] contextMenuElements
+                                        [ SIC.svg [ HA.class' "svg-32", HA.viewBox "0 0 16 16", HA.id $ show AskContextMenu <> show ask.id, HA.onClick <<< ToggleAskMenu $ Just ask.id ] contextMenuElements
                                         , HE.div [ HA.class' { "ask-context-menu": true, hidden: model.contextMenuFor /= Just ask.id } ]
                                                 [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick $ IgnoreAsk ask.id ] [ HE.text "Ignore" ]
                                                 , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick $ ReportAsk ask.id ask.asker ] [ HE.text "Report" ]
@@ -98,7 +99,7 @@ asks model = case model.asks of
                                         , HA.autocomplete "off"
                                         , HA.maxlength (maxAskCharacters * 2)
                                         ]
-                                , HE.svg [ HA.class' "send-button svg-50", HA.viewBox "0 0 16 16", HA.onClick $ SendAnswer ask.id ] $ SIVC.sendButtonElements "Answer"
+                                , SIC.svg [ HA.class' "send-button svg-50", HA.viewBox "0 0 16 16", HA.onClick $ SendAnswer ask.id ] $ SIVC.sendButtonElements "Answer"
                                 ]
             ]
 
@@ -106,13 +107,13 @@ posts ∷ ProfileModel → Array (Html ProfileMessage)
 posts model = case model.posts of
       [] → [ HE.div [ HA.class' "posts" ] [ HE.text "You haven't posted yet" ] ]
       pts →
-            [ HE.div [ HA.class' "posts" ] [ HE.div [ HA.class' "post-list" ] $ map (SIVP.posted model.user.name) pts ]
+            [ HE.div [ HA.class' "posts" ] [ HE.div [ HA.class' "post-list" ] $ map (SIVPO.posted model.user.name) pts ]
             ]
 
 praises ∷ ProfileModel → Array (Html ProfileMessage)
 praises model = case model.praise of
       [] → [ HE.div [ HA.class' "praise" ] [ HE.text "You haven't received any praise yet" ] ]
-      prs → [ HE.div [ HA.class' "praise" ] [ HE.div [ HA.class' "ask-list" ] <<< SIVP.praised $ map _.content prs ] ]
+      prs → [ HE.div [ HA.class' "praise" ] [ HE.div [ HA.class' "ask-list" ] <<< SIVPR.praised $ map _.content prs ] ]
 
 edit ∷ ProfileModel → Array (Html ProfileMessage)
 edit model =
@@ -121,8 +122,8 @@ edit model =
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Avatar" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your profile picture" ]
               , HE.div [ HA.class' "fit" ]
-                      [ HE.img [ HA.onClick SelectAvatar, HA.class' "avatar-profile-edition", HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed ]
-                      , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
+                      [ SA.imagePath model.avatarInputed [ HA.onClick SelectAvatar, HA.class' "avatar-profile-edition", HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed ]
+                      , SIC.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
                               [ HE.title [ HE.text "Reset profile picture" ]
                               , HE.path' [ HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.5A7.5,7.5,0,1,1,15.5,8,7.5,7.5,0,0,1,8,15.5Z" ]
                               , HE.path' [ HA.class' "a", HA.d "M11.65,7.38H4.4a.62.62,0,1,0,0,1.24h7.25a.62.62,0,0,0,0-1.24Z" ]
@@ -138,12 +139,12 @@ edit model =
                                       [ HE.text $ DM.maybe "Choose birthday" SD.formatIsoDate model.ageInputed ]
                               , HE.button [ HA.class' { hidden: DM.isNothing model.ageInputed }, HA.onClick $ SetAge "" ] [ HE.text "Clear birthday" ]
                               ]
-                      , dropdown model "gender" (DM.maybe "Do not show my gender" show model.genderInputed) SetGender
+                      , dropdown "Gender" (Just $ DM.maybe "" show model.genderInputed) (DM.maybe "Do not show my gender" show model.genderInputed) SetGender
                               ({ value: "", name: "Do not show my gender" } : map (\gender → { value: show gender, name: show gender }) [ Female, Male, NonBinary, Other ])
                       ]
-              , dropdown model "country" (DM.fromMaybe "Do not show my country" $ model.countryInputed >>= flip DH.lookup SCO.countries) SetCountry
+              , dropdown "Country" (Just $ DM.maybe "" show model.countryInputed) (DM.fromMaybe "Do not show my country" $ model.countryInputed >>= flip DH.lookup SCO.countries) SetCountry
                       ({ value: "", name: "Do not show my country" } : map (\country → { value: show country.id, name: country.name }) SCO.options)
-              , dropdown model "language" "Choose a language" SetLanguage
+              , dropdown "Language" Nothing "Choose a language" SetLanguage
                       ({ value: "", name: "Do not show my languages" } : map (\language → { value: show language.id, name: language.name }) SL.options)
               , HE.div [ HA.class' { hidden: DA.null model.languagesInputed } ] $ map languageEntry model.languagesInputed
               ]
@@ -185,7 +186,7 @@ edit model =
       tagEntry tag = HE.div [ HA.class' "profile-selected-item lynx-inline" ]
             [ HE.text tag
             , HE.button [ HA.class' "profile-remove-tag", HA.title "Remove tag", HA.onClick $ SetTag tag ]
-                    [ HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16" ] closeElements ]
+                    [ SIC.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16" ] closeElements ]
             ]
 
       unwrapFailure = case _ of
@@ -197,7 +198,7 @@ preview ∷ ProfileModel → Array (Html ProfileMessage)
 preview model =
       [ HE.div [ HA.class' "avatar-info" ]
               [ HE.div [ HA.class' "big-avatar-info" ]
-                      [ HE.img [ HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed, HA.class' "big-suggestion-avatar" ]
+                      [ SA.imagePath model.avatarInputed [ HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed, HA.class' "big-suggestion-avatar" ]
                       , HE.div [ HA.class' "big-suggestion-info" ]
                               ( [ HE.span [ HA.class' "lynx-inline" ] $ HE.strong [ HA.class' "big-card-name" ] [ HE.text $ DM.fromMaybe "" model.nameInputed ]
                                         : SIVP.badges model.user.badges
@@ -222,7 +223,7 @@ preview model =
               )
       , HE.div [ HA.class' "card-description", HA.title "See full profile" ]
               [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
-              , SM.markdown [] $ DM.fromMaybe "" model.descriptionInputed
+              , SMA.profileMarkdown $ DM.fromMaybe "" model.descriptionInputed
               ]
       ]
       where
@@ -241,11 +242,6 @@ preview model =
       languageEntry id = HE.span_ [ HE.text <<< DM.fromMaybe "" $ DH.lookup id languages ]
 
 
-dropdown ∷ ProfileModel → String → String → (String → ProfileMessage) → Array { value ∷ String, name ∷ String } → Html ProfileMessage
-dropdown model key label select options = HE.div [ HA.class' "profile-choice" ]
-      [ HE.button [ HA.class' "modal-select", HA.onClick <<< SetPField $ _ { choice = if model.choice == Just key then Nothing else Just key } ] [ HE.text label ]
-      , if model.choice == Just key then
-              HE.scrollView [ HA.class' "profile-choice-options", HA.scrollOrientation "vertical" ] $
-                    map (\option → HE.button [ HA.onClick $ select option.value ] [ HE.text option.name ]) options
-        else HE.div_ []
-      ]
+dropdown ∷ String → Maybe String → String → (String → ProfileMessage) → Array { value ∷ String, name ∷ String } → Html ProfileMessage
+dropdown title selected label select options = HE.div [ HA.class' "profile-choice" ]
+      [ HE.button [ HA.class' "modal-select", HA.onClick $ SelectChoice title selected options select ] [ HE.text label ] ]

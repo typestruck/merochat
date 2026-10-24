@@ -48,23 +48,14 @@ contentWithForm ∷ ∀ message. F.Html message → Array (F.Html message)
 contentWithForm form =
       [ HE.div [ HA.class' "landing" ]
               [ HE.div [ HA.class' "pastel-area" ]
-                      [ HE.div [ HA.class' "blurb" ]
-                              [ HE.strong [] [ HE.text "Feeling chatty? In search of new friends? Bored?" ]
-                              , br
-                              , HE.span [ HA.class' "lynx-inline" ]
-                                      [ HE.strong [] [ HE.text "MeroChat" ]
-                                      , HE.text " is the space to connect with people who"
-                                      ]
-                              , br
-                              , HE.span [ HA.class' "lynx-inline" ]
-                                      [ HE.text "are also looking for "
-                                      , HE.strong [] [ HE.text "quality chats" ]
-                                      ]
-                              , br
-                              , HE.span [ HA.class' "lynx-inline" ]
-                                      [ HE.text " Text only, no groups or video, and"
-                                      , HE.strong [] [ HE.text " strictly platonic" ]
-                                      ]
+                      [ HE.createElement "text" [ HA.class' "blurb" ]
+                              [ HE.createElement "text" [ HA.class' "bold" ] [ HE.text "Feeling chatty? In search of new friends? Bored?" ]
+                              , HE.text "\n"
+                              , HE.createElement "text" [ HA.class' "bold" ] [ HE.text "MeroChat" ]
+                              , HE.text " is the space to connect with people who\nare also looking for "
+                              , HE.createElement "text" [ HA.class' "bold" ] [ HE.text "quality chats" ]
+                              , HE.text "\nText only, no groups or video, and "
+                              , HE.createElement "text" [ HA.class' "bold" ] [ HE.text "strictly platonic" ]
                               ]
                       , form
                       ]
