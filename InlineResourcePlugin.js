@@ -1,5 +1,5 @@
-import { resolve } from 'path';
-import { readFileSync, writeFileSync } from 'fs';
+import * as P from 'node:path';
+import * as FS from 'node:fs';
 
 function InlineResourcePlugin(options = {}) {
     this.options = options;
@@ -16,14 +16,14 @@ InlineResourcePlugin.prototype.apply = function (compiler) {
 
 function inline(options) {
     for (let entry of options.files) {
-        let htmlPath = resolve(entry.htmlFile),
-            htmlContents = readFileSync(htmlPath, 'utf8'),
+        let htmlPath = P.resolve(entry.htmlFile),
+            htmlContents = FS.readFileSync(htmlPath, 'utf8'),
             resourceName = entry.resourceFile.split('/').pop(),
-            resourceContents = readFileSync(resolve(entry.resourceFile), 'utf8').replaceAll('"', "'");
+            resourceContents = FS.readFileSync(P.resolve(entry.resourceFile), 'utf8');
 
-      htmlContents = htmlContents.replace(`"666 ${resourceName} 666"`, `\`${resourceContents}\``);
+      htmlContents = htmlContents.replaceAll(JSON.stringify(`666 ${resourceName} 666`), () => JSON.stringify(resourceContents));
 
-      writeFileSync(htmlPath, htmlContents);
+      FS.writeFileSync(htmlPath, htmlContents);
     }
 }
 

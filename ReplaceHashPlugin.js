@@ -1,5 +1,5 @@
-import { resolve } from 'path';
-import { readFileSync, readdirSync, writeFileSync } from 'fs';
+import * as P from 'node:path';
+import * as FS from 'node:fs';
 
 function ReplaceHashPlugin(options = {}) {
     this.options = options;
@@ -33,7 +33,7 @@ function replace(options, assets) {
         if (typeof entry === 'string')
             fileName = entry;
         else {
-            fileName = `${entry.dir}/${readdirSync(resolve(entry.dir)).find(f => f.startsWith(entry.prefix) && f.endsWith('.js'))}`;
+            fileName = `${entry.dir}/${Object.keys(assets).find(f => f.startsWith(`${entry.prefix}.`) && f.endsWith('.js'))}`;
         }
 
         replaceInFile(fileName, hash);
@@ -41,14 +41,14 @@ function replace(options, assets) {
 }
 
 function replaceInFile(fileName, hash) {
-    let path = resolve(fileName),
-        contents = readFileSync(path, 'utf8');
+    let path = P.resolve(fileName),
+        contents = FS.readFileSync(path, 'utf8');
 
     for (let [key, value] of hash) {
-        contents = contents.replace(key, value);
+        contents = contents.replaceAll(key, value);
     }
 
-    writeFileSync(path, contents);
+    FS.writeFileSync(path, contents);
 }
 
 export default ReplaceHashPlugin;

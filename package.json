@@ -7,8 +7,9 @@
   },
   "description": "Friendly random chat",
   "scripts": {
-    "watch": "nodemon loader/development/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js",
-    "nowatch": "node loader/development/server.js & webpack --progress --config webpack.development.config.js"
+    "watch": "nodemon loader/development/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & rsbuild build --watch --config rsbuild.development.config.js",
+    "nowatch": "node loader/development/server.js & rsbuild build --config rsbuild.development.config.js",
+    "build": "rsbuild build --config rsbuild.production.config.js && rsbuild build --config rsbuild.landing.config.js"
   },
   "type": "module",
   "author": "Eduardo Asafe<e@asafe.dev>",
@@ -29,18 +30,11 @@
     "xhr2": "^0.2.1"
   },
   "devDependencies": {
-    "css-loader": "^6.11.0",
-    "css-minimizer-webpack-plugin": "^3.4.1",
-    "html-inline-css-webpack-plugin": "^1.11.2",
-    "html-webpack-plugin": "^5.6.3",
-    "mini-css-extract-plugin": "^1.6.2",
+    "@rsbuild/core": "^2.2.14",
     "nodemon": "^2.0.22",
     "purescript-psa": "^0.8.2",
     "purs-backend-es": "^1.4.3",
-    "purs-loader": "^3.7.2",
-    "purs-tidy": "^0.11.0",
-    "webpack": "^5.99.9",
-    "webpack-cli": "4.9.2"
+    "purs-tidy": "^0.11.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.9"

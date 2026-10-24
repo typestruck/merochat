@@ -8,7 +8,7 @@ Server side code (to be run with node.js) lies in src/Server. Likewise, client c
 
 ### Client side
 
-On client side there is a folder for each entry point. These entry points are bundled with webpack.
+On client side there is a folder for each entry point. These entry points are bundled with Rsbuild.
 
 #### External pages
 
